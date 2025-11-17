@@ -1,7 +1,5 @@
 "use client"
 
-import { Calendar, Grid2X2, Grid2X2Check, Grid2x2X, FileSearch, FolderSearch, FolderRoot, Building, Star, Asterisk, ChartBarBig, BookHeart, UserCog, UserPen, UserRoundCheck, SquareUserRound, CircleUser, Ampersand, Hash, Building2, CornerRightUp, UsersRound, Users, Boxes } from "lucide-react"
-
 import {
   Sidebar,
   SidebarContent,
@@ -15,10 +13,11 @@ import {
 } from "@/components/ui/sidebar"
 import { AccountSwitcher } from "./account-switcher"
 import { sidebarItems } from "@/lib/sidebar-items"
+import React from "react"
 
 export function AppSidebar() {
   return (
-    <Sidebar>
+    <Sidebar collapsible="offcanvas" variant="inset">
       <SidebarHeader>
         <AccountSwitcher accounts={sidebarItems.accounts} />
       </SidebarHeader>
