@@ -18,7 +18,7 @@ export default async function QasLayout({
       <AppSidebar/>
       <SidebarInset>
         <SiteHeader />
-        <div className="flex flex-1 flex-col">
+        <div className="flex flex-1 flex-col pt-14">
           {children}
         </div>
       </SidebarInset>

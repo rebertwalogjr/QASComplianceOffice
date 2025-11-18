@@ -3,6 +3,7 @@
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -14,13 +15,31 @@ import {
 import { AccountSwitcher } from "./account-switcher"
 import { sidebarItems } from "@/lib/sidebar-items"
 import React from "react"
+import Link from "next/link"
+import { Star } from "lucide-react"
 
 export function AppSidebar() {
   return (
-    <Sidebar collapsible="offcanvas" variant="inset">
-      <SidebarHeader>
-        <AccountSwitcher accounts={sidebarItems.accounts} />
+    <Sidebar collapsible="offcanvas">
+
+      {/* SIDEBAR HEADER */}
+      <SidebarHeader className="border-b">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              className="data-[slot=sidebar-menu-button]:p-1.5!"
+            >
+              <Link href="#">
+                <Star className="size-5!" />
+                <span className="text-base font-semibold">QAS</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarHeader>
+
+      {/* SIDEBAR MENU */}
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Menu</SidebarGroupLabel>
@@ -57,6 +76,12 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      {/* SIDEBAR FOOTER */}
+      <SidebarFooter>
+        <AccountSwitcher accounts={sidebarItems.accounts} />
+      </SidebarFooter>
+
     </Sidebar>
   )
 }

@@ -18,6 +18,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar'
+import { ThemeToggleGroup } from "./theme-toggle-group"
 
 export function AccountSwitcher({
   accounts,
@@ -76,6 +77,13 @@ export function AccountSwitcher({
                 {/* <DropdownMenuShortcut>{index + 1}</DropdownMenuShortcut> */}
               </DropdownMenuItem>
             ))}
+            <DropdownMenuSeparator />
+
+            {/* SETTINGS OPTIONS */}
+            <div>
+              <ThemeToggleGroup />
+            </div>
+
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

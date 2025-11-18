@@ -2,7 +2,7 @@ import { Calendar, Grid2X2, Grid2X2Check, Grid2x2X, FileSearch, FolderSearch, Fo
 
 export const sidebarItems = {
   mainMenu: [
-    { title: "QAS Master List", url: "/default", icon: Grid2X2 },
+    { title: "QAS Master List", url: "/qas", icon: Grid2X2 },
     { title: "Outstanding NCR", url: "#", icon: Grid2X2Check },
     { title: "Cancelled NCR", url: "#", icon: Grid2x2X },
     { title: "Closed NCR", url: "#", icon: Grid2X2 },
