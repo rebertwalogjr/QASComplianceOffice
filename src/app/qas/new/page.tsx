@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { SelectValue } from "@radix-ui/react-select";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import NavigationMenu from "./navigation-menu";
+import { Button } from "@/components/ui/button";
 
 export default function NewQASForm() {
 
@@ -34,8 +35,9 @@ export default function NewQASForm() {
         <ScrollArea className="h-[calc(100vh-72px)] p-4">
           <FieldGroup>
             <FieldSet>
-              <FieldLegend>Findings</FieldLegend>
-              <FieldDescription>Complete all require fields.</FieldDescription>
+              {/* <FieldLegend>Findings</FieldLegend>
+              <FieldDescription>Complete all require fields.</FieldDescription> */}
+              <h1 className="text-lg font-bold">Findings</h1>
               <FieldGroup>
 
                 <Field>
@@ -162,8 +164,9 @@ export default function NewQASForm() {
             <FieldSeparator />
 
             <FieldSet>
-              <FieldLegend>Audit Info.</FieldLegend>
-              <FieldDescription>Complete all require fields.</FieldDescription>
+              {/* <FieldLegend>Audit Info.</FieldLegend>
+              <FieldDescription>Complete all require fields.</FieldDescription> */}
+              <h1 className="text-lg font-bold">Audit Information</h1>
               <FieldGroup>
 
                 <Field>
@@ -260,8 +263,9 @@ export default function NewQASForm() {
             <FieldSeparator />
 
             <FieldSet>
-              <FieldLegend>Additional Details</FieldLegend>
-              <FieldDescription>Complete all require fields.</FieldDescription>
+              {/* <FieldLegend>Additional Details</FieldLegend>
+              <FieldDescription>Complete all require fields.</FieldDescription> */}
+              <h1 className="text-lg font-bold">Additional Details</h1>
               <FieldGroup>
 
                 <Field>
@@ -289,8 +293,9 @@ export default function NewQASForm() {
             <FieldSeparator />
 
             <FieldSet>
-              <FieldLegend>Responsible Person</FieldLegend>
-              <FieldDescription>Complete all require fields.</FieldDescription>
+              {/* <FieldLegend>Responsible Person</FieldLegend>
+              <FieldDescription>Complete all require fields.</FieldDescription> */}
+              <h1 className="text-lg font-bold">Responsible Person</h1>
               <FieldGroup>
 
                 <Field>
@@ -328,8 +333,9 @@ export default function NewQASForm() {
             <FieldSeparator />
 
             <FieldSet>
-              <FieldLegend>Escalations</FieldLegend>
-              <FieldDescription>Complete all require fields.</FieldDescription>
+              {/* <FieldLegend>Escalations</FieldLegend>
+              <FieldDescription>Complete all require fields.</FieldDescription> */}
+              <h1 className="text-lg font-bold">Escalations</h1>
               <FieldGroup>
 
                 <Field>
@@ -354,6 +360,12 @@ export default function NewQASForm() {
 
               </FieldGroup>
             </FieldSet>
+
+            <div className="flex item-center gap-4 justify-end py-2">
+              <Button variant="secondary">Cancel</Button>
+              <Button type="submit">Submit</Button>
+            </div>
+
           </FieldGroup>
         </ScrollArea>
       </div>

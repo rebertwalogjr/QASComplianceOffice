@@ -23,7 +23,7 @@ export function AppSidebar() {
     <Sidebar collapsible="offcanvas">
 
       {/* SIDEBAR HEADER */}
-      <SidebarHeader className="border-b">
+      <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton

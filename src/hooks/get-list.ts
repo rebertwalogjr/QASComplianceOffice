@@ -49,3 +49,35 @@ export function useDataClient() {
 
   return data;
 }
+
+export function useRecord(id?: string) {
+  const [data, setData] = useState<Transaction[]>([]);
+
+  useEffect(() => {
+    fetch("/qas-list-sample.json")
+      .then((res) => res.json())
+      .then((json) => {
+        const mappedData = json.map((item: any) => ({
+          id: item.JobTransactionId,
+          auditNo: item.AuditFindingNumber,
+          company: item.CompanyName,
+          project: item.ProjectDepartmentName,
+          resposiblePerson: item.ResponsiblePerson,
+          status: item.JobStatus.toLowerCase(),
+          engagement: item.EngagementName,
+          rating: item.RatingName,
+          category: item.CategoryName,
+          details: item.ProblemDescription,
+          approvedDate: item.ApprovedDate || "",
+        }));
+
+        const filtered = id
+          ? mappedData.filter((record: Transaction) => record.id === id) 
+          : mappedData;
+
+        setData(filtered);
+      });
+  }, [id]);
+
+  return data;
+}

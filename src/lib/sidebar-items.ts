@@ -1,4 +1,4 @@
-import { Calendar, Grid2X2, Grid2X2Check, Grid2x2X, FileSearch, FolderSearch, FolderRoot, Building, Star, Asterisk, ChartBarBig, BookHeart, UserCog, UserPen, UserRoundCheck, SquareUserRound, CircleUser, Ampersand, Hash, Building2, CornerRightUp, UsersRound, Users, Boxes } from "lucide-react"
+import { Calendar, Grid2X2, Grid2X2Check, Grid2x2X, FileSearch, FolderSearch, FolderRoot, Building, Star, Asterisk, ChartBarBig, BookHeart, UserCog, UserPen, UserRoundCheck, SquareUserRound, CircleUser, Ampersand, Hash, Building2, CornerRightUp, UsersRound, Users, Boxes, FilePenLine } from "lucide-react"
 
 export const sidebarItems = {
   mainMenu: [
@@ -6,6 +6,7 @@ export const sidebarItems = {
     { title: "Outstanding NCR", url: "#", icon: Grid2X2Check },
     { title: "Cancelled NCR", url: "#", icon: Grid2x2X },
     { title: "Closed NCR", url: "#", icon: Grid2X2 },
+    { title: "QA Entry", url: "/qas/new", icon: FilePenLine },
   ],
 
   adminMenu: [

@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
+import Link from "next/link";
 
 interface Props {
   item: Transaction;
@@ -87,7 +88,9 @@ export default function TableCellViewer({ item }: Props) {
         </div>
 
         <DrawerFooter>
-          <Button>View</Button>
+          <Button asChild>
+            <Link href={`/qas/${item.id}`}>View</Link>
+          </Button>
           <DrawerClose asChild>
             <Button variant="outline">Close</Button>
           </DrawerClose>
