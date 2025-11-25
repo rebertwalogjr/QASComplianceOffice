@@ -34,7 +34,7 @@ const IconSwitcher = (type: string) => {
 
 export default function AttachmentViewer() {
   return (
-    <>
+    <div className="flex flex-col w-full gap-2">
       {attachments.map((item: typeAttachment) => (
         <Item key={item.id} variant="outline" size="sm" className="w-full hover:bg-muted">
           <i className={`bi ${IconSwitcher(item.type)} text-xl`} />
@@ -43,14 +43,9 @@ export default function AttachmentViewer() {
             <ItemDescription className="text-xs">{item.size}</ItemDescription>
           </ItemContent>
           <ItemActions>
-            {/* <Button variant="ghost" className="hover:bg-background">
-              <ChevronDown className="size-4" />
-            </Button> */}
             <DropdownMenu>
-              <DropdownMenuTrigger>
-                {/* <Button size="icon-sm" variant="ghost" className="hover:bg-background"> */}
-                  <ChevronDown className="size-4 hover:bg-background" />
-                {/* </Button> */}
+              <DropdownMenuTrigger className="flex justify-center items-center size-6 hover:bg-background rounded">
+                <ChevronDown className="size-4" />
               </DropdownMenuTrigger>
               <DropdownMenuContent>
                 <DropdownMenuItem>Download</DropdownMenuItem>
@@ -61,6 +56,6 @@ export default function AttachmentViewer() {
         </Item>
       ))
       }
-    </>
+    </div>
   )
 }

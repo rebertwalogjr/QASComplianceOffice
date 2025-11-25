@@ -5,6 +5,8 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbP
 import { Separator } from '@/components/ui/separator'
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar"
 import { Button } from './ui/button'
+import { Label } from './ui/label'
+import { sidebarItems } from '@/lib/sidebar-items'
 
 export function SiteHeader() {
   const pathname = usePathname()
@@ -29,7 +31,25 @@ export function SiteHeader() {
     return breadcrumbs
   } 
 
+  const getPagetitle = () => {
+    const segments = pathname.split('/').filter(Boolean)
+
+    if (segments[0] === 'qas' && segments[1]) {
+      return `Series - #${segments[1]}`
+    }
+
+    const allItems = [...sidebarItems.mainMenu, ...sidebarItems.adminMenu]
+
+    const matchedItem = allItems.find(item => 
+      pathname === item.url || pathname.startsWith(`{${item.url}}`)
+    )
+
+    return matchedItem?.title || "QAS Compliance Office"
+  }
+
   const breadcrumbs = generateBreadcrumbs()
+
+  const pageTitle = getPagetitle()
   
   return (
     <header className="fixed w-full bg-background top-0 z-50 flex h-16 shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
@@ -39,20 +59,22 @@ export function SiteHeader() {
           orientation="vertical"
           className="mr-2 data-[orientation=vertical]:h-4"
           />
-        <Breadcrumb>
+          <Label className='text-base font-semibold'>{ pageTitle }</Label>
+
+        {/* <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem className="hidden md:block">
               <BreadcrumbLink href="/qas">
                 QAS Master List
               </BreadcrumbLink>
-            </BreadcrumbItem>
+            </BreadcrumbItem> */}
 
             {/* <BreadcrumbSeparator className="hidden md:block" />
             <BreadcrumbItem>
               <BreadcrumbPage>QAS Master List</BreadcrumbPage>
             </BreadcrumbItem> */}
 
-            {breadcrumbs.map((breadcrumb, index) => (
+            {/* {breadcrumbs.map((breadcrumb, index) => (
               <div key={index} className="flex items-center gap-2">
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem className="hidden md:block">
@@ -68,7 +90,7 @@ export function SiteHeader() {
             ))}
             
           </BreadcrumbList>
-        </Breadcrumb>
+        </Breadcrumb> */}
       </div>
     </header>
   )

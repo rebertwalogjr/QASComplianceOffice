@@ -10,80 +10,99 @@ type ItemGroupProps = React.ComponentProps<"div"> & {
 }
 
 
-function SeriesContainer({ className, ...props} : React.ComponentProps<"div">){
+function SeriesContainer({ className, ...props }: React.ComponentProps<"div">) {
   const isMobile = useIsMobile()
   return (
     <div
       data-slot=""
       className={cn(
-        "w-full bg-background space-y-5 pb-8",
+        "w-full bg-background pb-8",
         className,
-        isMobile ? "px-2 py-2" : "px-6 py-4"
+        isMobile ? "px-2 py-4" : "px-6 py-4"
       )}
-      { ...props } 
+      {...props}
     />
   )
 }
 
-function SeriesGroup({ 
+function SeriesGroup({
   orientation,
   className,
   ...props
-  } : ItemGroupProps){
+}: ItemGroupProps) {
+  const isMobile = useIsMobile()
+  const dir = orientation ?? (isMobile ? "vertical" : "horizontal")
+  return (
+    <div
+      className={cn(
+        "flex flex-col px-2 w-full",
+        isMobile ? "" : "px-20 py-4",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+// function SeriesTitle({ className, ...props }: React.ComponentProps<"div">) {
+//   return (
+//     <div
+//       className={cn(
+//         "flex w-fit items-center gap-2 text-lg leading-snug font-medium", className
+//       )}
+//       {...props}
+//     />
+//   )
+// }
+
+function SeriesItem({
+  orientation,
+  className,
+  ...props
+}: ItemGroupProps) {
   const isMobile = useIsMobile()
   const dir = orientation ?? (isMobile ? "vertical" : "horizontal")
   return (
     <div
       className={cn(
         "flex px-2",
-        dir === "horizontal" ? "flex-row gap-8 items-center" :"flex-col gap-1 items-start",
+        dir === "horizontal" ? "flex-row gap-8 items-center h-10" : "flex-col gap-2 items-start py-2",
         className
       )}
-      { ...props } 
+      {...props}
     />
   )
 }
 
-function SeriesTitle({ className, ...props} : React.ComponentProps<"div">){
-  return(
-    <div 
+function SeriesLabel({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
       className={cn(
-        "flex w-fit items-center gap-2 text-lg leading-snug font-medium", className
+        "w-3xs font-medium text-sm", className
       )}
-      { ...props }
+      {...props}
     />
   )
 }
 
-function SeriesLabel({ className, ...props} : React.ComponentProps<"div">){
-  return(
-    <div 
-      className={cn(
-        "w-2xs font-medium text-sm", className
-      )}
-      { ...props }
-    />
-  )
-}
-
-function SeriesDescription({ className, ...props} : React.ComponentProps<"div">){
-  return(
-    <div 
+function SeriesDescription({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
       className={cn(
         "font-normal text-muted-foreground text-sm", className
       )}
-      { ...props }
+      {...props}
     />
   )
 }
 
-function SeriesValue({ className, ...props} : React.ComponentProps<"div">){
-  return(
-    <div 
+function SeriesValue({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
       className={cn(
-        "text-sm", className
+        "w-full text-sm md:truncate", className
       )}
-      { ...props }
+      {...props}
     />
   )
 }
@@ -120,13 +139,13 @@ function SeriesMedia({
   )
 }
 
-function SeriesHeader({ className, ...props} : React.ComponentProps<"div">){
-  return(
-    <div 
+function SeriesHeader({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
       className={cn(
-        "flex gap-1 items-center h-10", className
+        "flex gap-2 items-center h-12 text-lg leading-snug font-medium", className
       )}
-      { ...props }
+      {...props}
     />
   )
 }
@@ -134,10 +153,11 @@ function SeriesHeader({ className, ...props} : React.ComponentProps<"div">){
 export {
   SeriesContainer,
   SeriesGroup,
-  SeriesTitle,
+  // SeriesTitle,
   SeriesMedia,
   SeriesHeader,
   SeriesLabel,
   SeriesValue,
-  SeriesDescription
+  SeriesDescription,
+  SeriesItem
 }

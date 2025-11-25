@@ -1,5 +1,5 @@
 import { ChevronDown, Circle, Dot, FileText } from "lucide-react";
-import { SeriesDescription, SeriesGroup, SeriesHeader, SeriesLabel, SeriesMedia, SeriesContainer, SeriesTitle, SeriesValue } from "@/components/series-item";
+import { SeriesDescription, SeriesGroup, SeriesHeader, SeriesLabel, SeriesMedia, SeriesContainer, SeriesValue, SeriesItem } from "@/components/series-item";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import AttachmentViewer from "@/components/attachment-viewer";
@@ -7,8 +7,8 @@ import AttachmentViewer from "@/components/attachment-viewer";
 const BadgeYesNo = (str: string) => {
   const val = str.toLowerCase()
   return <>
-    <Badge className={`${ val === "yes" ? "bg-blue-500 text-white" : "bg-gray-500 text-white" } px-3`}>
-      { str }
+    <Badge className={`${val === "yes" ? "bg-blue-500 text-white" : "bg-gray-500 text-white"} px-3`}>
+      {str}
     </Badge>
   </>
 }
@@ -19,140 +19,147 @@ export default function FormView() {
 
     <SeriesContainer>
 
-      <SeriesHeader>
-        <SeriesMedia>
-          <FileText />
-        </SeriesMedia>
-        <SeriesTitle>Findings</SeriesTitle>
-      </SeriesHeader>
-
       <SeriesGroup>
-        <SeriesLabel>Auditor:</SeriesLabel>
-        <SeriesValue>Juan Dela Cruz</SeriesValue>
-      </SeriesGroup>
+        <SeriesHeader>
+          <SeriesMedia>
+            <FileText />
+          </SeriesMedia>
+          Findings
+        </SeriesHeader>
 
-      <SeriesGroup>
-        <SeriesLabel>Company:</SeriesLabel>
-        <SeriesValue>DMCI Project Developers, Inc.</SeriesValue>
-      </SeriesGroup>
+        <SeriesItem>
+          <SeriesLabel>Auditor:</SeriesLabel>
+          <SeriesValue>Juan Dela Cruz</SeriesValue>
+        </SeriesItem>
 
-      <SeriesGroup>
-        <SeriesLabel>Project:</SeriesLabel>
-        <SeriesValue>Construction</SeriesValue>
-      </SeriesGroup>
+        <SeriesItem>
+          <SeriesLabel>Company:</SeriesLabel>
+          <SeriesValue>DMCI Project Developers, Inc.</SeriesValue>
+        </SeriesItem>
 
-      <SeriesGroup>
-        <SeriesLabel>Audit Report No.:</SeriesLabel>
-        <SeriesValue>IAD-REPORT-2025-11</SeriesValue>
-      </SeriesGroup>
+        <SeriesItem>
+          <SeriesLabel>Project:</SeriesLabel>
+          <SeriesValue>Construction</SeriesValue>
+        </SeriesItem>
 
-      <SeriesGroup>
-        <SeriesLabel>Type of Findings:</SeriesLabel>
-        <SeriesValue>Positive Observation</SeriesValue>
-      </SeriesGroup>
+        <SeriesItem>
+          <SeriesLabel>Audit Report No.:</SeriesLabel>
+          <SeriesValue>IAD-REPORT-2025-11</SeriesValue>
+        </SeriesItem>
 
-      <SeriesGroup>
-        <SeriesLabel>Findings Category:</SeriesLabel>
-        <SeriesValue>Operations</SeriesValue>
-      </SeriesGroup>
+        <SeriesItem>
+          <SeriesLabel>Type of Findings:</SeriesLabel>
+          <SeriesValue>Positive Observation</SeriesValue>
+        </SeriesItem>
 
-      <SeriesGroup>
-        <SeriesLabel>Verified By:</SeriesLabel>
-        <SeriesValue>Juan Dela Cruz</SeriesValue>
-      </SeriesGroup>
+        <SeriesItem>
+          <SeriesLabel>Findings Category:</SeriesLabel>
+          <SeriesValue>Operations</SeriesValue>
+        </SeriesItem>
 
-      <SeriesGroup>
-        <SeriesLabel>Approved By:</SeriesLabel>
-        <SeriesValue>Juan Dela Cruz</SeriesValue>
-      </SeriesGroup>
+        <SeriesItem>
+          <SeriesLabel>Verified By:</SeriesLabel>
+          <SeriesValue>Juan Dela Cruz</SeriesValue>
+        </SeriesItem>
 
-      <SeriesGroup>
-        <SeriesLabel>Request for Closing:</SeriesLabel>
-        <SeriesValue>{ BadgeYesNo("Yes") }</SeriesValue>
-      </SeriesGroup>
+        <SeriesItem>
+          <SeriesLabel>Approved By:</SeriesLabel>
+          <SeriesValue>Juan Dela Cruz</SeriesValue>
+        </SeriesItem>
 
-      <SeriesHeader>
-        <SeriesMedia>
-          <FileText />
-        </SeriesMedia>
-        <SeriesTitle>Audit Information</SeriesTitle>
-      </SeriesHeader>
-
-      <SeriesGroup>
-        <SeriesLabel>Audit Engagement:</SeriesLabel>
-        <SeriesValue>Site Warehousing Audit Cycle 3</SeriesValue>
+        <SeriesItem>
+          <SeriesLabel>Request for Closing:</SeriesLabel>
+          <SeriesValue>{BadgeYesNo("Yes")}</SeriesValue>
+        </SeriesItem>
       </SeriesGroup>
 
       <SeriesGroup>
-        <SeriesLabel>Audit Finding No.:</SeriesLabel>
-        <SeriesValue>IAD-REPORT-2005-11-46</SeriesValue>
+
+        <SeriesHeader>
+          <SeriesMedia>
+            <FileText />
+          </SeriesMedia>
+          Audit Information
+        </SeriesHeader>
+
+        <SeriesItem>
+          <SeriesLabel>Audit Engagement:</SeriesLabel>
+          <SeriesValue>Site Warehousing Audit Cycle 3</SeriesValue>
+        </SeriesItem>
+
+        <SeriesItem>
+          <SeriesLabel>Audit Finding No.:</SeriesLabel>
+          <SeriesValue>IAD-REPORT-2005-11-46</SeriesValue>
+        </SeriesItem>
+
+        <SeriesItem>
+          <SeriesLabel>Date & Time Issued:</SeriesLabel>
+          <SeriesValue>11/14/2025 5:03:00 PM</SeriesValue>
+        </SeriesItem>
+
+        <SeriesItem>
+          <SeriesLabel>Target Date:</SeriesLabel>
+          <SeriesValue>11/18/2025</SeriesValue>
+        </SeriesItem>
+
+        <SeriesItem>
+          <SeriesLabel>Audit Rating:</SeriesLabel>
+          <SeriesValue>Adequate</SeriesValue>
+        </SeriesItem>
+
+        <SeriesItem>
+          <SeriesLabel>Project Manager / Dept. Head:</SeriesLabel>
+          <SeriesValue>Juan Dela Cruz</SeriesValue>
+        </SeriesItem>
+
+        <SeriesItem>
+          <SeriesLabel>Responsible Person:</SeriesLabel>
+          <SeriesValue>Juan Dela Cruz</SeriesValue>
+        </SeriesItem>
+
+        <SeriesItem>
+          <SeriesLabel>Responsible Department:</SeriesLabel>
+          <SeriesValue>Juan Dela Cruz</SeriesValue>
+        </SeriesItem>
+
+        <SeriesItem>
+          <SeriesLabel>Recurring Per Process:</SeriesLabel>
+          <SeriesValue>{BadgeYesNo("No")}</SeriesValue>
+        </SeriesItem>
+
+        <SeriesItem>
+          <SeriesLabel>Recurring Per Person:</SeriesLabel>
+          <SeriesValue>{BadgeYesNo("No")}</SeriesValue>
+        </SeriesItem>
+
       </SeriesGroup>
 
       <SeriesGroup>
-        <SeriesLabel>Date & Time Issued:</SeriesLabel>
-        <SeriesValue>11/14/2025 5:03:00 PM</SeriesValue>
-      </SeriesGroup>
 
-      <SeriesGroup>
-        <SeriesLabel>Target Date:</SeriesLabel>
-        <SeriesValue>11/18/2025</SeriesValue>
-      </SeriesGroup>
+        <SeriesHeader>
+          <SeriesMedia>
+            <FileText />
+          </SeriesMedia>
+          Additional Details
+        </SeriesHeader>
 
-      <SeriesGroup>
-        <SeriesLabel>Audit Rating:</SeriesLabel>
-        <SeriesValue>Adequate</SeriesValue>
-      </SeriesGroup>
+        <SeriesItem orientation="vertical" className="">
+          <SeriesLabel>Details of Findings</SeriesLabel>
+          <SeriesDescription>Criteria:</SeriesDescription>
+          <Textarea className="bg-muted min-h-25" value="Some text here..." readOnly />
+          <SeriesDescription>Findings:</SeriesDescription>
+          <Textarea className="bg-muted min-h-25" value="Some text here..." readOnly />
+        </SeriesItem>
 
-      <SeriesGroup>
-        <SeriesLabel>Project Manager / Dept. Head:</SeriesLabel>
-        <SeriesValue>Juan Dela Cruz</SeriesValue>
-      </SeriesGroup>
+        <SeriesItem orientation="vertical" className="">
+          <SeriesLabel>Recommendations</SeriesLabel>
+          <Textarea className="bg-muted min-h-25" value="Some text here..." readOnly />
+        </SeriesItem>
 
-      <SeriesGroup>
-        <SeriesLabel>Responsible Person:</SeriesLabel>
-        <SeriesValue>Juan Dela Cruz</SeriesValue>
-      </SeriesGroup>
-
-      <SeriesGroup>
-        <SeriesLabel>Responsible Department:</SeriesLabel>
-        <SeriesValue>Juan Dela Cruz</SeriesValue>
-      </SeriesGroup>
-
-      <SeriesGroup>
-        <SeriesLabel>Recurring Per Process:</SeriesLabel>
-        <SeriesValue>{ BadgeYesNo("No") }</SeriesValue>
-      </SeriesGroup>
-
-      <SeriesGroup>
-        <SeriesLabel>Recurring Per Person:</SeriesLabel>
-        <SeriesValue>{ BadgeYesNo("No") }</SeriesValue>
-      </SeriesGroup>
-
-      <SeriesHeader>
-        <SeriesMedia>
-          <FileText />
-        </SeriesMedia>
-        <SeriesTitle>Additional Details</SeriesTitle>
-      </SeriesHeader>
-
-      <SeriesGroup orientation="vertical" className="">
-        <SeriesLabel>Details of Findings</SeriesLabel>
-        <SeriesDescription>Criteria:</SeriesDescription>
-        <Textarea className="bg-muted min-h-25" value="Some text here..." readOnly />
-        <SeriesDescription>Findings:</SeriesDescription>
-        <Textarea className="bg-muted min-h-25" value="Some text here..." readOnly />
-      </SeriesGroup>
-
-      <SeriesGroup orientation="vertical" className="">
-        <SeriesLabel>Recommendations</SeriesLabel>
-        <Textarea className="bg-muted min-h-25" value="Some text here..." readOnly />
-      </SeriesGroup>
-
-      <SeriesGroup orientation="vertical" className="">
-        <SeriesLabel>Attachments</SeriesLabel>
-        
-        <AttachmentViewer />
-
+        <SeriesItem orientation="vertical" className="">
+          <SeriesLabel>Attachments</SeriesLabel>
+          <AttachmentViewer />
+        </SeriesItem>
       </SeriesGroup>
 
     </SeriesContainer>
