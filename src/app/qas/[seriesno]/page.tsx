@@ -7,6 +7,9 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import RightPanel from "./right-panel"
 import { Separator } from "@/components/ui/separator"
 import HideOnScroll from "@/components/hide-on-scroll"
+import SeriesTitle from "./series-title"
+import SeriesNavigationMenu from "./series-navigation-menu"
+import { SeriesTabs, SeriesTabsContent, SeriesTabsList, SeriesTabsTrigger } from "@/components/series-tabs"
 
 export default async function SeriesViewer(props: { params: Promise<{ seriesno: string }> }) {
   const params = await props.params
@@ -15,24 +18,32 @@ export default async function SeriesViewer(props: { params: Promise<{ seriesno: 
     <div className="@container/main flex flex-row pt-2">
       {/* <p>Viewing series number: {params.seriesno}</p> */}
 
-      <div className="flex-2 w-[75vw] min-w-0 min-h-0 overflow-y-auto"> {/* overflow-y-auto */}
-        <div id="page-title" className="fixed top-16 border-b w-full bg-background">
-          <HideOnScroll>
-            <div id="series-title" className="p-4">
-              <Label className="text-md">Series - #{params.seriesno}</Label>
-            </div>
-          </HideOnScroll>
-          <div className="flex items-center px-4 h-12">
-            <nav className="">
-              <Button variant="ghost">Details</Button>
-              <Button variant="ghost">Audit Trail</Button>
-              <Button variant="ghost">Update Trail</Button>
-              <Button variant="ghost">Review Trail</Button>
-            </nav>
-          </div>
-        </div>
-        <div className="pt-26">
-          <FormView />
+      <div className="flex-2 w-[75vw] min-w-0 min-h-0">
+        <SeriesTitle seriesno={params.seriesno} />
+        <div className="pt-16">
+          {/* <div className="sticky top-16"> */}
+            {/* <SeriesNavigationMenu /> */}
+            <SeriesTabs defaultValue="details">
+              <SeriesTabsList>
+                <SeriesTabsTrigger value="details">Details</SeriesTabsTrigger>
+                <SeriesTabsTrigger value="audit">Audit Trail</SeriesTabsTrigger>
+                <SeriesTabsTrigger value="update">Update Trail</SeriesTabsTrigger>
+                <SeriesTabsTrigger value="review">Review Trail</SeriesTabsTrigger>
+              </SeriesTabsList>
+              <SeriesTabsContent value="details">
+                <FormView />
+              </SeriesTabsContent>
+              <SeriesTabsContent value="audit">
+                <div>Audit Trail</div>
+              </SeriesTabsContent>
+              <SeriesTabsContent value="update">
+                <div>Update Trail</div>
+              </SeriesTabsContent>
+              <SeriesTabsContent value="review">
+                <div>Review Trail</div>
+              </SeriesTabsContent>
+            </SeriesTabs>
+          {/* </div> */}
         </div>
 
       </div>

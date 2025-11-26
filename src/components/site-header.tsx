@@ -7,29 +7,12 @@ import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar"
 import { Button } from './ui/button'
 import { Label } from './ui/label'
 import { sidebarItems } from '@/lib/sidebar-items'
+import { useEffect, useRef, useState } from 'react'
 
 export function SiteHeader() {
   const pathname = usePathname()
-
-  const generateBreadcrumbs = () => {
-    const segments = pathname.split('/').filter(Boolean)
-    const breadcrumbs: { label: string; href: string }[] = []
-
-    segments.forEach((segment, index) => {
-      const href = '/' + segments.slice(0, index + 1).join('/')
-      
-      if (segment === 'qas') {
-        //breadcrumbs.push({ label: '', href })
-      } else if (!isNaN(Number(segment))) {
-        // If segment is a number (series ID)
-        breadcrumbs.push({ label: segment, href })
-      } else {
-        breadcrumbs.push({ label: segment.charAt(0).toUpperCase() + segment.slice(1), href })
-      }
-    })
-    
-    return breadcrumbs
-  } 
+  const [showHeaderTitle, setShowHeaderTitle] = useState(false)
+  const pageTitleRef = useRef<HTMLDivElement | null>(null)
 
   const getPagetitle = () => {
     const segments = pathname.split('/').filter(Boolean)
@@ -40,17 +23,24 @@ export function SiteHeader() {
 
     const allItems = [...sidebarItems.mainMenu, ...sidebarItems.adminMenu]
 
-    const matchedItem = allItems.find(item => 
+    const matchedItem = allItems.find(item =>
       pathname === item.url || pathname.startsWith(`{${item.url}}`)
     )
 
     return matchedItem?.title || "QAS Compliance Office"
   }
 
-  const breadcrumbs = generateBreadcrumbs()
-
   const pageTitle = getPagetitle()
-  
+
+  useEffect(() => {
+    const handler = (e: CustomEvent) => {
+      setShowHeaderTitle(!e.detail.visible);
+    }
+    window.addEventListener("seriesTitleVisibility", handler as EventListener);
+    return () => window.removeEventListener("seriesTitleVisibility", handler as EventListener);
+  }, []);
+
+
   return (
     <header className="fixed w-full bg-background top-0 z-50 flex h-16 shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
       <div className="flex items-center gap-2 px-4">
@@ -58,39 +48,10 @@ export function SiteHeader() {
         <Separator
           orientation="vertical"
           className="mr-2 data-[orientation=vertical]:h-4"
-          />
-          <Label className='text-base font-semibold'>{ pageTitle }</Label>
-
-        {/* <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem className="hidden md:block">
-              <BreadcrumbLink href="/qas">
-                QAS Master List
-              </BreadcrumbLink>
-            </BreadcrumbItem> */}
-
-            {/* <BreadcrumbSeparator className="hidden md:block" />
-            <BreadcrumbItem>
-              <BreadcrumbPage>QAS Master List</BreadcrumbPage>
-            </BreadcrumbItem> */}
-
-            {/* {breadcrumbs.map((breadcrumb, index) => (
-              <div key={index} className="flex items-center gap-2">
-                <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbItem className="hidden md:block">
-                  {index === breadcrumbs.length - 1 ? (
-                    <BreadcrumbPage>{breadcrumb.label}</BreadcrumbPage>
-                  ) : (
-                    <BreadcrumbLink href={breadcrumb.href}>
-                      {breadcrumb.label}
-                    </BreadcrumbLink>
-                  )}
-                </BreadcrumbItem>
-              </div>
-            ))}
-            
-          </BreadcrumbList>
-        </Breadcrumb> */}
+        />
+        { (
+          <Label className={`absolute left-16 text-base font-semibold transition-all ease-in-out duration-300 ${ showHeaderTitle ? "opacity-100 tranlate-y-0" : "opacity-0 translate-y-4"}`}>{pageTitle}</Label>
+        )}
       </div>
     </header>
   )
