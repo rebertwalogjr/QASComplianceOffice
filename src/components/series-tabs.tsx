@@ -10,16 +10,19 @@ interface TabsContextProps {
 interface SeriesTabsProps {
   defaultValue: string
   children: React.ReactNode
+  className?: string
 }
 
 interface SeriesTabsTriggerProps {
   value: string
   children: React.ReactNode
+  className?: string
 }
 
 interface SeriesTabsContentProps {
   value: string
   children: React.ReactNode
+  className?: string
 }
 
 const TabsContext = createContext<TabsContextProps | undefined>(undefined)
@@ -30,30 +33,30 @@ function useTabs() {
   return context
 }
 
-function SeriesTabs({ defaultValue, children } : SeriesTabsProps) {
+function SeriesTabs({ defaultValue, children, className } : SeriesTabsProps) {
   const [activeTab, setActiveTab] = useState(defaultValue)
   return (
     <TabsContext.Provider value={{ activeTab, setActiveTab }}>
-      <div className="flex flex-col">{children}</div>
+      <div className={`flex flex-col ${ className }`}>{children}</div>
     </TabsContext.Provider>
   )
 }
 
 function SeriesTabsList({ children } : { children : React.ReactNode }){
   return (
-    <div className="sticky top-16 z-10 bg-background border-b flex items-center px-8 overflow-x-auto flex-nowrap whitespace-nowrap gap-2 scrollbar-hide">
+    <div className="sticky top-16 w-screen border-b z-10 bg-background flex items-center px-4 md:px-8 overflow-x-auto flex-nowrap whitespace-nowrap gap-2 scrollbar-hide">
       <nav className="flex gap-4">{ children }</nav>
     </div>
   )
 }
 
-function SeriesTabsTrigger({ value, children } : SeriesTabsTriggerProps){
+function SeriesTabsTrigger({ value, children, className } : SeriesTabsTriggerProps){
   const { activeTab, setActiveTab } = useTabs()
   const isActive = activeTab === value
   return (
     <button
       onClick={() => setActiveTab(value)}
-      className={`relative hover:bg-transparent h-12 group ${ isActive
+      className={`relative hover:bg-transparent h-12 group font-semibold ${className} ${ isActive
               ? "text-primary"
               : "text-muted-foreground hover:text-muted-foreground"}`}
     >
@@ -64,11 +67,11 @@ function SeriesTabsTrigger({ value, children } : SeriesTabsTriggerProps){
   )
 }
 
-function SeriesTabsContent({ value, children } : SeriesTabsContentProps) {
+function SeriesTabsContent({ value, children, className } : SeriesTabsContentProps) {
   const { activeTab } = useTabs()
   return (
     activeTab === value 
-    ? <div className="p-4">{children}</div>
+    ? <div className={`p-4 ${className}`}>{children}</div>
     : null
   )
 }

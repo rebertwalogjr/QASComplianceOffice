@@ -26,14 +26,14 @@ export function AppSidebar() {
     const isActive = pathname === item.url || pathname.startsWith(item.url === "/" ? "/" : `${item.url}/`)
 
     const base = "flex items-center gap-3 px-3 py-2 rounded-md transition-colors"
-    const active = "bg-foreground text-background font-medium"
-    const inactive = "hover:bg-muted/50"
+    const active = "bg-background text-primary font-medium"
+    const inactive = "text-white"
 
     return (
       <Link
         href={item.url}
         aria-current={isActive ? "page" : undefined}
-        className={`${base} ${isActive ? active : inactive}`}    
+        className={`${base} ${isActive ? active : inactive }`}    
     >
         <item.icon className="size-4" />
         <span>{item.title}</span>
@@ -64,7 +64,7 @@ export function AppSidebar() {
       {/* SIDEBAR MENU */}
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Menu</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-muted">Menu</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {sidebarItems.mainMenu.map((item) => (
@@ -82,7 +82,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
         <SidebarGroup>
-          <SidebarGroupLabel>Admin Menu</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-muted">Admin Menu</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {sidebarItems.adminMenu.map((item) => (

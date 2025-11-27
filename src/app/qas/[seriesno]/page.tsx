@@ -10,6 +10,9 @@ import HideOnScroll from "@/components/hide-on-scroll"
 import SeriesTitle from "./series-title"
 import SeriesNavigationMenu from "./series-navigation-menu"
 import { SeriesTabs, SeriesTabsContent, SeriesTabsList, SeriesTabsTrigger } from "@/components/series-tabs"
+import AuditTrail from "../audit-trail"
+import UpdateTrail from "../update-trail"
+import ReviewTrail from "../review-trail"
 
 export default async function SeriesViewer(props: { params: Promise<{ seriesno: string }> }) {
   const params = await props.params
@@ -18,7 +21,7 @@ export default async function SeriesViewer(props: { params: Promise<{ seriesno: 
     <div className="@container/main flex flex-row pt-2">
       {/* <p>Viewing series number: {params.seriesno}</p> */}
 
-      <div className="flex-2 w-[75vw] min-w-0 min-h-0">
+      <div className="flex-2 min-w-0 min-h-0">
         <SeriesTitle seriesno={params.seriesno} />
         <div className="pt-16">
           {/* <div className="sticky top-16"> */}
@@ -34,13 +37,13 @@ export default async function SeriesViewer(props: { params: Promise<{ seriesno: 
                 <FormView />
               </SeriesTabsContent>
               <SeriesTabsContent value="audit">
-                <div>Audit Trail</div>
+                <AuditTrail />
               </SeriesTabsContent>
               <SeriesTabsContent value="update">
-                <div>Update Trail</div>
+                <UpdateTrail />
               </SeriesTabsContent>
               <SeriesTabsContent value="review">
-                <div>Review Trail</div>
+                <ReviewTrail />
               </SeriesTabsContent>
             </SeriesTabs>
           {/* </div> */}

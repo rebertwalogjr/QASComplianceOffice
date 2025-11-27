@@ -13,7 +13,7 @@ export default function SeriesTitle({ seriesno }: Props) {
   return (
     <div id="page-title" className="fixed top-16 w-full bg-background">
       <HideOnScroll>
-        <div id="series-title" className="flex items-start justify-center p-8 flex-col h-16">
+        <div id="series-title" className="flex items-start justify-center p-4 md:p-8 flex-col h-16">
           <Label className="text-md">Series - #{seriesno}</Label>
           <div className="flex gap-2">
             <Label className="text-sm">Juan Dela Cruz</Label>
