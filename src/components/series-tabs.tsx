@@ -37,15 +37,15 @@ function SeriesTabs({ defaultValue, children, className } : SeriesTabsProps) {
   const [activeTab, setActiveTab] = useState(defaultValue)
   return (
     <TabsContext.Provider value={{ activeTab, setActiveTab }}>
-      <div className={`flex flex-col ${ className }`}>{children}</div>
+      <div className={`flex flex-col flex-1 ${ className }`}>{children}</div>
     </TabsContext.Provider>
   )
 }
 
 function SeriesTabsList({ children } : { children : React.ReactNode }){
   return (
-    <div className="sticky top-16 w-screen border-b z-10 bg-background flex items-center px-4 md:px-8 overflow-x-auto flex-nowrap whitespace-nowrap gap-2 scrollbar-hide">
-      <nav className="flex gap-4">{ children }</nav>
+    <div className="sticky top-16 border-b z-10 bg-background flex items-center overflow-x-auto flex-nowrap whitespace-nowrap gap-2 scrollbar-hide">
+      <nav className="flex gap-4 px-4 md:px-8 md:gap-8">{ children }</nav>
     </div>
   )
 }

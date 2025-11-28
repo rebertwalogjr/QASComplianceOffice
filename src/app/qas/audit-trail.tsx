@@ -3,6 +3,7 @@ import { BadgeCheck, BadgeCheckIcon, BadgeMinusIcon, User2, LucideClockFading } 
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import StatusBadge from "@/components/status-badge";
 
 export default function AuditTrail() {
   return (
@@ -17,7 +18,7 @@ export default function AuditTrail() {
         <ItemContent>
             <ItemTitle><div><strong>Rebert Walog Jr</strong> tag the entry as closed.</div></ItemTitle>
             <ItemDescription className="md:hidden">1:20 PM</ItemDescription>
-            <Badge className="bg-gradient-horizontal"><BadgeCheck />Closed</Badge>
+            <StatusBadge status="closed" />
         </ItemContent>
         <ItemContent className="hidden md:block">
           <ItemDescription>1:20 PM</ItemDescription>
@@ -31,7 +32,7 @@ export default function AuditTrail() {
         <ItemContent>
           <ItemTitle><div><strong>Maria Makiling</strong> tag the entry for closing.</div></ItemTitle>
           <ItemDescription className="md:hidden">12:45 PM</ItemDescription>
-          <Badge className="bg-primary/10 border-primary text-primary"><BadgeCheck />For Closing</Badge>
+          <StatusBadge status="for closing" />
         </ItemContent>
         <ItemContent className="hidden md:block">
           <ItemDescription>12:45 PM</ItemDescription>
@@ -48,7 +49,7 @@ export default function AuditTrail() {
           </ItemTitle>
           <ItemDescription className="md:hidden">9:45 AM</ItemDescription>
           <ItemDescription className="line-clamp-none">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Recusandae mollitia, natus corrupti minus ad tenetur dolor, eligendi officia reiciendis hic quasi obcaecati? Aspernatur, deserunt? Dolorum aliquam quidem doloribus eaque minus!</ItemDescription>
-          <Badge className="bg-cyan-500/10 border-cyan-500 text-cyan-500"><BadgeCheck />Accepted</Badge>
+          <StatusBadge status="accepted" />
         </ItemContent>
         <ItemContent className="hidden md:block">
           <ItemDescription>9:45 AM</ItemDescription>
@@ -67,7 +68,7 @@ export default function AuditTrail() {
           <ItemTitle><div><strong>Pedro</strong> approved the entry with comment.</div></ItemTitle>
           <ItemDescription className="md:hidden">Yesterday 9:45 AM</ItemDescription>
           <ItemDescription className="line-clamp-none">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Recusandae mollitia, natus corrupti minus ad tenetur dolor, eligendi officia reiciendis hic quasi obcaecati? Aspernatur, deserunt? Dolorum aliquam quidem doloribus eaque minus!</ItemDescription>
-          <Badge className="bg-cyan-500/10 border-cyan-500 text-cyan-500"><BadgeCheckIcon />Approved</Badge>
+          <StatusBadge status="approved" />
         </ItemContent>
         <ItemContent className="hidden md:block">
           <ItemDescription>Yesterday 9:45 AM</ItemDescription>
@@ -86,7 +87,7 @@ export default function AuditTrail() {
           <ItemTitle><div><strong>Rebert Walog Jr</strong> verified the entry with comment.</div></ItemTitle>
           <ItemDescription className="md:hidden">11/8 2:56 PM</ItemDescription>
           <ItemDescription className="line-clamp-none">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Recusandae mollitia, natus corrupti minus ad tenetur dolor, eligendi officia reiciendis hic quasi obcaecati? Aspernatur, deserunt? Dolorum aliquam quidem doloribus eaque minus!</ItemDescription>
-          <Badge className="bg-green-600/10 border-green-600 text-green-600"><BadgeCheckIcon />Verified</Badge>
+          <StatusBadge status="verified" />
         </ItemContent>
         <ItemContent className="hidden md:block">
           <ItemDescription>11/8 2:56 PM</ItemDescription>
@@ -123,7 +124,7 @@ export default function AuditTrail() {
           <ItemTitle><div><strong>Rebert Walog Jr</strong> declined the entry with comment.</div></ItemTitle>
           <ItemDescription className="md:hidden">11/7 4:35 PM</ItemDescription>
           <ItemDescription className="line-clamp-none">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Recusandae mollitia, natus corrupti minus ad tenetur dolor, eligendi officia reiciendis hic quasi obcaecati? Aspernatur, deserunt? Dolorum aliquam quidem doloribus eaque minus!</ItemDescription>
-          <Badge className="bg-red-500/10 border-red-500 text-red-500"><BadgeMinusIcon />Declined</Badge>
+          <StatusBadge status="declined" />
         </ItemContent>
         <ItemContent className="hidden md:block">
           <ItemDescription>11/7 4:35 PM</ItemDescription>
@@ -147,7 +148,7 @@ export default function AuditTrail() {
           <ItemTitle><div><strong>Maria Makiling</strong> verified the entry with comment.</div></ItemTitle>
           <ItemDescription className="md:hidden">11/5 1:23 PM</ItemDescription>
           <ItemDescription className="line-clamp-none">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Recusandae mollitia, natus corrupti minus ad tenetur dolor, eligendi officia reiciendis hic quasi obcaecati? Aspernatur, deserunt? Dolorum aliquam quidem doloribus eaque minus!</ItemDescription>
-          <Badge className="bg-green-600/10 border-green-600 text-green-600"><BadgeCheckIcon />Verified</Badge>
+          <StatusBadge status="verified" />
         </ItemContent>
         <ItemContent className="hidden md:block">
           <ItemDescription>11/5 1:23 PM</ItemDescription>

@@ -11,7 +11,7 @@ interface Props {
 export default function SeriesTitle({ seriesno }: Props) {
 
   return (
-    <div id="page-title" className="fixed top-16 w-full bg-background">
+    <div id="page-title" className="w-full">
       <HideOnScroll>
         <div id="series-title" className="flex items-start justify-center p-4 md:p-8 flex-col h-16">
           <Label className="text-md">Series - #{seriesno}</Label>
