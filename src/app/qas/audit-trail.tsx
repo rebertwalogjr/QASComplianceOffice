@@ -18,7 +18,7 @@ export default function AuditTrail() {
         <ItemContent>
             <ItemTitle><div><strong>Rebert Walog Jr</strong> tag the entry as closed.</div></ItemTitle>
             <ItemDescription className="md:hidden">1:20 PM</ItemDescription>
-            <StatusBadge status="closed" />
+            <StatusBadge status="Closed" />
         </ItemContent>
         <ItemContent className="hidden md:block">
           <ItemDescription>1:20 PM</ItemDescription>
@@ -32,7 +32,7 @@ export default function AuditTrail() {
         <ItemContent>
           <ItemTitle><div><strong>Maria Makiling</strong> tag the entry for closing.</div></ItemTitle>
           <ItemDescription className="md:hidden">12:45 PM</ItemDescription>
-          <StatusBadge status="for closing" />
+          <StatusBadge status="For Closing" />
         </ItemContent>
         <ItemContent className="hidden md:block">
           <ItemDescription>12:45 PM</ItemDescription>
@@ -49,7 +49,7 @@ export default function AuditTrail() {
           </ItemTitle>
           <ItemDescription className="md:hidden">9:45 AM</ItemDescription>
           <ItemDescription className="line-clamp-none">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Recusandae mollitia, natus corrupti minus ad tenetur dolor, eligendi officia reiciendis hic quasi obcaecati? Aspernatur, deserunt? Dolorum aliquam quidem doloribus eaque minus!</ItemDescription>
-          <StatusBadge status="accepted" />
+          <StatusBadge status="Accepted" />
         </ItemContent>
         <ItemContent className="hidden md:block">
           <ItemDescription>9:45 AM</ItemDescription>
@@ -68,7 +68,7 @@ export default function AuditTrail() {
           <ItemTitle><div><strong>Pedro</strong> approved the entry with comment.</div></ItemTitle>
           <ItemDescription className="md:hidden">Yesterday 9:45 AM</ItemDescription>
           <ItemDescription className="line-clamp-none">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Recusandae mollitia, natus corrupti minus ad tenetur dolor, eligendi officia reiciendis hic quasi obcaecati? Aspernatur, deserunt? Dolorum aliquam quidem doloribus eaque minus!</ItemDescription>
-          <StatusBadge status="approved" />
+          <StatusBadge status="Approved" />
         </ItemContent>
         <ItemContent className="hidden md:block">
           <ItemDescription>Yesterday 9:45 AM</ItemDescription>
@@ -87,7 +87,7 @@ export default function AuditTrail() {
           <ItemTitle><div><strong>Rebert Walog Jr</strong> verified the entry with comment.</div></ItemTitle>
           <ItemDescription className="md:hidden">11/8 2:56 PM</ItemDescription>
           <ItemDescription className="line-clamp-none">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Recusandae mollitia, natus corrupti minus ad tenetur dolor, eligendi officia reiciendis hic quasi obcaecati? Aspernatur, deserunt? Dolorum aliquam quidem doloribus eaque minus!</ItemDescription>
-          <StatusBadge status="verified" />
+          <StatusBadge status="Verified" />
         </ItemContent>
         <ItemContent className="hidden md:block">
           <ItemDescription>11/8 2:56 PM</ItemDescription>
@@ -124,7 +124,7 @@ export default function AuditTrail() {
           <ItemTitle><div><strong>Rebert Walog Jr</strong> declined the entry with comment.</div></ItemTitle>
           <ItemDescription className="md:hidden">11/7 4:35 PM</ItemDescription>
           <ItemDescription className="line-clamp-none">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Recusandae mollitia, natus corrupti minus ad tenetur dolor, eligendi officia reiciendis hic quasi obcaecati? Aspernatur, deserunt? Dolorum aliquam quidem doloribus eaque minus!</ItemDescription>
-          <StatusBadge status="declined" />
+          <StatusBadge status="Declined" />
         </ItemContent>
         <ItemContent className="hidden md:block">
           <ItemDescription>11/7 4:35 PM</ItemDescription>
@@ -148,7 +148,7 @@ export default function AuditTrail() {
           <ItemTitle><div><strong>Maria Makiling</strong> verified the entry with comment.</div></ItemTitle>
           <ItemDescription className="md:hidden">11/5 1:23 PM</ItemDescription>
           <ItemDescription className="line-clamp-none">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Recusandae mollitia, natus corrupti minus ad tenetur dolor, eligendi officia reiciendis hic quasi obcaecati? Aspernatur, deserunt? Dolorum aliquam quidem doloribus eaque minus!</ItemDescription>
-          <StatusBadge status="verified" />
+          <StatusBadge status="Verified" />
         </ItemContent>
         <ItemContent className="hidden md:block">
           <ItemDescription>11/5 1:23 PM</ItemDescription>

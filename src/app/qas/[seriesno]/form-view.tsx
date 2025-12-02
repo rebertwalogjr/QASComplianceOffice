@@ -16,9 +16,6 @@ const BadgeYesNo = (str: string) => {
 }
 
 export default function FormView() {
-
-  const lorem = "Lorem ipsum dolor sit amet consectetur adipisicing elit. Debitis sapiente ut ea commodi cum nam consequatur, dignissimos earum omnis quas, placeat odio necessitatibus rem ipsum voluptas odit quasi dolorum? Earum?"
-
   return (
     <div className="flex flex-col gap-4 md:px-12">
 
@@ -170,19 +167,19 @@ export default function FormView() {
         <CardContent className="">
           <div className="grid gap-2 items-start">
             <Label className="text-muted-foreground">Criteria</Label>
-            <Textarea className="bg-muted resize-none min-h-24" value={lorem} readOnly />
+            <Textarea className="bg-muted resize-none min-h-24"  readOnly />
           </div>
         </CardContent>
         <CardContent className="">
           <div className="grid gap-2 items-start">
             <Label className="text-muted-foreground">Findings</Label>
-            <Textarea className="bg-muted resize-none min-h-24" value={lorem} readOnly />
+            <Textarea className="bg-muted resize-none min-h-24" readOnly />
           </div>
         </CardContent>
         <CardContent className="">
           <div className="grid gap-2 items-start">
             <Label className="text-muted-foreground">Recommendations</Label>
-            <Textarea className="bg-muted resize-none min-h-24" value={lorem} readOnly />
+            <Textarea className="bg-muted resize-none min-h-24" readOnly />
           </div>
         </CardContent>
         <CardContent className="">

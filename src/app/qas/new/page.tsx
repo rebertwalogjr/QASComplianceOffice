@@ -12,6 +12,8 @@ import { SelectValue } from "@radix-ui/react-select";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import NavigationMenu from "./navigation-menu";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { File, LucideBadgeInfo, MegaphoneIcon, TextSelection, User2 } from "lucide-react";
 
 export default function NewQASForm() {
 
@@ -20,24 +22,28 @@ export default function NewQASForm() {
   }
 
   return (
-    <div className="@container/main flex h-full">
-      {/* <div className="flex h-full"> */}
+    <div className="@container/main py-6 bg-muted">
 
-      {/* NAVIGATION */}
-      <div className="flex flex-col p-8 w-xs gap-8">
-        <NavigationMenu onSectionChange={handleSectionChange} />
-      </div>
+      <div className="flex flex-col gap-4 md:px-40">
 
-      <Separator orientation="vertical" className="mx-2" />
+        <div className="flex items-center gap-2">
+          <div className="rounded-md border p-2 bg-primary/10 text-primary border-primary">
+            <File size={16} />
+          </div>
+          <Label className="text-lg">Findings</Label>
+        </div>
 
-      {/* FORM */}
-      <div className="p-2 flex-1">
-        <ScrollArea className="h-[calc(100vh-72px)] p-4">
-          <FieldGroup>
+        <Card className="shadow-none">
+          {/* <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <div className="rounded-md border p-2 bg-primary/10 text-primary border-primary">
+                <File size={16} />
+              </div>
+              Findings
+            </CardTitle>
+          </CardHeader> */}
+          <CardContent>
             <FieldSet>
-              {/* <FieldLegend>Findings</FieldLegend>
-              <FieldDescription>Complete all require fields.</FieldDescription> */}
-              <h1 className="text-lg font-bold">Findings</h1>
               <FieldGroup>
 
                 <Field>
@@ -160,15 +166,28 @@ export default function NewQASForm() {
 
               </FieldGroup>
             </FieldSet>
+          </CardContent>
+        </Card>
 
-            <FieldSeparator />
+        <div className="flex items-center gap-2">
+          <div className="rounded-md border p-2 bg-cyan-500/10 text-cyan-500 border-cyan-500">
+            <TextSelection size={16} />
+          </div>
+          <Label className="text-lg">Audit Information</Label>
+        </div>
 
+        <Card className="shadow-none">
+          {/* <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <div className="rounded-md border p-2 bg-cyan-500/10 text-cyan-500 border-cyan-500">
+                <TextSelection size={16} />
+              </div>
+              Audit Information
+            </CardTitle>
+          </CardHeader> */}
+          <CardContent>
             <FieldSet>
-              {/* <FieldLegend>Audit Info.</FieldLegend>
-              <FieldDescription>Complete all require fields.</FieldDescription> */}
-              <h1 className="text-lg font-bold">Audit Information</h1>
               <FieldGroup>
-
                 <Field>
                   <FieldLabel htmlFor="teamleader">Audit Engagement</FieldLabel>
                   <Select required>
@@ -259,15 +278,28 @@ export default function NewQASForm() {
 
               </FieldGroup>
             </FieldSet>
+          </CardContent>
+        </Card>
 
-            <FieldSeparator />
+        <div className="flex items-center gap-2">
+          <div className="rounded-md border p-2 bg-green-500/10 text-green-500 border-green-500">
+            <LucideBadgeInfo size={16} />
+          </div>
+          <Label className="text-lg">Additional Details</Label>
+        </div>
 
+        <Card className="shadow-none">
+          {/* <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <div className="rounded-md border p-2 bg-green-500/10 text-green-500 border-green-500">
+                <LucideBadgeInfo size={16} />
+              </div>
+              Additional Details
+            </CardTitle>
+          </CardHeader> */}
+          <CardContent>
             <FieldSet>
-              {/* <FieldLegend>Additional Details</FieldLegend>
-              <FieldDescription>Complete all require fields.</FieldDescription> */}
-              <h1 className="text-lg font-bold">Additional Details</h1>
               <FieldGroup>
-
                 <Field>
                   <FieldLabel htmlFor="detailsOfFinding">Details of Finding</FieldLabel>
                   <FieldDescription>Criteria:</FieldDescription>
@@ -289,13 +321,27 @@ export default function NewQASForm() {
               </FieldGroup>
 
             </FieldSet>
+          </CardContent>
+        </Card>
 
-            <FieldSeparator />
+        <div className="flex items-center gap-2">
+          <div className="rounded-md border p-2 bg-orange-500/10 text-orange-500 border-orange-500">
+            <MegaphoneIcon size={16} />
+          </div>
+          <Label className="text-lg">Recipient & Escalations</Label>
+        </div>
 
+        <Card className="shadow-none">
+          {/* <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <div className="rounded-md border p-2 bg-orange-500/10 text-orange-500 border-orange-500">
+                <MegaphoneIcon size={16} />
+              </div>
+              Recipient & Escalations
+            </CardTitle>
+          </CardHeader> */}
+          <CardContent>
             <FieldSet>
-              {/* <FieldLegend>Responsible Person</FieldLegend>
-              <FieldDescription>Complete all require fields.</FieldDescription> */}
-              <h1 className="text-lg font-bold">Responsible Person</h1>
               <FieldGroup>
 
                 <Field>
@@ -327,16 +373,6 @@ export default function NewQASForm() {
                   </Select>
                   {/* <FieldError>Please select project.</FieldError> */}
                 </Field>
-              </FieldGroup>
-            </FieldSet>
-
-            <FieldSeparator />
-
-            <FieldSet>
-              {/* <FieldLegend>Escalations</FieldLegend>
-              <FieldDescription>Complete all require fields.</FieldDescription> */}
-              <h1 className="text-lg font-bold">Escalations</h1>
-              <FieldGroup>
 
                 <Field>
                   <FieldLabel htmlFor="firstEscalation">First Escation</FieldLabel>
@@ -361,23 +397,21 @@ export default function NewQASForm() {
               </FieldGroup>
             </FieldSet>
 
-            <div className="flex item-center gap-4 justify-end py-2">
-              <Button variant="secondary">Cancel</Button>
-              <Button type="submit">Submit</Button>
-            </div>
+          </CardContent>
+        </Card>
 
-          </FieldGroup>
-        </ScrollArea>
-      </div>
+        <FieldGroup>
 
-      <Separator orientation="vertical" className="mx-2" />
+          <div className="flex item-center gap-4 justify-end py-2">
+            <Button variant="outline">Cancel</Button>
+            <Button type="submit">Submit</Button>
+          </div>
 
-      {/* RIGHT PANEL */}
-      <div className="flex flex-col p-6 w-sm gap-8">
+        </FieldGroup>
 
       </div>
+
 
     </div>
-    // </div>
   )
 }

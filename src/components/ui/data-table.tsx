@@ -8,17 +8,20 @@ import { Button } from "./button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select";
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { Label } from "./label";
+import { cn } from "@/lib/utils";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
   defaultPageSize?: number
+  getRowClassName?: (row: TData) => string | undefined
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
   defaultPageSize = 10,
+  getRowClassName,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
@@ -93,8 +96,11 @@ export function DataTable<TData, TValue>({
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
-                key={row.id}
+                  key={row.id}
                   data-state={row.getIsSelected() && "selected"}
+                  className={cn(
+                    getRowClassName?.(row.original)
+                  )}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>

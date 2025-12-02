@@ -1,51 +1,78 @@
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, CircleCheck, CircleX, Hand, Loader, ThumbsUp } from "lucide-react";
+import { ArrowUpDown, Check, CircleCheck, CircleX, FilterIcon, FilterX, Hand, Loader, ThumbsUp } from "lucide-react";
 import { z } from "zod";
 import TableCellViewer from "./table-cell-viewer";
 import StatusBadge from "@/components/status-badge";
-
-export type Transaction = {
-  id: string,
-  auditNo: string,
-  company: string,
-  project: string,
-  resposiblePerson: string,
-  status: "new" | "outstanding" | "cancelled" | "closed" | "for approval" | "closing approval",
-  engagement: string,
-  rating: string,
-  category: string,
-  details: string,
-  approvedDate: string
-}
-
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Separator } from "@/components/ui/separator";
+import PopoverStatusFilter from "./popover-status-filter";
+import { Transaction } from "@/lib/transaction";
 
 export const columns: ColumnDef<Transaction>[] = [
-  { accessorKey: "id", 
-    header: ({column}) => {
+  {
+    accessorKey: "id",
+    header: ({ column }) => {
       return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
+        <div className="flex items-center justify-between">
           Series No.
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
+          <Button
+            variant="ghost"
+            className="hover:bg-background"
+            size="icon-sm"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            <ArrowUpDown />
+          </Button>
+        </div>
       )
     },
-    cell: ({row}) => {
-      return <TableCellViewer item={row.original as Transaction} />;
+    cell: ({ row }) => {
+      return <TableCellViewer item={row.original as Transaction} className={row.original.status === "Closed" ? "opacity-50" : ""} />;
     }
   },
-  { accessorKey: "auditNo", header: "Audit Finding No."},
-  { accessorKey: "status", 
-    header: "Status",
-    cell: ({row}) => (
-      StatusBadge({ status: row.original.status })
-    )
+  {
+    accessorKey: "auditNo",
+    header: "Audit Finding No.",
+    // cell: ({row}) => {
+    //   return <div className={row.original.status === "Closed" ? "opacity-50" : ""}>{row.original.auditNo}</div>
+    // }
   },
-  { accessorKey: "company", header: "Company" },
-  { accessorKey: "project", header: "Project / Department" },
+  {
+    accessorKey: "status",
+    header: ({ column }) => {
+      return (
+        <div className="flex items-center justify-between">
+          Status
+          <PopoverStatusFilter column={column} />
+        </div>
+      )
+    },
+    cell: ({ row }) => {
+      let main = row.original.status
+      let secondary = row.original.secondaryStatus
+      if (main === "Open") {
+        if (secondary === "New") {
+          return StatusBadge({ status: secondary })
+        }
+        if (secondary === "On-Hold") {
+          return StatusBadge({ status: secondary })
+        }
+        return StatusBadge({ status: main })
+      }
+      return StatusBadge({ status: main })
+    }
+  },
+  {
+    accessorKey: "company",
+    header: "Company",
+  },
+  {
+    accessorKey: "project",
+    header: "Project / Department",
+  },
   // { accessorKey: "resposiblePerson", header: "Responsible Person" },
   // { accessorKey: "engagement", header: "Audit Engagement" },
   // { accessorKey: "rating", header: "Audit Rating" },

@@ -9,16 +9,17 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import Link from "next/link";
 
 interface Props {
-  item: Transaction;
+  item: Transaction
+  className?: string
 }
 
-export default function TableCellViewer({ item }: Props) {
+export default function TableCellViewer({ item, className }: Props) {
   const isMobile = useIsMobile();
 
   return (
     <Drawer direction={isMobile ? "bottom" : "right"}>
       <DrawerTrigger asChild>
-        <Button variant="link" className="text-foreground w-fit px-0 ml-4 text-left">
+        <Button variant="link" className={`text-foreground w-fit px-0 ml-4 text-left ${ className }`}>
           {item.id}
         </Button>
       </DrawerTrigger>

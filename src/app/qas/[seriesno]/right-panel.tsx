@@ -18,7 +18,7 @@ export default function RightPanel() {
 
         <div className="flex items-center gap-3 p-4 berder-b border-b">
           <Label className="text-lg">Series - #10</Label>
-          <StatusBadge status="closed" />
+          <StatusBadge status="Closed" />
         </div>
 
         <div className="flex flex-col gap-6 px-4 py-4 h-full overflow-auto">
