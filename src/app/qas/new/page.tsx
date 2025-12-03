@@ -34,14 +34,6 @@ export default function NewQASForm() {
         </div>
 
         <Card className="shadow-none">
-          {/* <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <div className="rounded-md border p-2 bg-primary/10 text-primary border-primary">
-                <File size={16} />
-              </div>
-              Findings
-            </CardTitle>
-          </CardHeader> */}
           <CardContent>
             <FieldSet>
               <FieldGroup>
@@ -169,7 +161,7 @@ export default function NewQASForm() {
           </CardContent>
         </Card>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 mt-4">
           <div className="rounded-md border p-2 bg-cyan-500/10 text-cyan-500 border-cyan-500">
             <TextSelection size={16} />
           </div>
@@ -177,14 +169,6 @@ export default function NewQASForm() {
         </div>
 
         <Card className="shadow-none">
-          {/* <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <div className="rounded-md border p-2 bg-cyan-500/10 text-cyan-500 border-cyan-500">
-                <TextSelection size={16} />
-              </div>
-              Audit Information
-            </CardTitle>
-          </CardHeader> */}
           <CardContent>
             <FieldSet>
               <FieldGroup>
@@ -281,7 +265,7 @@ export default function NewQASForm() {
           </CardContent>
         </Card>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 mt-4">
           <div className="rounded-md border p-2 bg-green-500/10 text-green-500 border-green-500">
             <LucideBadgeInfo size={16} />
           </div>
@@ -289,14 +273,6 @@ export default function NewQASForm() {
         </div>
 
         <Card className="shadow-none">
-          {/* <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <div className="rounded-md border p-2 bg-green-500/10 text-green-500 border-green-500">
-                <LucideBadgeInfo size={16} />
-              </div>
-              Additional Details
-            </CardTitle>
-          </CardHeader> */}
           <CardContent>
             <FieldSet>
               <FieldGroup>
@@ -324,7 +300,7 @@ export default function NewQASForm() {
           </CardContent>
         </Card>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 mt-4">
           <div className="rounded-md border p-2 bg-orange-500/10 text-orange-500 border-orange-500">
             <MegaphoneIcon size={16} />
           </div>
@@ -332,14 +308,6 @@ export default function NewQASForm() {
         </div>
 
         <Card className="shadow-none">
-          {/* <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <div className="rounded-md border p-2 bg-orange-500/10 text-orange-500 border-orange-500">
-                <MegaphoneIcon size={16} />
-              </div>
-              Recipient & Escalations
-            </CardTitle>
-          </CardHeader> */}
           <CardContent>
             <FieldSet>
               <FieldGroup>
