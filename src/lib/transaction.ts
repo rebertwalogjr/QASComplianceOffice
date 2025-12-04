@@ -1,4 +1,4 @@
-export type Transaction = {
+type Transaction = {
   id: string,
   auditNo: string,
   company: string,
@@ -12,3 +12,5 @@ export type Transaction = {
   details: string,
   approvedDate: string
 }
+
+export default Transaction

@@ -1,4 +1,4 @@
-export const qas_series = [
+const qas_series = [
     {
         "JobTransactionId": "1",
         "AuditFindingNumber": "IAD-REPORT-2019-1-1",
@@ -7598,3 +7598,5 @@ export const qas_series = [
         "PageStatus": "Closed"
     }
 ]
+
+export default qas_series

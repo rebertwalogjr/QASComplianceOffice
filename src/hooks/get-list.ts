@@ -1,6 +1,6 @@
 "use client"
 import { useEffect, useState } from "react"
-import { Transaction } from "@/app/qas/columns";
+import Transaction from "@/lib/transaction";
 
 export async function useDataServer(): Promise<Transaction[]> {
   const res = await fetch("/qas-list-sample.json");

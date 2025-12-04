@@ -60,9 +60,11 @@ export function DataTable<TData, TValue>({
         <div className="flex items-center w-100">
           <Input
             placeholder="Search series number ..."
-            value={(table.getColumn("id")?.getFilterValue() as string) ?? ""}
+            // value={(table.getColumn("id")?.getFilterValue() as string) ?? ""}
+            value={(table.getState().globalFilter as string) ?? ""}
             onChange={(event) =>
-              table.getColumn("id")?.setFilterValue(event.target.value)
+              // table.getColumn("id")?.setFilterValue(event.target.value)
+              table.setGlobalFilter(event.target.value)
             }
             className="max-w-sm"
           />

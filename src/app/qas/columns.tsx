@@ -1,15 +1,12 @@
+"use client"
+
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, Check, CircleCheck, CircleX, FilterIcon, FilterX, Hand, Loader, ThumbsUp } from "lucide-react";
-import { z } from "zod";
+import { ArrowUpDown } from "lucide-react";
 import TableCellViewer from "./table-cell-viewer";
 import StatusBadge from "@/components/status-badge";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Separator } from "@/components/ui/separator";
 import PopoverStatusFilter from "./popover-status-filter";
-import { Transaction } from "@/lib/transaction";
+import Transaction from "@/lib/transaction";
 
 export const columns: ColumnDef<Transaction>[] = [
   {
@@ -30,15 +27,15 @@ export const columns: ColumnDef<Transaction>[] = [
       )
     },
     cell: ({ row }) => {
-      return <TableCellViewer item={row.original as Transaction} className={row.original.status === "Closed" ? "opacity-50" : ""} />;
-    }
+      return <TableCellViewer item={row.original as Transaction} className={row.original.status === "Closed" ? "opacity-50" : ""} />
+    },
   },
   {
     accessorKey: "auditNo",
     header: "Audit Finding No.",
     // cell: ({row}) => {
     //   return <div className={row.original.status === "Closed" ? "opacity-50" : ""}>{row.original.auditNo}</div>
-    // }
+    // },
   },
   {
     accessorKey: "computedStatus",

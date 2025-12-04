@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import Transaction from "@/lib/transaction";
+import User from "@/lib/user";
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -10,18 +10,18 @@ import Link from "next/link";
 import { X } from "lucide-react";
 
 interface Props {
-  item: Transaction
+  item: User
   className?: string
 }
 
-export default function TableCellViewer({ item, className }: Props) {
+export default function TableCellViewerUser({ item, className }: Props) {
   const isMobile = useIsMobile();
 
   return (
     <Drawer direction={isMobile ? "bottom" : "right"}>
       <DrawerTrigger asChild>
         <Button variant="link" className={`text-foreground w-fit px-0 ml-4 text-left ${ className }`}>
-          {item.id}
+          {item.empId}
         </Button>
       </DrawerTrigger>
 
@@ -41,23 +41,23 @@ export default function TableCellViewer({ item, className }: Props) {
           <form className="flex flex-col gap-4">
 
             <div className="flex flex-col gap-3">
-              <Label htmlFor="seriesno">Series No.</Label>
-              <Input id="seriesno" defaultValue={item.id} readOnly />
+              <Label htmlFor="seriesno">Employee ID</Label>
+              <Input id="seriesno" defaultValue={item.empId} readOnly />
             </div>
 
             <div className="flex flex-col gap-3">
-              <Label htmlFor="auditno">Audit Finding No.</Label>
-              <Input id="auditno" defaultValue={item.auditNo} readOnly />
+              <Label htmlFor="auditno">First Name</Label>
+              <Input id="auditno" defaultValue={item.firstname} readOnly />
             </div>
 
             <div className="flex flex-col gap-3">
-              <Label htmlFor="company">Company</Label>
-              <Input id="company" defaultValue={item.company} readOnly />
+              <Label htmlFor="company">Last Name</Label>
+              <Input id="company" defaultValue={item.lastname} readOnly />
             </div>
 
             <div className="flex flex-col gap-3">
-              <Label htmlFor="project">Project</Label>
-              <Input id="project" defaultValue={item.project} readOnly />
+              <Label htmlFor="project">Username</Label>
+              <Input id="project" defaultValue={item.username} readOnly />
             </div>
 
             <div className="flex flex-col gap-3">
@@ -66,29 +66,21 @@ export default function TableCellViewer({ item, className }: Props) {
             </div>
 
             <div className="flex flex-col gap-3">
-              <Label htmlFor="rating">Rating</Label>
-              <Input id="rating" defaultValue={item.rating} readOnly />
+              <Label htmlFor="rating">Email</Label>
+              <Input id="rating" defaultValue={item.email} readOnly />
             </div>
 
             <div className="flex flex-col gap-3">
-              <Label htmlFor="engagement">Engagement</Label>
-              <Input id="engagement" defaultValue={item.engagement} readOnly />
+              <Label htmlFor="engagement">Company</Label>
+              <Input id="engagement" defaultValue={item.company} readOnly />
             </div>
 
             <div className="flex flex-col gap-3">
-              <Label htmlFor="category">Category</Label>
-              <Input id="category" defaultValue={item.category} readOnly />
+              <Label htmlFor="category">User Access</Label>
+              <Input id="category" readOnly />
             </div>
 
-            <div className="flex flex-col gap-3">
-              <Label htmlFor="details">Details</Label>
-              <Input id="details" defaultValue={item.details} readOnly />
-            </div>
-
-            <div className="flex flex-col gap-3">
-              <Label htmlFor="approvedDate">Date Approved</Label>
-              <Input id="approvedDate" defaultValue={item.approvedDate} readOnly />
-            </div>
+            
 
           </form>
         </div>

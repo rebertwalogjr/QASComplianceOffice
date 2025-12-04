@@ -10,7 +10,7 @@ export const sidebarItems = {
   ],
 
   adminMenu: [
-    { title: "Users", url: "#", icon: Users },
+    { title: "Users", url: "/qas/user", icon: Users },
     { title: "Group", url: "#", icon: Boxes },
     { title: "Escalation", url: "#", icon: CornerRightUp },
     { title: "Finding Type", url: "#", icon: FileSearch },
