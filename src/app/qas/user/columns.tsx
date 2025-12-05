@@ -3,7 +3,7 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ArrowUpDown, AArrowDown, AArrowUp  } from "lucide-react"
+import { ArrowUpDown, AArrowDown, AArrowUp, ArrowDownAZ, ArrowDownZA, ArrowDown01  } from "lucide-react"
 import User from "@/lib/user"
 import TableCellViewerUser from "./table-cell-viewer"
 
@@ -30,15 +30,23 @@ export const columns: ColumnDef<User>[] = [
   {
     accessorKey: "status",
     header: ({ column }) => {
+      const sorted = column.getIsSorted()
       return <div className="flex items-center justify-between">
           Status
           <Button
             variant="ghost"
             className="hover:bg-background"
             size="icon-sm"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            onClick={() => {
+              sorted === "asc" 
+              ? column.toggleSorting(true)
+              : sorted === "desc" 
+              ? column.clearSorting()
+              : column.toggleSorting(false)
+            }}
+            aria-label={sorted === "asc" ? "Sorted status descending" : "Sort status ascending"}
           >
-            { column.getIsSorted() === "asc" ? <AArrowDown /> : <AArrowUp /> }
+            { sorted === "asc" ? <ArrowDownAZ /> : sorted === "desc" ? <ArrowDownZA /> : <ArrowDown01 /> }
           </Button>
         </div>
     },

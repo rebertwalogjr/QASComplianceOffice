@@ -12,7 +12,7 @@ import { useEffect, useRef, useState } from 'react'
 export function SiteHeader() {
   const pathname = usePathname()
   const [showHeaderTitle, setShowHeaderTitle] = useState(false)
-  const pageTitleRef = useRef<HTMLDivElement | null>(null)
+  // const pageTitleRef = useRef<HTMLDivElement | null>(null)
 
   const getPagetitle = () => {
     const segments = pathname.split('/').filter(Boolean)
@@ -42,14 +42,14 @@ export function SiteHeader() {
 
 
   return (
-    <header className="fixed w-full bg-gradient-horizontal top-0 z-50 flex h-16 shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+    <header className="fixed w-full bg-background top-0 z-50 flex h-16 shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
       <div className="flex items-center gap-2 px-4">
-        <SidebarTrigger className="-ml-1 text-white" />
+        <SidebarTrigger className="-ml-1 text-foreground" />
         <Separator
           orientation="vertical"
           className={`mr-2 data-[orientation=vertical]:h-4 transition-opacity ease-in-out duration-300 ${ showHeaderTitle ? "opacity-100" : "opacity-0"}`}
         />
-          <Label className={`absolute left-16 text-base text-white font-semibold transition-all ease-in-out duration-300 ${ showHeaderTitle ? "opacity-100 tranlate-y-0" : "opacity-0 translate-y-4"}`}>{pageTitle}</Label>
+          <Label className={`absolute left-16 text-base text-foreground font-semibold transition-all ease-in-out duration-300 ${ showHeaderTitle ? "opacity-100 tranlate-y-0" : "opacity-0 translate-y-4"}`}>{pageTitle}</Label>
       </div>
     </header>
   )
