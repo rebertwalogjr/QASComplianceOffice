@@ -3,29 +3,33 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ArrowUpDown, AArrowDown, AArrowUp, ArrowDownAZ, ArrowDownZA, ArrowDown01  } from "lucide-react"
-import User from "@/lib/user"
-import TableCellViewerUser from "./table-cell-viewer"
+import { ArrowDownAZ, ArrowDownZA, ArrowDown01  } from "lucide-react"
+import Group from "@/lib/group"
+import TableCellViewer from "./table-cell-viewer"
 
-export const columns: ColumnDef<User>[] = [
+export const columns: ColumnDef<Group>[] = [
   {
-    accessorKey: "empId",
-    header: "Employee Id",
+    accessorKey: "groupId",
+    header: "Group Id",
     cell: ({ row }) => {
-      return <TableCellViewerUser item={row.original as User} />
+      return <TableCellViewer item={row.original as Group} />
     }
   },
   {
-    accessorKey: "username",
-    header: "Username",
+    accessorKey: "groupCode",
+    header: "Code",
   },
   {
-    accessorKey: "firstname",
-    header: "Firstname",
+    accessorKey: "groupName",
+    header: "Name",
   },
   {
-    accessorKey: "lastname",
-    header: "Lastname",
+    accessorKey: "groupInCharge",
+    header: "Group In-Charge",
+  },
+  {
+    accessorKey: "groupInChargeEmail",
+    header: "Email Address",
   },
   {
     accessorKey: "status",
@@ -53,13 +57,5 @@ export const columns: ColumnDef<User>[] = [
     cell: ({ row }) => {
       return <Badge variant="outline" className={ row.original.status === "Active" ? "bg-green-50 text-green-500 border-green-500" : "bg-gray-50 text-gray-600 border-gray-600" } >{ row.original.status }</Badge>
     }
-  },
-  {
-    accessorKey: "email",
-    header: "Email",
-  },
-  {
-    accessorKey: "company",
-    header: "Company",
   },
 ]

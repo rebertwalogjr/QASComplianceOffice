@@ -70,10 +70,6 @@ export function AppSidebar() {
               {sidebarItems.mainMenu.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    {/* <a href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </a> */}
                     {renderLink(item)}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -88,10 +84,6 @@ export function AppSidebar() {
               {sidebarItems.adminMenu.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    {/* <a href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </a> */}
                     {renderLink(item)}
                   </SidebarMenuButton>
                 </SidebarMenuItem>

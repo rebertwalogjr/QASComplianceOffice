@@ -14,7 +14,7 @@ interface Props {
   className?: string
 }
 
-export default function TableCellViewerUser({ item, className }: Props) {
+export default function TableCellViewer({ item, className }: Props) {
   const isMobile = useIsMobile();
 
   return (
@@ -87,7 +87,7 @@ export default function TableCellViewerUser({ item, className }: Props) {
 
         <DrawerFooter>
           <Button asChild>
-            <Link href={`/qas/${item.id}`}>View</Link>
+            <Link href={`/qas/admin/user/${item.id}`}>Update</Link>
           </Button>
           <DrawerClose asChild>
             <Button variant="outline">Close</Button>

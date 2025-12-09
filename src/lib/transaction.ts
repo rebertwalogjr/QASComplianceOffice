@@ -1,11 +1,13 @@
+import { PrimaryStatus, SecondaryStatus } from "./types"
+
 type Transaction = {
   id: string,
   auditNo: string,
   company: string,
   project: string,
   resposiblePerson: string,
-  status: "Open" | "Accepted" | "Cancelled" | "Closed" | "For Closing",
-  secondaryStatus: "New" | "Verified" | "Approved" | "Request for Hold" | "On-Hold" | "Accepted" | "Cancelled" | "Closed" | "For Closing",
+  status: PrimaryStatus,
+  secondaryStatus: SecondaryStatus,
   engagement: string,
   rating: string,
   category: string,
