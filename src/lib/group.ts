@@ -1,13 +1,14 @@
-import { Status } from "./types"
+import { Status } from "./common-types"
 
 type Group = {
   id: string,
-  groupCode: string,
-  groupName: string,
-  groupInCharge: string,
-  groupInChargeEmail: string,
+  code: string,
+  name: string,
+  project:string | undefined,
+  inCharge: string,
+  inChargeEmail: string,
   status: Status,
-  remarks?: string, 
+  remarks: string | undefined, 
 }
 
 export default Group

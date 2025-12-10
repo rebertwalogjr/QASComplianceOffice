@@ -3,20 +3,18 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
+import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
-import Link from "next/link";
 import { X } from "lucide-react";
-import Group from "@/lib/group";
 import { Textarea } from "@/components/ui/textarea";
-import { Field, FieldDescription, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field";
+import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Status } from "@/lib/common-types";
+import FindingType from "@/lib/finding-type";
 
 interface Props {
-  item: Group
+  item: FindingType
   className?: string
 }
 
@@ -27,12 +25,8 @@ export default function TableCellViewer({ item, className }: Props) {
 
   const [form, setForm] = React.useState({
     id: item.id,
-    groupCode: item.code,
-    groupName: item.name,
-    groupInCharge: item.inCharge,
-    groupInChargeEmail: item.inChargeEmail,
+    name: item.name,
     status: item.status,
-    remarks: item.remarks,
   })
 
   const handleUpdate = () => {
@@ -46,12 +40,8 @@ export default function TableCellViewer({ item, className }: Props) {
   const handleCancel = () => {
     setForm({
       id: item.id,
-      groupCode: item.code,
-      groupName: item.name,
-      groupInCharge: item.inCharge,
-      groupInChargeEmail: item.inChargeEmail,
+      name: item.name,
       status: item.status,
-      remarks: item.remarks,
     })
     setIsEditing(false)
   }
@@ -67,7 +57,7 @@ export default function TableCellViewer({ item, className }: Props) {
     <Drawer direction={isMobile ? "bottom" : "right"}>
       <DrawerTrigger asChild>
         <Button variant="link" className={`text-foreground w-fit px-0 ml-1 text-left ${className}`}>
-          {item.code}
+          {item.name}
         </Button>
       </DrawerTrigger>
 
@@ -91,43 +81,13 @@ export default function TableCellViewer({ item, className }: Props) {
                 <FieldGroup>
 
                   <Field>
-                    <FieldLabel htmlFor="groupId">Group Id</FieldLabel>
-                    <Input id="groupId" value={form.id} disabled className="disabled:opacity-70" />
+                    <FieldLabel htmlFor="id">Id</FieldLabel>
+                    <Input id="id" value={form.id} disabled className="disabled:opacity-70" />
                   </Field>
 
                   <Field>
-                    <FieldLabel htmlFor="groupCode">Group Code</FieldLabel>
-                    <Input id="groupCode" value={form.groupCode} onChange={onInput("groupCode")} disabled={!isEditing} className="disabled:opacity-70" />
-                  </Field>
-
-                  <Field>
-                    <FieldLabel htmlFor="groupName">Name</FieldLabel>
-                    <Input id="groupName" value={form.groupName} onChange={onInput("groupName")} disabled={!isEditing} className="disabled:opacity-70" />
-                  </Field>
-
-                  <Field>
-                    <FieldLabel htmlFor="project">Project / Department</FieldLabel>
-                    <Select>
-                      <SelectTrigger id="project">
-                        <SelectValue placeholder="Select project or department..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="proj-a">Project A</SelectItem>
-                        <SelectItem value="proj-b">Project B</SelectItem>
-                        <SelectItem value="proj-c">Project C</SelectItem>
-                        <SelectItem value="proj-f">Project D</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </Field>
-
-                  <Field>
-                    <FieldLabel htmlFor="groupInCharge">In-Charge</FieldLabel>
-                    <Input id="groupInCharge" value={form.groupInCharge} onChange={onInput("groupInCharge")} disabled={!isEditing} className="disabled:opacity-70" />
-                  </Field>
-
-                  <Field>
-                    <FieldLabel htmlFor="groupInChargeEmail">In-Charge Email</FieldLabel>
-                    <Input id="groupInChargeEmail" value={form.groupInChargeEmail} onChange={onInput("groupInChargeEmail")} disabled={!isEditing} className="disabled:opacity-70" />
+                    <FieldLabel htmlFor="name">Name</FieldLabel>
+                    <Input id="name" value={form.name} onChange={onInput("name")} disabled={!isEditing} className="disabled:opacity-70" />
                   </Field>
 
                   <Field>
@@ -147,11 +107,6 @@ export default function TableCellViewer({ item, className }: Props) {
                         <SelectItem value="Inactive">Inactive</SelectItem>
                       </SelectContent>
                     </Select>
-                  </Field>
-
-                  <Field>
-                    <FieldLabel htmlFor="remarks">Remarks</FieldLabel>
-                    <Textarea id="remarks" value={form.remarks} onChange={onInput("remarks")} disabled={!isEditing} className="disabled:opacity-70" />
                   </Field>
 
                 </FieldGroup>

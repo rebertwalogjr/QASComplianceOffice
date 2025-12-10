@@ -14,10 +14,10 @@ type UserFormProps = {
   id?: string
 }
 
-export default function UserForm({mode, id} : UserFormProps) {
+export default function UserPage({mode, id} : UserFormProps) {
   return (
     <div className="@container/main py-6 bg-muted">
-      <div className="flex flex-col gap-4 md:px-40">
+      <div className="flex flex-col gap-4 px-3 md:px-40">
 
         <div className="flex items-center gap-2">
           <div className="rounded-md border p-2 bg-primary/10 text-primary border-primary">

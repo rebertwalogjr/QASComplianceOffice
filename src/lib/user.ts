@@ -1,4 +1,4 @@
-import { Status } from "./types"
+import { Status } from "./common-types"
 
 type User = {
   id: string,

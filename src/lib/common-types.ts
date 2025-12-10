@@ -4,4 +4,6 @@ type PrimaryStatus = "Open" | "Accepted" | "Cancelled" | "Closed" | "For Closing
 
 type SecondaryStatus = "New" | "Verified" | "Approved" | "Request for Hold" | "On-Hold" | "Accepted" | "Cancelled" | "Closed" | "For Closing"
 
-export type {Status, PrimaryStatus, SecondaryStatus}
+type HolidayType = "Regular" | "Special"
+
+export type {Status, PrimaryStatus, SecondaryStatus, HolidayType}

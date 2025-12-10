@@ -4,32 +4,20 @@ import { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ArrowDownAZ, ArrowDownZA, ArrowDown01  } from "lucide-react"
-import Group from "@/lib/group"
 import TableCellViewer from "./table-cell-viewer"
+import AuditRating from "@/lib/audit-rating"
 
-export const columns: ColumnDef<Group>[] = [
-  {
-    accessorKey: "code",
-    header: "Code",
-    cell: ({ row }) => {
-      return <TableCellViewer item={row.original as Group} />
-    }
-  },
+export const columns: ColumnDef<AuditRating>[] = [
   {
     accessorKey: "name",
     header: "Name",
+    cell: ({ row }) => {
+      return <TableCellViewer item={row.original as AuditRating} />
+    }
   },
   {
-    accessorKey: "project",
-    header: "Project/Department",
-  },
-  {
-    accessorKey: "inCharge",
-    header: "Group In-Charge",
-  },
-  {
-    accessorKey: "inChargeEmail",
-    header: "Email Address",
+    accessorKey: "company",
+    header: "Company"
   },
   {
     accessorKey: "status",

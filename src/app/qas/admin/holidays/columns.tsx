@@ -3,33 +3,44 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ArrowDownAZ, ArrowDownZA, ArrowDown01  } from "lucide-react"
-import Group from "@/lib/group"
+import { ArrowDownAZ, ArrowDownZA, ArrowDown01, ArrowUpDown  } from "lucide-react"
 import TableCellViewer from "./table-cell-viewer"
+import Holiday from "@/lib/holiday"
+import { formatLongDate } from "@/lib/date-utils"
 
-export const columns: ColumnDef<Group>[] = [
-  {
-    accessorKey: "code",
-    header: "Code",
-    cell: ({ row }) => {
-      return <TableCellViewer item={row.original as Group} />
-    }
-  },
+export const columns: ColumnDef<Holiday>[] = [
   {
     accessorKey: "name",
     header: "Name",
+    cell: ({ row }) => {
+      return <TableCellViewer item={row.original as Holiday} />
+    }
   },
   {
-    accessorKey: "project",
-    header: "Project/Department",
+    accessorKey: "holidayType",
+    header: "Type"
   },
   {
-    accessorKey: "inCharge",
-    header: "Group In-Charge",
-  },
-  {
-    accessorKey: "inChargeEmail",
-    header: "Email Address",
+    accessorKey: "date",
+    header: ({ column }) => {
+      return (
+        <div className="flex items-center justify-between">
+          Date
+          <Button
+            variant="ghost"
+            className="hover:bg-background"
+            size="icon-sm"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            <ArrowUpDown />
+          </Button>
+        </div>
+      )
+    },
+    cell: ({ getValue }) => {
+      const value = getValue<Date | string | undefined>()
+      return formatLongDate(value)
+    },
   },
   {
     accessorKey: "status",

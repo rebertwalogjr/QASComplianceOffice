@@ -4,32 +4,16 @@ import { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ArrowDownAZ, ArrowDownZA, ArrowDown01  } from "lucide-react"
-import Group from "@/lib/group"
 import TableCellViewer from "./table-cell-viewer"
+import FindingCategory from "@/lib/finding-category"
 
-export const columns: ColumnDef<Group>[] = [
-  {
-    accessorKey: "code",
-    header: "Code",
-    cell: ({ row }) => {
-      return <TableCellViewer item={row.original as Group} />
-    }
-  },
+export const columns: ColumnDef<FindingCategory>[] = [
   {
     accessorKey: "name",
     header: "Name",
-  },
-  {
-    accessorKey: "project",
-    header: "Project/Department",
-  },
-  {
-    accessorKey: "inCharge",
-    header: "Group In-Charge",
-  },
-  {
-    accessorKey: "inChargeEmail",
-    header: "Email Address",
+    cell: ({ row }) => {
+      return <TableCellViewer item={row.original as FindingCategory} />
+    }
   },
   {
     accessorKey: "status",

@@ -8,7 +8,7 @@ import AddUser from "./add-user";
 import Link from "next/link";
 
 
-export default function UsersList() {
+export default function UsersPage() {
   return (
     <div className="@container/main flex flex-col">
       <div className="flex flex-row px-6 pt-6 justify-between items-center">

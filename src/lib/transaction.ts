@@ -1,4 +1,4 @@
-import { PrimaryStatus, SecondaryStatus } from "./types"
+import { PrimaryStatus, SecondaryStatus } from "./common-types"
 
 type Transaction = {
   id: string,
