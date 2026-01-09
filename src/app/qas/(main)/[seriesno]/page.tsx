@@ -13,9 +13,13 @@ import { SeriesTabs, SeriesTabsContent, SeriesTabsList, SeriesTabsTrigger } from
 import AuditTrail from "../audit-trail"
 import UpdateTrail from "../update-trail"
 import ReviewTrail from "../review-trail"
+import { notFound } from "next/navigation"
 
 export default async function SeriesViewer(props: { params: Promise<{ seriesno: string }> }) {
   const params = await props.params
+
+  // NOT-FOUND CATCHER
+  if(params.seriesno === '404') return notFound()
 
   return (
     <div className="@container/ pt-2 flex">

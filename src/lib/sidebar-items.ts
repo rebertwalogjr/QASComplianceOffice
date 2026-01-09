@@ -12,7 +12,7 @@ export const sidebarItems = {
   adminMenu: [
     { title: "Users", url: "/qas/admin/users", icon: Users },
     { title: "Group", url: "/qas/admin/groups", icon: Boxes },
-    { title: "Escalation", url: "#", icon: CornerRightUp },
+    { title: "Escalation", url: "/qas/admin/escalations", icon: CornerRightUp },
     { title: "Finding Type", url: "/qas/admin/types", icon: FileSearch },
     { title: "Finding Category", url: "/qas/admin/categories", icon: FolderSearch },
     { title: "Holiday", url: "/qas/admin/holidays", icon: Calendar },

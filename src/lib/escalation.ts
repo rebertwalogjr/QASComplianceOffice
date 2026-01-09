@@ -2,7 +2,7 @@ import { Status } from "./common-types"
 
 type Escalation = {
   id: string,
-  fullname: string,
+  name: string,
   email: string,
   project: string,
   status: Status
