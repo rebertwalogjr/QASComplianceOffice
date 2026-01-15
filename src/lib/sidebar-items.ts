@@ -21,7 +21,7 @@ export const sidebarItems = {
     { title: "Audit Engagement", url: "/qas/admin/engagements", icon: BookHeart },
     { title: "Audit Rating", url: "/qas/admin/ratings", icon: Star },
     { title: "Audit Number", url: "/qas/admin/auditnumbers", icon: Hash },
-    { title: "Manage Status", url: "/qas/admin/manage", icon: ChartBarBig },
+    { title: "Manage Status", url: "/qas/admin/managestatus", icon: ChartBarBig },
   ],
 
   accounts: [
