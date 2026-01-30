@@ -26,7 +26,7 @@ export default function TableCellViewer({ item, className }: Props) {
     id: item.id,
     name: item.name,
     code: item.code,
-    status: item.status,
+    status: item.isActive ? "Active" : "Inactive",
   })
 
   const handleUpdate = () => {
@@ -42,7 +42,7 @@ export default function TableCellViewer({ item, className }: Props) {
       id: item.id,
       name: item.name,
       code: item.code,
-      status: item.status,
+      status: item.isActive ? "Active" : "Inactive",
     })
     setIsEditing(false)
   }

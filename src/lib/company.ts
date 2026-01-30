@@ -1,10 +1,14 @@
 import { Status } from "./common-types"
 
 type Company = {
-  id: string,
-  code: string,
-  name: string,
-  status: Status
+  id: number;
+  name: string;
+  code: string;
+  isActive: boolean;
+  createdBy: number;
+  createdOn: Date;
+  modifiedBy: number | null;
+  modifiedOn: Date;
 }
 
 export default Company
