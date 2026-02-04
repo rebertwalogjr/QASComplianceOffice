@@ -4,7 +4,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { X } from "lucide-react";
@@ -12,6 +12,10 @@ import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Status } from "@/lib/common-types";
 import Project from "@/lib/project";
 import { Textarea } from "@/components/ui/textarea";
+import { useLookups } from "@/context/lookups-context";
+import { updateProject } from "@/hooks/actions";
+import { toast } from "sonner";
+
 
 interface Props {
   item: Project
@@ -20,16 +24,17 @@ interface Props {
 
 export default function TableCellViewer({ item, className }: Props) {
   const isMobile = useIsMobile();
-
   const [isEditing, setIsEditing] = React.useState(false)
-
+  const [isPending, setIsPending] = React.useState(false)
+  const [isOpen, setIsOpen] = React.useState(false)
+  const { activeCompanies } = useLookups();
   const [form, setForm] = React.useState({
     id: item.id,
     name: item.name,
     code: item.code,
-    company: item.company,
+    companyId: item.companyId,
     remarks: item.remarks,
-    status: item.status,
+    status: item.isActive ? "Active" : "Inactive",
   })
 
   const handleUpdate = () => {
@@ -40,14 +45,38 @@ export default function TableCellViewer({ item, className }: Props) {
     setIsEditing(false)
   }
 
+  const handleSubmitUpdate = async () => {
+    setIsPending(true)
+
+    const formData = new FormData()
+
+    formData.append("name", form.name)
+    formData.append("code", form.code)
+    formData.append("isActive", form.status === "Active" ? "true" : "false")
+    formData.append("companyId", form.companyId?.toString())
+    formData.append("remarks", form.remarks || "")
+
+    const result = await updateProject(formData, item.id)
+
+    if (result.error) {
+      toast.error(`Failed to update project: ${result.error}`)
+    } else {
+      toast.success("Project updated successfully!", { position: "top-center" })
+      setIsEditing(false)
+      setIsOpen(false)
+    }
+
+    setIsPending(false)
+  }
+
   const handleCancel = () => {
     setForm({
       id: item.id,
       name: item.name,
       code: item.code,
-      company: item.company,
+      companyId: item.companyId,
       remarks: item.remarks,
-      status: item.status,
+      status: item.isActive ? "Active" : "Inactive",
     })
     setIsEditing(false)
   }
@@ -60,7 +89,7 @@ export default function TableCellViewer({ item, className }: Props) {
   const isStatus = (v: string): v is Status => v === "Active" || v === "Inactive"
 
   return (
-    <Drawer direction={isMobile ? "bottom" : "right"}>
+    <Drawer direction={isMobile ? "bottom" : "right"} open={isOpen} onOpenChange={setIsOpen} onClose={handleCancel}>
       <DrawerTrigger asChild>
         <Button variant="link" className={`text-foreground w-fit px-0 ml-1 text-left ${className}`}>
           {item.name}
@@ -103,12 +132,30 @@ export default function TableCellViewer({ item, className }: Props) {
 
                   <Field>
                     <FieldLabel htmlFor="company">Company</FieldLabel>
-                    <Input id="company" value={form.company} onChange={onInput("company")} disabled={!isEditing} className="disabled:opacity-70" />
+                    {/* <Input id="company" value={companies.find(c => c.id === form.companyId)?.name || ""} disabled className="disabled:opacity-70" /> */}
+                    <Select
+                      value={form.companyId?.toString() || ""}
+                      disabled={!isEditing}
+                      onValueChange={(value) => setForm({ ...form, companyId: parseInt(value) })}
+                    >
+                      <SelectTrigger id="company">
+                        <SelectValue placeholder="Select a company" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          {activeCompanies.map((company) => (
+                            <SelectItem key={company.id} value={company.id.toString()}>
+                              {company.name}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
                   </Field>
 
                   <Field>
                     <FieldLabel htmlFor="remarks">Remarks</FieldLabel>
-                    <Textarea id="remarks" value={form.remarks} onChange={onInput("remarks")} disabled={!isEditing} className="disabled:opacity-70" />
+                    <Textarea id="remarks" value={form.remarks || ""} onChange={onInput("remarks")} disabled={!isEditing} className="disabled:opacity-70" />
                   </Field>
 
                   <Field>
@@ -146,7 +193,7 @@ export default function TableCellViewer({ item, className }: Props) {
             </>
           ) : (
             <>
-              <Button onClick={handleSave}>Save</Button>
+              <Button onClick={handleSubmitUpdate}>Save</Button>
               <Button onClick={handleCancel} variant="outline">Cancel</Button>
             </>
           )}

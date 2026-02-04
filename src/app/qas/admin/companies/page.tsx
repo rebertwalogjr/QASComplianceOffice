@@ -2,11 +2,10 @@ import { DataTable } from "@/components/ui/data-table";
 import { columns } from "./columns";
 import { Label } from "@radix-ui/react-label";
 import CreateDrawer from "./create-drawer";
-//import companies from "@/dummy/qas-company";
 import { getCompanies } from "@/hooks/actions";
 
 export default async function CompaniesPage() {
-  const data = await getCompanies()
+  const companies = await getCompanies()
 
   return (
     <div className="@container/main flex flex-col">
@@ -17,7 +16,7 @@ export default async function CompaniesPage() {
       <div>
         <DataTable
           columns={columns}
-          data={data}
+          data={companies}
         />
       </div>
 

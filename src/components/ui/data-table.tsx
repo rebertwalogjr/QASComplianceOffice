@@ -113,8 +113,22 @@ export function DataTable<TData, TValue>({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                {/* <TableCell colSpan={columns.length} className="h-24 text-center">
                   No results.
+                </TableCell> */}
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-[400px] text-center"
+                >
+                  <div className="flex flex-col items-center justify-center gap-2">
+                    {/* You can add an icon or image here */}
+                    <p className="text-lg font-medium text-muted-foreground">
+                      No records found.
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Try adjusting your search or add a new record to get started.
+                    </p>
+                  </div>
                 </TableCell>
               </TableRow>
             )}

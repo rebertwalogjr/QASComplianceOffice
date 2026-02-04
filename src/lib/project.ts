@@ -1,12 +1,14 @@
-import { Status } from "./common-types"
-
 type Project = {
-  id: string,
+  id: number,
   code: string,
   name: string,
-  company: string,
-  remarks: string | undefined,
-  status: Status
+  companyId: number,
+  remarks: string | null,
+  isActive: boolean,
+  createdBy: number,
+  createdOn: Date,
+  modifiedBy: number | null,
+  modifiedOn: Date | null,
 }
 
 export default Project

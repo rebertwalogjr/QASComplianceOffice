@@ -9,23 +9,39 @@ import { Separator } from "@/components/ui/separator";
 import { createCompany } from "@/hooks/actions";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PlusCircle, X } from "lucide-react";
-import { useFormStatus } from "react-dom";
 import { toast } from "sonner";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function CreateDrawer() {
   const isMobile = useIsMobile();
-  const { pending } = useFormStatus();
   const [isOpen, setIsOpen] = React.useState(false);
+  const [isPending, setIsPending] = React.useState(false);
+  const [formData, setFormData] = React.useState({ name: "", code: "" });
 
-  const handleSubmit = async (formData: FormData) => {
-    const result = await createCompany(formData);
+  const handleSubmit = async () => {
+    const data = new FormData()
+    
+    setIsPending(true)
+    
+    if (!formData.name.trim() || !formData.code.trim()) {
+      toast.error("Please fill in all required fields.");
+      setIsPending(false)
+      return
+    }
+
+    data.append("name", formData.name)
+    data.append("code", formData.code)
+
+    const result = await createCompany(data)
 
     if (result.error) {
-      toast.error("Failed to create company");
+      toast.error(result.error)
     } else {
-      toast.success("Company created successfully!");
-      setIsOpen(false);
+      toast.success("Company created successfully!", { position: "top-center" });
+      setFormData({ name: "", code: "" })
+      setIsOpen(false)
     }
+    setIsPending(false)
   }
 
   return (
@@ -38,45 +54,56 @@ export default function CreateDrawer() {
       </DrawerTrigger>
 
       <DrawerContent>
-        <form className="flex flex-col gap-4" action={handleSubmit}>
-          <DrawerHeader className="gap-1 flex flex-row items-center h-12 justify-between">
-            <DrawerTitle>Add New Company</DrawerTitle>
-            <DrawerClose asChild>
-              <Button variant="ghost" size="icon-sm">
-                <X />
-              </Button>
-            </DrawerClose>
-          </DrawerHeader>
+        <DrawerHeader className="gap-1 flex flex-row items-center h-12 justify-between">
+          <DrawerTitle>Add New Company</DrawerTitle>
+          <DrawerClose asChild>
+            <Button variant="ghost" size="icon-sm">
+              <X />
+            </Button>
+          </DrawerClose>
+        </DrawerHeader>
 
-          <Separator />
+        <Separator />
 
-          <div className="flex flex-col gap-4 overflow-y-auto px-4 py-4 text-sm">
-            <FieldGroup>
-              <FieldSet>
-                <FieldGroup>
+        <div className="flex flex-col gap-4 overflow-y-auto px-4 py-4 text-sm">
+          <FieldGroup>
+            <FieldSet>
+              <FieldGroup>
 
-                  <Field>
-                    <FieldLabel htmlFor="name">Name</FieldLabel>
-                    <Input name="name" id="name" />
-                  </Field>
+                <Field>
+                  <FieldLabel htmlFor="name">Name</FieldLabel>
+                  <Input
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
+                </Field>
 
-                  <Field>
-                    <FieldLabel htmlFor="code">Code</FieldLabel>
-                    <Input name="code" id="code" />
-                  </Field>
+                <Field>
+                  <FieldLabel htmlFor="code">Code</FieldLabel>
+                  <Input
+                    value={formData.code}
+                    onChange={(e) => setFormData({ ...formData, code: e.target.value })} />
+                </Field>
 
-                </FieldGroup>
-              </FieldSet>
-            </FieldGroup>
-          </div>
+              </FieldGroup>
+            </FieldSet>
+          </FieldGroup>
+        </div>
 
-          <DrawerFooter>
-            <Button type="submit" disabled={pending}>{pending ? "Saving..." : "Save"}</Button>
-            <DrawerClose asChild>
-              <Button variant="outline">Cancel</Button>
-            </DrawerClose>
-          </DrawerFooter>
-        </form>
+        <DrawerFooter>
+          <Button onClick={handleSubmit} disabled={isPending}>
+            {isPending ? (
+              <>
+                Saving
+                <Spinner className="mr-2" />
+              </>
+            ) : (
+              "Save"
+            )}
+          </Button>
+          <DrawerClose asChild>
+            <Button variant="outline" disabled={isPending}>Cancel</Button>
+          </DrawerClose>
+        </DrawerFooter>
       </DrawerContent>
     </Drawer>
   );

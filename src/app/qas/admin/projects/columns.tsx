@@ -20,11 +20,11 @@ export const columns: ColumnDef<Project>[] = [
     header: "Code"
   },
   {
-    accessorKey: "company",
+    accessorKey: "company.name",
     header: "Company"
   },
   {
-    accessorKey: "status",
+    accessorKey: "isActive",
     header: ({ column }) => {
       const sorted = column.getIsSorted()
       return <div className="flex items-center justify-between">
@@ -47,7 +47,7 @@ export const columns: ColumnDef<Project>[] = [
         </div>
     },
     cell: ({ row }) => {
-      return <Badge variant="outline" className={ row.original.status === "Active" ? "bg-green-50 text-green-500 border-green-500" : "bg-gray-50 text-gray-600 border-gray-600" } >{ row.original.status }</Badge>
+      return <Badge variant="outline" className={ row.original.isActive === true ? "bg-green-50 text-green-500 border-green-500" : "bg-gray-50 text-gray-600 border-gray-600" } >{ row.original.isActive === true ? "Active" : "Inactive" }</Badge>
     }
   },
 ]

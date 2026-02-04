@@ -1,18 +1,66 @@
 "use client"
 
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
+import { createProject, getCompanies } from "@/hooks/actions";
 import { useIsMobile } from "@/hooks/use-mobile";
+import Company from "@/lib/company";
 import { PlusCircle, X } from "lucide-react";
+import { toast } from "sonner";
+import { Spinner } from "@/components/ui/spinner";
 
-export default function CreateDrawer() {
-  const isMobile = useIsMobile();
+interface CreateDrawerProps {
+  companies: Company[]
+}
+
+export default function CreateDrawer({ companies }: CreateDrawerProps) {
+  const isMobile = useIsMobile()
+  const [isOpen, setIsOpen] = React.useState(false);
+  const [isPending, setIsPending] = React.useState(false);
+  const [formData, setFormData] = React.useState({ name: "", code: "", company: "", remarks: "" })
+
+  const handleSubmit = async () => {
+    const data = new FormData()
+    
+    setIsPending(true)
+    
+    if (!formData.name.trim() || !formData.code.trim()) {
+      toast.error("Please fill in all required fields.");
+      setIsPending(false)
+      return
+    }
+    
+    if (!formData.company) {
+      toast.error("Please select a company first.");
+      setIsPending(false)
+      return
+    }
+
+    data.append("name", formData.name)
+    data.append("code", formData.code)
+    data.append("companyId", formData.company)
+    data.append("remarks", formData.remarks)
+
+    const result = await createProject(data)
+
+    if (result.error) {
+      toast.error(result.error)
+    } else {
+      toast.success("Project created successfully!", { position: "top-center" });
+      setFormData({ name: "", code: "", company: "", remarks: "" })
+      setIsOpen(false)
+    }
+    setIsPending(false)
+  }
+
   return (
-    <Drawer direction={isMobile ? "bottom" : "right"}>
+    <Drawer direction={isMobile ? "bottom" : "right"} open={isOpen} onOpenChange={setIsOpen}>
       <DrawerTrigger asChild>
         <Button variant="default" size="sm" className="rounded-2xl">
           <PlusCircle className="fill-white text-primary" />
@@ -33,42 +81,66 @@ export default function CreateDrawer() {
         <Separator />
 
         <div className="flex flex-col gap-4 overflow-y-auto px-4 py-4 text-sm">
-          <form className="flex flex-col gap-4" onSubmit={(e) => e.preventDefault()}>
+          <FieldGroup>
+            <FieldSet>
+              <FieldGroup>
 
-            <FieldGroup>
-              <FieldSet>
-                <FieldGroup>
+                <Field>
+                  <FieldLabel htmlFor="name">Name</FieldLabel>
+                  <Input id="name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
+                </Field>
 
-                  <Field>
-                    <FieldLabel htmlFor="name">Name</FieldLabel>
-                    <Input id="name" />
-                  </Field>
+                <Field>
+                  <FieldLabel htmlFor="code">Code</FieldLabel>
+                  <Input id="code" value={formData.code} onChange={(e) => setFormData({ ...formData, code: e.target.value })} />
+                </Field>
 
-                  <Field>
-                    <FieldLabel htmlFor="code">Code</FieldLabel>
-                    <Input id="code" />
-                  </Field>
+                <Field>
+                  <FieldLabel htmlFor="company">Company</FieldLabel>
+                  <Select
+                    value={formData.company}
+                    onValueChange={(value) => setFormData({ ...formData, company: value })}
+                  >
+                    <SelectTrigger id="company">
+                      <SelectValue placeholder="Select a company" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        {companies.map((company) => (
+                          <SelectItem key={company.id} value={company.id.toString()}>
+                            {company.name}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </Field>
 
-                  <Field>
-                    <FieldLabel htmlFor="company">Company</FieldLabel>
-                    <Input id="company" />
-                  </Field>
+                <Field>
+                  <FieldLabel htmlFor="remarks">Remarks</FieldLabel>
+                  <Textarea id="remarks"
+                    value={formData.remarks}
+                    onChange={(e) => setFormData({ ...formData, remarks: e.target.value })} />
+                </Field>
 
-                  <Field>
-                    <FieldLabel htmlFor="remarks">Remarks</FieldLabel>
-                    <Textarea id="remarks" />
-                  </Field>
-
-                </FieldGroup>
-              </FieldSet>
-            </FieldGroup>
-          </form>
+              </FieldGroup>
+            </FieldSet>
+          </FieldGroup>
         </div>
 
         <DrawerFooter>
-          <Button>Save</Button>
+          <Button onClick={handleSubmit} disabled={isPending}>
+            {isPending ? (
+              <>
+                Saving
+                <Spinner className="mr-2" />
+              </>
+            ) : (
+              "Save"
+            )}
+          </Button>
           <DrawerClose asChild>
-            <Button variant="outline">Cancel</Button>
+            <Button variant="outline" disabled={isPending}>Cancel</Button>
           </DrawerClose>
         </DrawerFooter>
       </DrawerContent>
