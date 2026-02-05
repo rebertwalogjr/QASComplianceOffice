@@ -20,7 +20,7 @@ export const sidebarItems = {
     { title: "Company", url: "/qas/admin/companies", icon: Building },
     { title: "Audit Engagement", url: "/qas/admin/engagements", icon: BookHeart },
     { title: "Audit Rating", url: "/qas/admin/ratings", icon: Star },
-    { title: "Audit Number", url: "/qas/admin/auditnumbers", icon: Hash },
+    { title: "Audit Reports", url: "/qas/admin/auditreports", icon: Hash },
     { title: "Manage Status", url: "/qas/admin/managestatus", icon: ChartBarBig },
   ],
 

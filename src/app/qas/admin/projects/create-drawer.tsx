@@ -130,7 +130,7 @@ export default function CreateDrawer({ companies }: CreateDrawerProps) {
 
         <DrawerFooter>
           <Button onClick={handleSubmit} disabled={isPending}>
-            {isPending ? (
+            { isPending ? (
               <>
                 Saving
                 <Spinner className="mr-2" />

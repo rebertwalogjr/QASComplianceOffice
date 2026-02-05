@@ -1,31 +1,26 @@
 import { DataTable } from "@/components/ui/data-table";
 import { columns } from "./columns";
-import groups from "@/dummy/qas-groups"
 import { Label } from "@radix-ui/react-label";
-import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
-import Link from "next/link";
 import CreateDrawer from "./create-drawer";
+import { getGroups, getProjects, getActiveProjects } from "@/hooks/actions";
+import { LookupsProvider } from "@/context/lookups-context";
 
+export default async function GroupsPage() {
+  const [groups, projects, activeProjects] = await Promise.all([getGroups(), getProjects(), getActiveProjects()]);
 
-export default function GroupsPage() {
   return (
     <div className="@container/main flex flex-col">
       <div className="flex flex-row px-6 pt-6 justify-between items-center">
         <Label className="text-md font-semibold text-foreground">Group Management</Label>
-        {/* <Link href={`/qas/admin/group`}>
-          <Button variant="default" size="sm" className="rounded-2xl">
-            <PlusCircle className="fill-white text-primary" />
-            Add Group
-          </Button>
-        </Link> */}
-        <CreateDrawer />
+        <CreateDrawer projects={activeProjects} />
       </div>
       <div>
-        <DataTable
-          columns={columns}
-          data={groups}
-        />
+        <LookupsProvider data={{ groups, projects, activeProjects }}>
+          <DataTable
+            columns={columns}
+            data={groups}
+          />
+        </LookupsProvider>
       </div>
 
     </div>

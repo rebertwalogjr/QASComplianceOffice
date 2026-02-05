@@ -1,5 +1,6 @@
 "use client"
 
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
@@ -7,11 +8,42 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PlusCircle, X } from "lucide-react";
+import { toast } from "sonner";
+import { set } from "date-fns";
+import { createFindingCategory } from "@/hooks/actions";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function CreateDrawer() {
   const isMobile = useIsMobile();
+  const [isOpen, setIsOpen] = React.useState(false);
+  const [isPending, setIsPending] = React.useState(false);
+  const [formData, setFormData] = React.useState({ name: "" })
+
+  const handleSubmit = async () => {
+    setIsPending(true);
+    const data = new FormData();
+    data.append("name", formData.name);
+
+    if (!formData.name.trim()) {
+      toast.error("Please fill in the name field.");
+      setIsPending(false);
+      return;
+    }
+
+    const response = await createFindingCategory(data);
+
+    if (response.error) {
+      toast.error(response.error)
+    } else {
+      toast.success("Finding category created successfully!", { position: "top-center" });
+      setFormData({ name: "" });
+      setIsOpen(false);
+    }
+    setIsPending(false);
+  }
+
   return (
-    <Drawer direction={isMobile ? "bottom" : "right"}>
+    <Drawer direction={isMobile ? "bottom" : "right"} open={isOpen} onOpenChange={setIsOpen}>
       <DrawerTrigger asChild>
         <Button variant="default" size="sm" className="rounded-2xl">
           <PlusCircle className="fill-white text-primary" />
@@ -32,27 +64,33 @@ export default function CreateDrawer() {
         <Separator />
 
         <div className="flex flex-col gap-4 overflow-y-auto px-4 py-4 text-sm">
-          <form className="flex flex-col gap-4" onSubmit={(e) => e.preventDefault()}>
-
             <FieldGroup>
               <FieldSet>
                 <FieldGroup>
 
                   <Field>
                     <FieldLabel htmlFor="name">Name</FieldLabel>
-                    <Input id="name" />
+                    <Input id="name" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
                   </Field>
 
                 </FieldGroup>
               </FieldSet>
             </FieldGroup>
-          </form>
         </div>
 
         <DrawerFooter>
-          <Button>Save</Button>
+          <Button onClick={handleSubmit} disabled={isPending}>
+            {isPending ? (
+              <>
+                Saving
+                <Spinner className="mr-2" />
+              </>
+            ) : (
+              "Save"
+            )}
+          </Button>
           <DrawerClose asChild>
-            <Button variant="outline">Cancel</Button>
+            <Button variant="outline" disabled={isPending}>Cancel</Button>
           </DrawerClose>
         </DrawerFooter>
       </DrawerContent>

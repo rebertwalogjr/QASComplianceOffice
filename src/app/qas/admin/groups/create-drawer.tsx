@@ -1,5 +1,6 @@
 "use client"
 
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
@@ -9,12 +10,51 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PlusCircle, X } from "lucide-react";
-import React from "react";
+import { toast } from "sonner";
+import { createGroup } from "@/hooks/actions";
+import { Spinner } from "@/components/ui/spinner";
+import { ProjectDepartmentList } from "../../../../../generated/prisma/client";
 
-export default function CreateDrawer() {
+interface CreateDrawerProps {
+  projects: ProjectDepartmentList[]
+}
+
+export default function CreateDrawer({ projects }: CreateDrawerProps) {
   const isMobile = useIsMobile();
+  const [isOpen, setIsOpen] = React.useState(false);
+  const [isPending, setIsPending] = React.useState(false);
+  const [formData, setFormData] = React.useState({ name: "", code: "", projectDepartmentId: "", remarks: "", inCharge: "", emailAddress: "" });
+
+  const handleSubmit = async () => {
+    setIsPending(true);
+    const data = new FormData();
+    data.append("name", formData.name);
+    data.append("code", formData.code);
+    data.append("projectDepartmentId", formData.projectDepartmentId);
+    data.append("remarks", formData.remarks);
+    data.append("inChargeId", formData.inCharge);
+    data.append("emailAddress", formData.emailAddress);
+
+    if (!formData.name.trim() || !formData.code.trim() || !formData.projectDepartmentId.trim() || !formData.inCharge.trim() || !formData.emailAddress.trim()) {
+      toast.error("Please fill in all required fields.");
+      setIsPending(false);
+      return;
+    }
+
+    const response = await createGroup(data);
+
+    if (response.error) {
+      toast.error(response.error);
+    } else {
+      toast.success("Group created successfully!", { position: "top-center" });
+      setFormData({ name: "", code: "", projectDepartmentId: "", remarks: "", inCharge: "", emailAddress: "" });
+      setIsOpen(false);
+    }
+    setIsPending(false);
+  }
+
   return (
-    <Drawer direction={isMobile ? "bottom" : "right"}>
+    <Drawer direction={isMobile ? "bottom" : "right"} open={isOpen} onOpenChange={setIsOpen}>
       <DrawerTrigger asChild>
         <Button variant="default" size="sm" className="rounded-2xl">
           <PlusCircle className="fill-white text-primary" />
@@ -35,62 +75,67 @@ export default function CreateDrawer() {
         <Separator />
 
         <div className="flex flex-col gap-4 overflow-y-auto px-4 py-4 text-sm">
-          <form className="flex flex-col gap-4" onSubmit={(e) => e.preventDefault()}>
+          <FieldGroup>
+            <FieldSet>
+              <FieldGroup>
 
-            <FieldGroup>
-              <FieldSet>
-                <FieldGroup>
+                <Field>
+                  <FieldLabel htmlFor="groupCode">Group Code</FieldLabel>
+                  <Input id="groupCode" value={formData.code} onChange={(e) => setFormData({ ...formData, code: e.target.value })} />
+                </Field>
 
-                  <Field>
-                    <FieldLabel htmlFor="groupCode">Group Code</FieldLabel>
-                    <Input id="groupCode" />
-                  </Field>
+                <Field>
+                  <FieldLabel htmlFor="groupName">Name</FieldLabel>
+                  <Input id="groupName" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
+                </Field>
 
-                  <Field>
-                    <FieldLabel htmlFor="groupName">Name</FieldLabel>
-                    <Input id="groupName" />
-                  </Field>
+                <Field>
+                  <FieldLabel htmlFor="project">Project / Department</FieldLabel>
+                  <Select onValueChange={(value) => setFormData({ ...formData, projectDepartmentId: value })} >
+                    <SelectTrigger id="project">
+                      <SelectValue placeholder="Select project or department..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {projects.map((project) => (
+                        <SelectItem key={project.id} value={project.id.toString()}>{project.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
 
-                  <Field>
-                    <FieldLabel htmlFor="project">Project / Department</FieldLabel>
-                    <Select>
-                      <SelectTrigger id="project">
-                        <SelectValue placeholder="Select project or department..."  />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="proj-a">Project A</SelectItem>
-                        <SelectItem value="proj-b">Project B</SelectItem>
-                        <SelectItem value="proj-c">Project C</SelectItem>
-                        <SelectItem value="proj-f">Project D</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </Field>
+                <Field>
+                  <FieldLabel htmlFor="groupInCharge">In-Charge</FieldLabel>
+                  <Input id="groupInCharge" value={formData.inCharge} onChange={(e) => setFormData({ ...formData, inCharge: e.target.value })} />
+                </Field>
 
-                  <Field>
-                    <FieldLabel htmlFor="groupInCharge">In-Charge</FieldLabel>
-                    <Input id="groupInCharge" />
-                  </Field>
+                <Field>
+                  <FieldLabel htmlFor="groupInChargeEmail">In-Charge Email</FieldLabel>
+                  <Input id="groupInChargeEmail" value={formData.emailAddress} onChange={(e) => setFormData({ ...formData, emailAddress: e.target.value })} />
+                </Field>
 
-                  <Field>
-                    <FieldLabel htmlFor="groupInChargeEmail">In-Charge Email</FieldLabel>
-                    <Input id="groupInChargeEmail" />
-                  </Field>
+                <Field>
+                  <FieldLabel htmlFor="remarks">Remarks</FieldLabel>
+                  <Textarea id="remarks" value={formData.remarks} onChange={(e) => setFormData({ ...formData, remarks: e.target.value })} />
+                </Field>
 
-                  <Field>
-                    <FieldLabel htmlFor="remarks">Remarks</FieldLabel>
-                    <Textarea id="remarks" />
-                  </Field>
-
-                </FieldGroup>
-              </FieldSet>
-            </FieldGroup>
-          </form>
+              </FieldGroup>
+            </FieldSet>
+          </FieldGroup>
         </div>
 
         <DrawerFooter>
-          <Button>Save</Button>
+          <Button onClick={handleSubmit} disabled={isPending}>
+            { isPending ? (
+              <>
+                Saving
+                <Spinner className="mr-2" />
+              </>
+            ) : (
+              "Save"
+            )}
+          </Button>
           <DrawerClose asChild>
-            <Button variant="outline">Cancel</Button>
+            <Button variant="outline" disabled={isPending}>Cancel</Button>
           </DrawerClose>
         </DrawerFooter>
       </DrawerContent>

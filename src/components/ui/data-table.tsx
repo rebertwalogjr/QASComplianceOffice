@@ -15,6 +15,7 @@ interface DataTableProps<TData, TValue> {
   data: TData[]
   defaultPageSize?: number
   getRowClassName?: (row: TData) => string | undefined
+  searchPlaceholder?: string
 }
 
 export function DataTable<TData, TValue>({
@@ -22,6 +23,7 @@ export function DataTable<TData, TValue>({
   data,
   defaultPageSize = 10,
   getRowClassName,
+  searchPlaceholder
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
@@ -59,7 +61,7 @@ export function DataTable<TData, TValue>({
       <div className="px-6 z-40 w-full h-18 flex items-center">
         <div className="flex items-center w-100">
           <Input
-            placeholder="Search series number ..."
+            placeholder={searchPlaceholder ?? "Type to search..."}
             // value={(table.getColumn("id")?.getFilterValue() as string) ?? ""}
             value={(table.getState().globalFilter as string) ?? ""}
             onChange={(event) =>

@@ -1,9 +1,13 @@
 import { Status } from "./common-types"
 
 type FindingCategory = {
-  id: string,
+  id: number,
   name: string,
-  status: Status
+  isActive: boolean,
+  createdBy: number,
+  createdOn: Date,
+  modifiedBy?: number | null,
+  modifiedOn?: Date | null,
 }
 
 export default FindingCategory

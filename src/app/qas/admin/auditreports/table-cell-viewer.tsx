@@ -10,32 +10,31 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { X } from "lucide-react";
 import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Status } from "@/lib/common-types";
-import Project from "@/lib/project";
-import { Textarea } from "@/components/ui/textarea";
+//import AuditNumber from "@/lib/audit-report";
+import { AuditReport } from "../../../../../generated/prisma/client";
 import { useLookups } from "@/context/lookups-context";
-import { updateProject } from "@/hooks/actions";
 import { toast } from "sonner";
+import { updateAuditReport } from "@/hooks/actions";
 import { Spinner } from "@/components/ui/spinner";
 
-
 interface Props {
-  item: Project
+  item: AuditReport
   className?: string
 }
 
 export default function TableCellViewer({ item, className }: Props) {
   const isMobile = useIsMobile();
+  const { activeProjects, activeCompanies, activeAuditEngagements } = useLookups();
   const [isEditing, setIsEditing] = React.useState(false)
   const [isPending, setIsPending] = React.useState(false)
   const [isOpen, setIsOpen] = React.useState(false)
-  const { activeCompanies } = useLookups();
   const [form, setForm] = React.useState({
     id: item.id,
     name: item.name,
-    code: item.code,
     companyId: item.companyId,
-    remarks: item.remarks,
-    status: item.isActive ? "Active" : "Inactive",
+    projectDepartmentId: item.projectDepartmentId,
+    auditEngagementId: item.auditEngagementId,
+    isActive: item.isActive ? "Active" : "Inactive",
   })
 
   const handleUpdate = () => {
@@ -45,24 +44,27 @@ export default function TableCellViewer({ item, className }: Props) {
   const handleSubmitUpdate = async () => {
     setIsPending(true)
 
-    const formData = new FormData()
+    if (!form.companyId || !form.projectDepartmentId || !form.auditEngagementId) {
+      toast.error("Please fill in all required fields.")
+      setIsPending(false)
+      return
+    }
 
-    formData.append("name", form.name)
-    formData.append("code", form.code)
-    formData.append("isActive", form.status === "Active" ? "true" : "false")
-    formData.append("companyId", form.companyId?.toString())
-    formData.append("remarks", form.remarks || "")
+    const data = new FormData()
+    data.append("name", form.name)
+    data.append("companyId", form.companyId.toString())
+    data.append("pojectDepartmentId", form.projectDepartmentId.toString())
+    data.append("auditEngagementId", form.auditEngagementId.toString())
 
-    const result = await updateProject(formData, item.id)
+    const response = await updateAuditReport(data, item.id)
 
-    if (result.error) {
-      toast.error(`Failed to update project: ${result.error}`)
+    if (response.error) {
+      toast.error(`Failed to update audit report: ${response.error}`)
     } else {
-      toast.success("Project updated successfully!", { position: "top-center" })
+      toast.success("Audit Report updated successfully!", { position: "top-center" })
       setIsEditing(false)
       setIsOpen(false)
     }
-
     setIsPending(false)
   }
 
@@ -70,10 +72,10 @@ export default function TableCellViewer({ item, className }: Props) {
     setForm({
       id: item.id,
       name: item.name,
-      code: item.code,
       companyId: item.companyId,
-      remarks: item.remarks,
-      status: item.isActive ? "Active" : "Inactive",
+      projectDepartmentId: item.projectDepartmentId,
+      auditEngagementId: item.auditEngagementId,
+      isActive: item.isActive ? "Active" : "Inactive",
     })
     setIsEditing(false)
   }
@@ -112,27 +114,22 @@ export default function TableCellViewer({ item, className }: Props) {
               <FieldSet>
                 <FieldGroup>
 
-                  <Field>
+                  {/* <Field>
                     <FieldLabel htmlFor="id">Id</FieldLabel>
                     <Input id="id" value={form.id} disabled className="disabled:opacity-70" />
-                  </Field>
+                  </Field> */}
 
                   <Field>
-                    <FieldLabel htmlFor="name">Name</FieldLabel>
-                    <Input id="name" value={form.name} onChange={onInput("name")} disabled={!isEditing} className="disabled:opacity-70" />
-                  </Field>
-
-                  <Field>
-                    <FieldLabel htmlFor="code">Code</FieldLabel>
-                    <Input id="code" value={form.code} onChange={onInput("code")} disabled={!isEditing} className="disabled:opacity-70" />
+                    <FieldLabel htmlFor="auditNumber">Audit Number</FieldLabel>
+                    <Input id="auditNumber" value={form.name} onChange={onInput("name")} disabled={!isEditing} className="disabled:opacity-70" />
                   </Field>
 
                   <Field>
                     <FieldLabel htmlFor="company">Company</FieldLabel>
-                    {/* <Input id="company" value={companies.find(c => c.id === form.companyId)?.name || ""} disabled className="disabled:opacity-70" /> */}
+                    {/* <Input id="company" value={form.companyId} onChange={onInput("companyId")} disabled={!isEditing} className="disabled:opacity-70" /> */}
                     <Select
-                      value={form.companyId?.toString() || ""}
                       disabled={!isEditing}
+                      value={form.companyId.toString()}
                       onValueChange={(value) => setForm({ ...form, companyId: parseInt(value) })}
                     >
                       <SelectTrigger id="company">
@@ -151,14 +148,55 @@ export default function TableCellViewer({ item, className }: Props) {
                   </Field>
 
                   <Field>
-                    <FieldLabel htmlFor="remarks">Remarks</FieldLabel>
-                    <Textarea id="remarks" value={form.remarks || ""} onChange={onInput("remarks")} disabled={!isEditing} className="disabled:opacity-70" />
+                    <FieldLabel htmlFor="project">Project</FieldLabel>
+                    {/* <Input id="project" value={form.projectDepartmentId} onChange={onInput("projectDepartmentId")} disabled={!isEditing} className="disabled:opacity-70" /> */}
+                    <Select
+                      disabled={!isEditing}
+                      value={form.projectDepartmentId.toString()}
+                      onValueChange={(value) => setForm({ ...form, projectDepartmentId: parseInt(value) })}
+                    >
+                      <SelectTrigger id="project">
+                        <SelectValue placeholder="Select a project" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          {activeProjects?.map((projects) => (
+                            <SelectItem key={projects.id} value={projects.id.toString()}>
+                              {projects.name}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </Field>
+
+                  <Field>
+                    <FieldLabel htmlFor="auditEngagement">Audit Engagement</FieldLabel>
+                    {/* <Input id="auditEngagement" value={form.auditEngagementId} onChange={onInput("auditEngagementId")} disabled={!isEditing} className="disabled:opacity-70" /> */}
+                    <Select
+                      disabled={!isEditing}
+                      value={form.auditEngagementId.toString()}
+                      onValueChange={(value) => setForm({ ...form, auditEngagementId: parseInt(value) })}
+                    >
+                      <SelectTrigger id="auditEngagement">
+                        <SelectValue placeholder="Select a audit engagement" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          {activeAuditEngagements?.map((engagements) => (
+                            <SelectItem key={engagements.id} value={engagements.id.toString()}>
+                              {engagements.name}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
                   </Field>
 
                   <Field>
                     <FieldLabel htmlFor="status">Status</FieldLabel>
                     <Select
-                      value={form.status}
+                      value={form.isActive}
                       onValueChange={(v) => {
                         if (!isEditing) return
                         if (!isStatus(v)) return
@@ -190,7 +228,7 @@ export default function TableCellViewer({ item, className }: Props) {
             </>
           ) : (
             <>
-              <Button onClick={handleSubmitUpdate}>
+              <Button onClick={handleSubmitUpdate} disabled={isPending}>
                 {isPending ? (
                   <>
                     Saving
@@ -200,7 +238,7 @@ export default function TableCellViewer({ item, className }: Props) {
                   "Save"
                 )}
               </Button>
-              <Button onClick={handleCancel} variant="outline">Cancel</Button>
+              <Button onClick={handleCancel} variant="outline" disabled={isPending}>Cancel</Button>
             </>
           )}
         </DrawerFooter>

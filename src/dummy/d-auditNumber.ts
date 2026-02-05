@@ -1,4 +1,4 @@
-import AuditNumber from "@/lib/audit-number";
+import AuditNumber from "@/lib/audit-report";
 
 const auditNumbers : AuditNumber[] = [
   {

@@ -1,14 +1,16 @@
-import { Status } from "./common-types"
-
 type Group = {
-  id: string,
+  id: number,
   code: string,
   name: string,
-  project:string | undefined,
-  inCharge: string,
-  inChargeEmail: string,
-  status: Status,
-  remarks: string | undefined, 
+  projectDepartmentId: number,
+  inChargeId: string,
+  emailAddress: string,
+  isActive: boolean,
+  remarks: string | null,
+  createdBy: number,
+  createdOn: Date,
+  modifiedBy: number | null,
+  modifiedOn: Date | null,
 }
 
 export default Group

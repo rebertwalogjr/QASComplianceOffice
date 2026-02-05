@@ -14,6 +14,10 @@ import Group from "@/lib/group";
 import { Textarea } from "@/components/ui/textarea";
 import { Field, FieldDescription, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field";
 import { Status } from "@/lib/common-types";
+import { useLookups } from "@/context/lookups-context";
+import { toast } from "sonner";
+import { updateGroup } from "@/hooks/actions";
+import { Spinner } from "@/components/ui/spinner";
 
 interface Props {
   item: Group
@@ -22,16 +26,18 @@ interface Props {
 
 export default function TableCellViewer({ item, className }: Props) {
   const isMobile = useIsMobile();
-
   const [isEditing, setIsEditing] = React.useState(false)
-
+  const [isPending, setIsPending] = React.useState(false)
+  const [isOpen, setIsOpen] = React.useState(false)
+  const { activeProjects } = useLookups();
   const [form, setForm] = React.useState({
     id: item.id,
-    groupCode: item.code,
-    groupName: item.name,
-    groupInCharge: item.inCharge,
-    groupInChargeEmail: item.inChargeEmail,
-    status: item.status,
+    code: item.code,
+    name: item.name,
+    inChargeId: item.inChargeId,
+    projectDepartmentId: item.projectDepartmentId,
+    emailAddress: item.emailAddress,
+    isActive: item.isActive ? "Active" : "Inactive",
     remarks: item.remarks,
   })
 
@@ -39,18 +45,45 @@ export default function TableCellViewer({ item, className }: Props) {
     setIsEditing(true)
   }
 
-  const handleSave = () => {
-    setIsEditing(false)
+  const handleSubmitUpdate = async () => {
+    setIsPending(true)
+
+    const data = new FormData()
+    data.append("name", form.name)
+    data.append("code", form.code)
+    data.append("isActive", form.isActive === "Active" ? "true" : "false")
+    data.append("projectDepartmentId", item.projectDepartmentId.toString())
+    data.append("inChargeId", form.inChargeId)
+    data.append("emailAddress", form.emailAddress)
+    data.append("remarks", form.remarks || "")
+
+    if (form.name.trim() === "" || form.code.trim() === "" || form.inChargeId.trim() === "" || form.emailAddress.trim() === "") {
+      toast.error("Please fill in all required fields.");
+      setIsPending(false);
+      return;
+    }
+
+    const response = await updateGroup(data, item.id)
+
+    if (response.error) {
+      toast.error(`Failed to update group: ${response.error}`)
+    } else {
+      toast.success("Group updated successfully!", { position: "top-center" })
+      setIsEditing(false)
+      setIsOpen(false)
+    }
+    setIsPending(false)
   }
 
   const handleCancel = () => {
     setForm({
       id: item.id,
-      groupCode: item.code,
-      groupName: item.name,
-      groupInCharge: item.inCharge,
-      groupInChargeEmail: item.inChargeEmail,
-      status: item.status,
+      code: item.code,
+      name: item.name,
+      projectDepartmentId: item.projectDepartmentId,
+      inChargeId: item.inChargeId,
+      emailAddress: item.emailAddress,
+      isActive: item.isActive ? "Active" : "Inactive",
       remarks: item.remarks,
     })
     setIsEditing(false)
@@ -64,10 +97,10 @@ export default function TableCellViewer({ item, className }: Props) {
   const isStatus = (v: string): v is Status => v === "Active" || v === "Inactive"
 
   return (
-    <Drawer direction={isMobile ? "bottom" : "right"}>
+    <Drawer direction={isMobile ? "bottom" : "right"} open={isOpen} onOpenChange={setIsOpen} onClose={handleCancel}>
       <DrawerTrigger asChild>
         <Button variant="link" className={`text-foreground w-fit px-0 ml-1 text-left ${className}`}>
-          {item.code}
+          {item.name}
         </Button>
       </DrawerTrigger>
 
@@ -91,53 +124,50 @@ export default function TableCellViewer({ item, className }: Props) {
                 <FieldGroup>
 
                   <Field>
-                    <FieldLabel htmlFor="groupId">Group Id</FieldLabel>
-                    <Input id="groupId" value={form.id} disabled className="disabled:opacity-70" />
-                  </Field>
-
-                  <Field>
                     <FieldLabel htmlFor="groupCode">Group Code</FieldLabel>
-                    <Input id="groupCode" value={form.groupCode} onChange={onInput("groupCode")} disabled={!isEditing} className="disabled:opacity-70" />
+                    <Input id="groupCode" value={form.code} onChange={onInput("code")} disabled={!isEditing} className="disabled:opacity-70" />
                   </Field>
 
                   <Field>
                     <FieldLabel htmlFor="groupName">Name</FieldLabel>
-                    <Input id="groupName" value={form.groupName} onChange={onInput("groupName")} disabled={!isEditing} className="disabled:opacity-70" />
+                    <Input id="groupName" value={form.name} onChange={onInput("name")} disabled={!isEditing} className="disabled:opacity-70" />
                   </Field>
 
                   <Field>
                     <FieldLabel htmlFor="project">Project / Department</FieldLabel>
-                    <Select>
+                    <Select
+                      value={form.projectDepartmentId.toString()}
+                      disabled={!isEditing}
+                      onValueChange={(value) => { setForm((p) => ({ ...p, projectDepartmentId: parseInt(value) }))}}>
                       <SelectTrigger id="project">
                         <SelectValue placeholder="Select project or department..." />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="proj-a">Project A</SelectItem>
-                        <SelectItem value="proj-b">Project B</SelectItem>
-                        <SelectItem value="proj-c">Project C</SelectItem>
-                        <SelectItem value="proj-f">Project D</SelectItem>
+                        { activeProjects?.map((project) => (
+                          <SelectItem key={project.id} value={project.id.toString()}>{project.name}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </Field>
 
                   <Field>
                     <FieldLabel htmlFor="groupInCharge">In-Charge</FieldLabel>
-                    <Input id="groupInCharge" value={form.groupInCharge} onChange={onInput("groupInCharge")} disabled={!isEditing} className="disabled:opacity-70" />
+                    <Input id="groupInCharge" value={form.inChargeId} onChange={onInput("inChargeId")} disabled={!isEditing} className="disabled:opacity-70" />
                   </Field>
 
                   <Field>
                     <FieldLabel htmlFor="groupInChargeEmail">In-Charge Email</FieldLabel>
-                    <Input id="groupInChargeEmail" value={form.groupInChargeEmail} onChange={onInput("groupInChargeEmail")} disabled={!isEditing} className="disabled:opacity-70" />
+                    <Input id="groupInChargeEmail" value={form.emailAddress} onChange={onInput("emailAddress")} disabled={!isEditing} className="disabled:opacity-70" />
                   </Field>
 
                   <Field>
                     <FieldLabel htmlFor="status">Status</FieldLabel>
                     <Select
-                      value={form.status}
+                      value={form.isActive}
                       onValueChange={(v) => {
                         if (!isEditing) return
                         if (!isStatus(v)) return
-                        setForm((p) => ({ ...p, status: v }))
+                        setForm((p) => ({ ...p, isActive: v }))
                       }}>
                       <SelectTrigger id="status" disabled={!isEditing} className="disabled:opacity-70">
                         <SelectValue placeholder="Select status..." />
@@ -151,7 +181,7 @@ export default function TableCellViewer({ item, className }: Props) {
 
                   <Field>
                     <FieldLabel htmlFor="remarks">Remarks</FieldLabel>
-                    <Textarea id="remarks" value={form.remarks} onChange={onInput("remarks")} disabled={!isEditing} className="disabled:opacity-70" />
+                    <Textarea id="remarks" value={form.remarks || ""} onChange={onInput("remarks")} disabled={!isEditing} className="disabled:opacity-70" />
                   </Field>
 
                 </FieldGroup>
@@ -170,8 +200,17 @@ export default function TableCellViewer({ item, className }: Props) {
             </>
           ) : (
             <>
-              <Button onClick={handleSave}>Save</Button>
-              <Button onClick={handleCancel} variant="outline">Cancel</Button>
+              <Button onClick={handleSubmitUpdate} disabled={isPending}>
+                {isPending ? (
+                  <>
+                    Saving
+                    <Spinner className="mr-2" />
+                  </>
+                ) : (
+                  "Save"
+                )}
+              </Button>
+              <Button onClick={handleCancel} variant="outline" disabled={isPending}>Cancel</Button>
             </>
           )}
         </DrawerFooter>

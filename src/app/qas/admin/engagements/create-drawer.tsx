@@ -1,5 +1,6 @@
 "use client"
 
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
@@ -7,11 +8,48 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PlusCircle, X } from "lucide-react";
+import { toast } from "sonner";
+import { createAuditEngagement } from "@/hooks/actions";
+import { Spinner } from "@/components/ui/spinner";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import Company from "@/lib/company";
 
-export default function CreateDrawer() {
+interface CreateDrawerProps {
+  companies: Company[]
+}
+
+export default function CreateDrawer({companies}: CreateDrawerProps) {
   const isMobile = useIsMobile();
+  const [isOpen, setIsOpen] = React.useState(false);
+  const [isPending, setIsPending] = React.useState(false);
+  const [formData, setFormData] = React.useState({ name: "", companyId: "" })
+
+  const handleSubmit = async () => {
+    setIsPending(true)
+    const data = new FormData()
+    data.append("name", formData.name)
+    data.append("companyId", formData.companyId)
+
+    if (!formData.name.trim() || !formData.companyId.trim()) {
+      toast.error("Please fill in all required fields.");
+      setIsPending(false)
+      return
+    }
+
+    const response = await createAuditEngagement(data)
+
+    if (response.error) {
+      toast.error(response.error)
+    } else {
+      toast.success("Engagement created successfully!", { position: "top-center" });
+      setFormData({ name: "", companyId: "" })
+      setIsOpen(false)
+    }
+    setIsPending(false)
+  }
+
   return (
-    <Drawer direction={isMobile ? "bottom" : "right"}>
+    <Drawer direction={isMobile ? "bottom" : "right"} open={isOpen} onOpenChange={setIsOpen}>
       <DrawerTrigger asChild>
         <Button variant="default" size="sm" className="rounded-2xl">
           <PlusCircle className="fill-white text-primary" />
@@ -32,32 +70,54 @@ export default function CreateDrawer() {
         <Separator />
 
         <div className="flex flex-col gap-4 overflow-y-auto px-4 py-4 text-sm">
-          <form className="flex flex-col gap-4" onSubmit={(e) => e.preventDefault()}>
+          <FieldGroup>
+            <FieldSet>
+              <FieldGroup>
 
-            <FieldGroup>
-              <FieldSet>
-                <FieldGroup>
+                <Field>
+                  <FieldLabel htmlFor="name">Name</FieldLabel>
+                  <Input id="name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
+                </Field>
 
-                  <Field>
-                    <FieldLabel htmlFor="name">Name</FieldLabel>
-                    <Input id="name" />
-                  </Field>
+                <Field>
+                  <FieldLabel htmlFor="company">Company</FieldLabel>
+                  <Select
+                    value={formData.companyId}
+                    onValueChange={(value) => setFormData({ ...formData, companyId: value })}
+                  >
+                    <SelectTrigger id="company">
+                      <SelectValue placeholder="Select a company" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        {companies.map((company) => (
+                          <SelectItem key={company.id} value={company.id.toString()}>
+                            {company.name}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </Field>
 
-                  <Field>
-                    <FieldLabel htmlFor="company">Company</FieldLabel>
-                    <Input id="company" />
-                  </Field>
-
-                </FieldGroup>
-              </FieldSet>
-            </FieldGroup>
-          </form>
+              </FieldGroup>
+            </FieldSet>
+          </FieldGroup>
         </div>
 
         <DrawerFooter>
-          <Button>Save</Button>
+          <Button onClick={handleSubmit} disabled={isPending}>
+            {isPending ? (
+              <>
+                Saving
+                <Spinner className="mr-2" />
+              </>
+            ) : (
+              "Save"
+            )}
+          </Button>
           <DrawerClose asChild>
-            <Button variant="outline">Cancel</Button>
+            <Button variant="outline" disabled={isPending}>Cancel</Button>
           </DrawerClose>
         </DrawerFooter>
       </DrawerContent>

@@ -11,6 +11,10 @@ import { X } from "lucide-react";
 import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Status } from "@/lib/common-types";
 import FindingCategory from "@/lib/finding-category";
+import { updateFindingCategory } from "@/hooks/actions";
+import { toast } from "sonner";
+import { set } from "date-fns";
+import { Spinner } from "@/components/ui/spinner";
 
 interface Props {
   item: FindingCategory
@@ -19,28 +23,51 @@ interface Props {
 
 export default function TableCellViewer({ item, className }: Props) {
   const isMobile = useIsMobile();
-
+  const [isOpen, setIsOpen] = React.useState(false);
+  const [isPending, setIsPending] = React.useState(false);
   const [isEditing, setIsEditing] = React.useState(false)
-
   const [form, setForm] = React.useState({
     id: item.id,
     name: item.name,
-    status: item.status,
+    isActive: item.isActive ? "Active" : "Inactive",
   })
 
   const handleUpdate = () => {
     setIsEditing(true)
   }
 
-  const handleSave = () => {
-    setIsEditing(false)
+  const handleSave = async () => {
+    setIsPending(true)
+
+    const data = new FormData()
+
+    data.append("name", form.name)
+    data.append("isActive", form.isActive === "Active" ? "true" : "false")
+
+    if (!form.name.trim()) {
+      toast.error("Please fill in the name field.");
+      setIsPending(false);
+      return;
+    }
+
+    const response = await updateFindingCategory(data, item.id);
+
+    if (response.error) {
+      toast.error(response.error)
+    } else {
+      toast.success("Finding category updated successfully!", { position: "top-center" })
+      setIsEditing(false)
+      setIsOpen(false);
+    }
+    setIsPending(false)
+
   }
 
   const handleCancel = () => {
     setForm({
       id: item.id,
       name: item.name,
-      status: item.status,
+      isActive: item.isActive ? "Active" : "Inactive",
     })
     setIsEditing(false)
   }
@@ -53,7 +80,7 @@ export default function TableCellViewer({ item, className }: Props) {
   const isStatus = (v: string): v is Status => v === "Active" || v === "Inactive"
 
   return (
-    <Drawer direction={isMobile ? "bottom" : "right"}>
+    <Drawer direction={isMobile ? "bottom" : "right"} open={isOpen} onOpenChange={setIsOpen}>
       <DrawerTrigger asChild>
         <Button variant="link" className={`text-foreground w-fit px-0 ml-1 text-left ${className}`}>
           {item.name}
@@ -73,45 +100,42 @@ export default function TableCellViewer({ item, className }: Props) {
         <Separator />
 
         <div className="flex flex-col gap-4 overflow-y-auto px-4 py-4 text-sm">
-          <form className="flex flex-col gap-4" onSubmit={(e) => e.preventDefault()}>
+          <FieldGroup>
+            <FieldSet>
+              <FieldGroup>
 
-            <FieldGroup>
-              <FieldSet>
-                <FieldGroup>
-
-                  <Field>
+                {/* <Field>
                     <FieldLabel htmlFor="id">Group Id</FieldLabel>
                     <Input id="id" value={form.id} disabled className="disabled:opacity-70" />
-                  </Field>
+                  </Field> */}
 
-                  <Field>
-                    <FieldLabel htmlFor="name">Group Code</FieldLabel>
-                    <Input id="name" value={form.name} onChange={onInput("name")} disabled={!isEditing} className="disabled:opacity-70" />
-                  </Field>
+                <Field>
+                  <FieldLabel htmlFor="name">Group Code</FieldLabel>
+                  <Input id="name" value={form.name} onChange={onInput("name")} disabled={!isEditing} className="disabled:opacity-70" />
+                </Field>
 
-                  <Field>
-                    <FieldLabel htmlFor="status">Status</FieldLabel>
-                    <Select
-                      value={form.status}
-                      onValueChange={(v) => {
-                        if (!isEditing) return
-                        if (!isStatus(v)) return
-                        setForm((p) => ({ ...p, status: v }))
-                      }}>
-                      <SelectTrigger id="status" disabled={!isEditing} className="disabled:opacity-70">
-                        <SelectValue placeholder="Select status..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Active">Active</SelectItem>
-                        <SelectItem value="Inactive">Inactive</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </Field>
+                <Field>
+                  <FieldLabel htmlFor="status">Status</FieldLabel>
+                  <Select
+                    value={form.isActive}
+                    onValueChange={(v) => {
+                      if (!isEditing) return
+                      if (!isStatus(v)) return
+                      setForm((p) => ({ ...p, isActive: v }))
+                    }}>
+                    <SelectTrigger id="status" disabled={!isEditing} className="disabled:opacity-70">
+                      <SelectValue placeholder="Select status..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Active">Active</SelectItem>
+                      <SelectItem value="Inactive">Inactive</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </Field>
 
-                </FieldGroup>
-              </FieldSet>
-            </FieldGroup>
-          </form>
+              </FieldGroup>
+            </FieldSet>
+          </FieldGroup>
         </div>
 
         <DrawerFooter>
@@ -124,8 +148,17 @@ export default function TableCellViewer({ item, className }: Props) {
             </>
           ) : (
             <>
-              <Button onClick={handleSave}>Save</Button>
-              <Button onClick={handleCancel} variant="outline">Cancel</Button>
+              <Button onClick={handleSave} disabled={isPending}>
+                {isPending ? (
+                  <>
+                    Saving
+                    <Spinner className="mr-2" />
+                  </>
+                ) : (
+                  "Save"
+                )}
+              </Button>
+              <Button onClick={handleCancel} variant="outline" disabled={isPending}>Cancel</Button>
             </>
           )}
         </DrawerFooter>
