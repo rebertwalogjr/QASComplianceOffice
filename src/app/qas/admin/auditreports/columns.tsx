@@ -4,7 +4,6 @@ import { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ArrowDownAZ, ArrowDownZA, ArrowDown01, AlertTriangle  } from "lucide-react"
-// import AuditNumber from "@/lib/audit-report"
 import { AuditReport } from "../../../../../generated/prisma/client"
 import TableCellViewer from "./table-cell-viewer"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -48,7 +47,7 @@ export const columns: ColumnDef<AuditReport>[] = [
     accessorKey: "projectId.name",
     header: "Project",
     cell: ({ row }) => {
-      const project = row.original.projectDepartmentId ? (row.original as any).projectDepartmentList : null
+      const project = row.original.projectId ? (row.original as any).projectDepartmentList : null
       const isActive = project ? project.isActive : null
       return (
         <div className="flex items-center gap-2">
@@ -75,7 +74,7 @@ export const columns: ColumnDef<AuditReport>[] = [
     accessorKey: "auditEngagementId.name",
     header: "Audit Engagement",
     cell: ({ row }) => {
-      const engagement = row.original.auditEngagementId ? (row.original as any).auditReport : null
+      const engagement = row.original.auditEngagementId ? (row.original as any).auditEngagement : null
       const isActive = engagement ? engagement.isActive : null
       return (
         <div className="flex items-center gap-2">

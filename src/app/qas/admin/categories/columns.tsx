@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ArrowDownAZ, ArrowDownZA, ArrowDown01  } from "lucide-react"
 import TableCellViewer from "./table-cell-viewer"
-import FindingCategory from "@/lib/finding-category"
+import { FindingCategory } from "../../../../../generated/prisma/client"
 
 export const columns: ColumnDef<FindingCategory>[] = [
   {

@@ -12,13 +12,13 @@ import { toast } from "sonner";
 import { createAuditEngagement } from "@/hooks/actions";
 import { Spinner } from "@/components/ui/spinner";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import Company from "@/lib/company";
+import { Company } from "../../../../../generated/prisma/client";
 
 interface CreateDrawerProps {
   companies: Company[]
 }
 
-export default function CreateDrawer({companies}: CreateDrawerProps) {
+export default function CreateDrawer({ companies }: CreateDrawerProps) {
   const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = React.useState(false);
   const [isPending, setIsPending] = React.useState(false);
@@ -48,8 +48,13 @@ export default function CreateDrawer({companies}: CreateDrawerProps) {
     setIsPending(false)
   }
 
+  const handleClose = () => {
+    setFormData({ name: "", companyId: "" })
+    setIsOpen(false)
+  }
+
   return (
-    <Drawer direction={isMobile ? "bottom" : "right"} open={isOpen} onOpenChange={setIsOpen}>
+    <Drawer direction={isMobile ? "bottom" : "right"} open={isOpen} onOpenChange={setIsOpen} onClose={handleClose}>
       <DrawerTrigger asChild>
         <Button variant="default" size="sm" className="rounded-2xl">
           <PlusCircle className="fill-white text-primary" />

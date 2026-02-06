@@ -2,7 +2,6 @@ import { DataTable } from "@/components/ui/data-table";
 import { columns } from "./columns";
 import { Label } from "@radix-ui/react-label";
 import CreateDrawer from "./create-drawer";
-import escations from "@/dummy/qas-escalations";
 
 export default function EscalationPage() {
   return (
@@ -12,10 +11,10 @@ export default function EscalationPage() {
         <CreateDrawer />
       </div>
       <div>
-        <DataTable
+        {/* <DataTable
           columns={columns}
           data={escations}
-        />
+        /> */}
       </div>
 
     </div>

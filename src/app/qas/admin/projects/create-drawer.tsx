@@ -8,12 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { createProject, getCompanies } from "@/hooks/actions";
+import { createProject } from "@/hooks/actions";
 import { useIsMobile } from "@/hooks/use-mobile";
-import Company from "@/lib/company";
 import { PlusCircle, X } from "lucide-react";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
+import { Company } from "../../../../../generated/prisma/client";
 
 interface CreateDrawerProps {
   companies: Company[]
@@ -27,15 +27,15 @@ export default function CreateDrawer({ companies }: CreateDrawerProps) {
 
   const handleSubmit = async () => {
     const data = new FormData()
-    
+
     setIsPending(true)
-    
+
     if (!formData.name.trim() || !formData.code.trim()) {
       toast.error("Please fill in all required fields.");
       setIsPending(false)
       return
     }
-    
+
     if (!formData.company) {
       toast.error("Please select a company first.");
       setIsPending(false)
@@ -59,8 +59,13 @@ export default function CreateDrawer({ companies }: CreateDrawerProps) {
     setIsPending(false)
   }
 
+  const handleClose = () => {
+    setFormData({ name: "", code: "", company: "", remarks: "" })
+    setIsOpen(false)
+  }
+
   return (
-    <Drawer direction={isMobile ? "bottom" : "right"} open={isOpen} onOpenChange={setIsOpen}>
+    <Drawer direction={isMobile ? "bottom" : "right"} open={isOpen} onOpenChange={setIsOpen} onClose={handleClose}>
       <DrawerTrigger asChild>
         <Button variant="default" size="sm" className="rounded-2xl">
           <PlusCircle className="fill-white text-primary" />
@@ -130,7 +135,7 @@ export default function CreateDrawer({ companies }: CreateDrawerProps) {
 
         <DrawerFooter>
           <Button onClick={handleSubmit} disabled={isPending}>
-            { isPending ? (
+            {isPending ? (
               <>
                 Saving
                 <Spinner className="mr-2" />

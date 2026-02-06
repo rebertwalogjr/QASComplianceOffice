@@ -10,7 +10,6 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { X } from "lucide-react";
 import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Status } from "@/lib/common-types";
-//import AuditNumber from "@/lib/audit-report";
 import { AuditReport } from "../../../../../generated/prisma/client";
 import { useLookups } from "@/context/lookups-context";
 import { toast } from "sonner";
@@ -32,7 +31,7 @@ export default function TableCellViewer({ item, className }: Props) {
     id: item.id,
     name: item.name,
     companyId: item.companyId,
-    projectDepartmentId: item.projectDepartmentId,
+    projectId: item.projectId,
     auditEngagementId: item.auditEngagementId,
     isActive: item.isActive ? "Active" : "Inactive",
   })
@@ -44,7 +43,7 @@ export default function TableCellViewer({ item, className }: Props) {
   const handleSubmitUpdate = async () => {
     setIsPending(true)
 
-    if (!form.companyId || !form.projectDepartmentId || !form.auditEngagementId) {
+    if (!form.companyId || !form.projectId || !form.auditEngagementId) {
       toast.error("Please fill in all required fields.")
       setIsPending(false)
       return
@@ -53,8 +52,9 @@ export default function TableCellViewer({ item, className }: Props) {
     const data = new FormData()
     data.append("name", form.name)
     data.append("companyId", form.companyId.toString())
-    data.append("pojectDepartmentId", form.projectDepartmentId.toString())
+    data.append("projectId", form.projectId.toString())
     data.append("auditEngagementId", form.auditEngagementId.toString())
+    data.append("isActive", form.isActive === "Active" ? "true" : "false")
 
     const response = await updateAuditReport(data, item.id)
 
@@ -73,7 +73,7 @@ export default function TableCellViewer({ item, className }: Props) {
       id: item.id,
       name: item.name,
       companyId: item.companyId,
-      projectDepartmentId: item.projectDepartmentId,
+      projectId: item.projectId,
       auditEngagementId: item.auditEngagementId,
       isActive: item.isActive ? "Active" : "Inactive",
     })
@@ -152,8 +152,8 @@ export default function TableCellViewer({ item, className }: Props) {
                     {/* <Input id="project" value={form.projectDepartmentId} onChange={onInput("projectDepartmentId")} disabled={!isEditing} className="disabled:opacity-70" /> */}
                     <Select
                       disabled={!isEditing}
-                      value={form.projectDepartmentId.toString()}
-                      onValueChange={(value) => setForm({ ...form, projectDepartmentId: parseInt(value) })}
+                      value={form.projectId.toString()}
+                      onValueChange={(value) => setForm({ ...form, projectId: parseInt(value) })}
                     >
                       <SelectTrigger id="project">
                         <SelectValue placeholder="Select a project" />
@@ -200,7 +200,7 @@ export default function TableCellViewer({ item, className }: Props) {
                       onValueChange={(v) => {
                         if (!isEditing) return
                         if (!isStatus(v)) return
-                        setForm((p) => ({ ...p, status: v }))
+                        setForm((p) => ({ ...p, isActive: v }))
                       }}>
                       <SelectTrigger id="status" disabled={!isEditing} className="disabled:opacity-70">
                         <SelectValue placeholder="Select status..." />

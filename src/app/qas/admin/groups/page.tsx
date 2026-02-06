@@ -4,24 +4,45 @@ import { Label } from "@radix-ui/react-label";
 import CreateDrawer from "./create-drawer";
 import { getGroups, getProjects, getActiveProjects } from "@/hooks/actions";
 import { LookupsProvider } from "@/context/lookups-context";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 export default async function GroupsPage() {
-  const [groups, projects, activeProjects] = await Promise.all([getGroups(), getProjects(), getActiveProjects()]);
+  const [groupsRes, projectsRes, activeProjectsRes] = await Promise.all([getGroups(), getProjects(), getActiveProjects()]);
+
+  const groups = groupsRes.data ?? []
+  const projects = projectsRes.data ?? []
+  const activeProjects = activeProjectsRes.data ?? []
+  const error = groupsRes.error || projectsRes.error || activeProjectsRes.error
 
   return (
     <div className="@container/main flex flex-col">
-      <div className="flex flex-row px-6 pt-6 justify-between items-center">
-        <Label className="text-md font-semibold text-foreground">Group Management</Label>
-        <CreateDrawer projects={activeProjects} />
-      </div>
-      <div>
-        <LookupsProvider data={{ groups, projects, activeProjects }}>
-          <DataTable
-            columns={columns}
-            data={groups}
-          />
-        </LookupsProvider>
-      </div>
+      {error ? (
+        <div className="mt-6 mx-4">
+          <Alert variant="destructive" className="bg-red-50 border-destructive">
+            <AlertCircle />
+            <AlertTitle>Connection Error</AlertTitle>
+            <AlertDescription>
+              {error}
+            </AlertDescription>
+          </Alert>
+        </div>
+      ) : (
+        <>
+          <div className="flex flex-row px-6 pt-6 justify-between items-center">
+            <Label className="text-md font-semibold text-foreground">Group Management</Label>
+            <CreateDrawer projects={activeProjects} />
+          </div>
+          <div>
+            <LookupsProvider data={{ groups, projects, activeProjects }}>
+              <DataTable
+                columns={columns}
+                data={groups}
+              />
+            </LookupsProvider>
+          </div>
+        </>
+      )}
 
     </div>
   )

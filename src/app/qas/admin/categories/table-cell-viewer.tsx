@@ -10,11 +10,10 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { X } from "lucide-react";
 import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Status } from "@/lib/common-types";
-import FindingCategory from "@/lib/finding-category";
 import { updateFindingCategory } from "@/hooks/actions";
 import { toast } from "sonner";
-import { set } from "date-fns";
 import { Spinner } from "@/components/ui/spinner";
+import { FindingCategory } from "../../../../../generated/prisma/client";
 
 interface Props {
   item: FindingCategory
@@ -80,7 +79,7 @@ export default function TableCellViewer({ item, className }: Props) {
   const isStatus = (v: string): v is Status => v === "Active" || v === "Inactive"
 
   return (
-    <Drawer direction={isMobile ? "bottom" : "right"} open={isOpen} onOpenChange={setIsOpen}>
+    <Drawer direction={isMobile ? "bottom" : "right"} open={isOpen} onOpenChange={setIsOpen} onClose={handleCancel}>
       <DrawerTrigger asChild>
         <Button variant="link" className={`text-foreground w-fit px-0 ml-1 text-left ${className}`}>
           {item.name}

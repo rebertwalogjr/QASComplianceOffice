@@ -4,9 +4,9 @@ import { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ArrowDownAZ, ArrowDownZA, ArrowDown01, AlertTriangle  } from "lucide-react"
-import Group from "@/lib/group"
 import TableCellViewer from "./table-cell-viewer"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Group } from "../../../../../generated/prisma/client"
 
 export const columns: ColumnDef<Group>[] = [
   {
@@ -21,10 +21,10 @@ export const columns: ColumnDef<Group>[] = [
     header: "Code",
   },
   {
-    accessorKey: "projectDepartmentList.name",
+    accessorKey: "projectId.name",
     header: "Project/Department",
     cell: ({ row }) => {
-      const project = row.original.projectDepartmentId ? (row.original as any).projectDepartmentList : null
+      const project = row.original.projectId ? (row.original as any).project : null
       const isActive = project ? project.isActive : null
       return (
         <div className="flex items-center gap-2">

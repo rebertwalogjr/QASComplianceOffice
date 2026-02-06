@@ -5,16 +5,15 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ArrowDownAZ, ArrowDownZA, ArrowDown01, AlertTriangle } from "lucide-react"
 import TableCellViewer from "./table-cell-viewer"
-//import Project from "@/lib/project"
-import { ProjectDepartmentList, Company } from "../../../../../generated/prisma/client"
+import { Project } from "../../../../../generated/prisma/client"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
-export const columns: ColumnDef<ProjectDepartmentList>[] = [
+export const columns: ColumnDef<Project>[] = [
   {
     accessorKey: "name",
     header: "Name",
     cell: ({ row }) => {
-      return <TableCellViewer item={row.original as ProjectDepartmentList} />
+      return <TableCellViewer item={row.original as Project} />
     }
   },
   {

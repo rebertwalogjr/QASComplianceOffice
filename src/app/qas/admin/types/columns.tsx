@@ -4,15 +4,15 @@ import { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ArrowDownAZ, ArrowDownZA, ArrowDown01  } from "lucide-react"
-import FindingType from "@/lib/finding-type"
 import TableCellViewer from "./table-cell-viewer"
+import { TypeOfFinding } from "../../../../../generated/prisma/client"
 
-export const columns: ColumnDef<FindingType>[] = [
+export const columns: ColumnDef<TypeOfFinding>[] = [
   {
     accessorKey: "name",
     header: "Name",
     cell: ({ row }) => {
-      return <TableCellViewer item={row.original as FindingType} />
+      return <TableCellViewer item={row.original as TypeOfFinding} />
     }
   },
   {

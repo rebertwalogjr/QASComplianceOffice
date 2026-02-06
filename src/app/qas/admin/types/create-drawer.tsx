@@ -10,7 +10,6 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { PlusCircle, X } from "lucide-react";
 import { createFindingType } from "@/hooks/actions";
 import { toast } from "sonner";
-import { set } from "date-fns";
 import { Spinner } from "@/components/ui/spinner";
 
 export default function CreateDrawer() {
@@ -33,10 +32,8 @@ export default function CreateDrawer() {
     const response = await createFindingType(data);
 
     if (response.error) {
-      // Handle error (e.g., show a toast notification)
       toast.error(response.error)
     } else {
-      // Handle success (e.g., show a success notification)
       toast.success("Finding type created successfully!", { position: "top-center" });
       setFormData({ name: "" });
       setIsOpen(false);
@@ -44,8 +41,13 @@ export default function CreateDrawer() {
     setIsPending(false);
   }
 
+  const handleClose = () => {
+    setFormData({ name: "" });
+    setIsOpen(false);
+  }
+
   return (
-    <Drawer direction={isMobile ? "bottom" : "right"} open={isOpen} onOpenChange={setIsOpen}>
+    <Drawer direction={isMobile ? "bottom" : "right"} open={isOpen} onOpenChange={setIsOpen} onClose={handleClose}>
       <DrawerTrigger asChild>
         <Button variant="default" size="sm" className="rounded-2xl">
           <PlusCircle className="fill-white text-primary" />

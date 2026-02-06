@@ -5,8 +5,8 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ArrowDownAZ, ArrowDownZA, ArrowDown01, AlertTriangle  } from "lucide-react"
 import TableCellViewer from "./table-cell-viewer"
-import AuditEngagement from "@/lib/audit-engagement"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { AuditEngagement } from "../../../../../generated/prisma/client"
 
 export const columns: ColumnDef<AuditEngagement>[] = [
   {

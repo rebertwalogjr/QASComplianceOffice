@@ -2,7 +2,6 @@ import { DataTable } from "@/components/ui/data-table";
 import { columns } from "./columns";
 import { Label } from "@radix-ui/react-label";
 import CreateDrawer from "./create-drawer";
-import auditRatings from "@/dummy/qas-ratings";
 
 export default function RatingsPage() {
   return (
@@ -12,10 +11,10 @@ export default function RatingsPage() {
         <CreateDrawer />
       </div>
       <div>
-        <DataTable
+        {/* <DataTable
           columns={columns}
           data={auditRatings}
-        />
+        /> */}
       </div>
 
     </div>

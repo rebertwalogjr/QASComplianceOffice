@@ -10,13 +10,13 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { X } from "lucide-react";
 import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Status } from "@/lib/common-types";
-import Company from "@/lib/company";
 import { toast } from "sonner";
 import { deleteCompany, updateCompany } from "@/hooks/actions";
 import ActionDialog from "@/components/action-dialog";
 import { DialogClose } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
+import { Company } from "../../../../../generated/prisma/client";
 
 interface Props {
   item: Company
@@ -62,24 +62,10 @@ export default function TableCellViewer({ item, className }: Props) {
     const result = await updateCompany(formData, item.id)
 
     if (result.error) {
-      toast.error(`Failed to update project: ${result.error}`)
+      toast.error(result.error)
     } else {
       toast.success("Company updated successfully!", { position: "top-center" })
       setIsEditing(false)
-      setIsOpen(false)
-    }
-
-    setIsPending(false)
-  }
-
-  const handleDelete = async () => {
-    setIsPending(true)
-    const result = await deleteCompany(item.id)
-
-    if (result.error) {
-      toast.error("Failed to delete company")
-    } else {
-      toast.success("Company deleted successfully!", { position: "top-center" })
       setIsOpen(false)
     }
 
@@ -168,42 +154,6 @@ export default function TableCellViewer({ item, className }: Props) {
             </>
           ) : (
             <>
-              {isEditing &&
-                <ActionDialog
-                  title="Delete company"
-                  description="Are you sure? This action cannot be undone."
-                  trigger={<Button variant="destructive" disabled={isPending}>Delete</Button>}
-                  children={
-                    <FieldGroup className="gap-4">
-                      <Field>
-                        <Label>Name</Label>
-                        <Input value={item.name} readOnly />
-                      </Field>
-                      <Field>
-                        <Label>Code</Label>
-                        <Input value={item.code} readOnly />
-                      </Field>
-                    </FieldGroup>
-                  }
-                  footer={
-                    <>
-                      <DialogClose asChild>
-                        <Button variant="secondary" disabled={isPending}>Cancel</Button>
-                      </DialogClose>
-                      <Button onClick={handleDelete} disabled={isPending}>
-                        {isPending ? (
-                          <>
-                            Deleting
-                            <Spinner className="mr-2" />
-                          </>
-                        ) : "Delete"}
-                      </Button>
-                    </>
-                  }
-                >
-                </ActionDialog>
-              }
-              <Separator className="my-2"></Separator>
               <Button onClick={handleSubmitUpdate} disabled={isPending}>
                 {isPending ? (
                   <>

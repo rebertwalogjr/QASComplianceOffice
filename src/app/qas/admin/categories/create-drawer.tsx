@@ -9,7 +9,6 @@ import { Separator } from "@/components/ui/separator";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PlusCircle, X } from "lucide-react";
 import { toast } from "sonner";
-import { set } from "date-fns";
 import { createFindingCategory } from "@/hooks/actions";
 import { Spinner } from "@/components/ui/spinner";
 
@@ -42,8 +41,13 @@ export default function CreateDrawer() {
     setIsPending(false);
   }
 
+  const handleClose = () => {
+    setFormData({ name: "" });
+      setIsOpen(false);
+  }
+
   return (
-    <Drawer direction={isMobile ? "bottom" : "right"} open={isOpen} onOpenChange={setIsOpen}>
+    <Drawer direction={isMobile ? "bottom" : "right"} open={isOpen} onOpenChange={setIsOpen} onClose={handleClose}>
       <DrawerTrigger asChild>
         <Button variant="default" size="sm" className="rounded-2xl">
           <PlusCircle className="fill-white text-primary" />

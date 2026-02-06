@@ -10,7 +10,6 @@ import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, Dr
 import { useIsMobile } from "@/hooks/use-mobile";
 import Link from "next/link";
 import { X } from "lucide-react";
-import Group from "@/lib/group";
 import { Textarea } from "@/components/ui/textarea";
 import { Field, FieldDescription, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field";
 import { Status } from "@/lib/common-types";
@@ -18,6 +17,7 @@ import { useLookups } from "@/context/lookups-context";
 import { toast } from "sonner";
 import { updateGroup } from "@/hooks/actions";
 import { Spinner } from "@/components/ui/spinner";
+import { Group } from "../../../../../generated/prisma/client";
 
 interface Props {
   item: Group
@@ -34,8 +34,8 @@ export default function TableCellViewer({ item, className }: Props) {
     id: item.id,
     code: item.code,
     name: item.name,
-    inChargeId: item.inChargeId,
-    projectDepartmentId: item.projectDepartmentId,
+    inCharge: item.inCharge,
+    projectId: item.projectId,
     emailAddress: item.emailAddress,
     isActive: item.isActive ? "Active" : "Inactive",
     remarks: item.remarks,
@@ -52,12 +52,12 @@ export default function TableCellViewer({ item, className }: Props) {
     data.append("name", form.name)
     data.append("code", form.code)
     data.append("isActive", form.isActive === "Active" ? "true" : "false")
-    data.append("projectDepartmentId", item.projectDepartmentId.toString())
-    data.append("inChargeId", form.inChargeId)
+    data.append("projectId", item.projectId.toString())
+    data.append("inCharge", form.inCharge)
     data.append("emailAddress", form.emailAddress)
     data.append("remarks", form.remarks || "")
 
-    if (form.name.trim() === "" || form.code.trim() === "" || form.inChargeId.trim() === "" || form.emailAddress.trim() === "") {
+    if (form.name.trim() === "" || form.code.trim() === "" || form.inCharge.trim() === "" || form.emailAddress.trim() === "") {
       toast.error("Please fill in all required fields.");
       setIsPending(false);
       return;
@@ -80,8 +80,8 @@ export default function TableCellViewer({ item, className }: Props) {
       id: item.id,
       code: item.code,
       name: item.name,
-      projectDepartmentId: item.projectDepartmentId,
-      inChargeId: item.inChargeId,
+      projectId: item.projectId,
+      inCharge: item.inCharge,
       emailAddress: item.emailAddress,
       isActive: item.isActive ? "Active" : "Inactive",
       remarks: item.remarks,
@@ -136,7 +136,7 @@ export default function TableCellViewer({ item, className }: Props) {
                   <Field>
                     <FieldLabel htmlFor="project">Project / Department</FieldLabel>
                     <Select
-                      value={form.projectDepartmentId.toString()}
+                      value={form.projectId.toString()}
                       disabled={!isEditing}
                       onValueChange={(value) => { setForm((p) => ({ ...p, projectDepartmentId: parseInt(value) }))}}>
                       <SelectTrigger id="project">
@@ -152,7 +152,7 @@ export default function TableCellViewer({ item, className }: Props) {
 
                   <Field>
                     <FieldLabel htmlFor="groupInCharge">In-Charge</FieldLabel>
-                    <Input id="groupInCharge" value={form.inChargeId} onChange={onInput("inChargeId")} disabled={!isEditing} className="disabled:opacity-70" />
+                    <Input id="groupInCharge" value={form.inCharge} onChange={onInput("inCharge")} disabled={!isEditing} className="disabled:opacity-70" />
                   </Field>
 
                   <Field>

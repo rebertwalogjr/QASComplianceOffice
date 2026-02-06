@@ -10,12 +10,11 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { X } from "lucide-react";
 import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Status } from "@/lib/common-types";
-import AuditEngagement from "@/lib/audit-engagement";
 import { useLookups } from "@/context/lookups-context";
 import { toast } from "sonner";
 import { updateAuditEngagement } from "@/hooks/actions";
 import { Spinner } from "@/components/ui/spinner";
-import { set } from "date-fns";
+import { AuditEngagement } from "../../../../../generated/prisma/client";
 
 interface Props {
   item: AuditEngagement

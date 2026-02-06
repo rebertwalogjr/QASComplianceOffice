@@ -1,6 +1,5 @@
 import { DataTable } from "@/components/ui/data-table";
 import { columns } from "./columns";
-import users from "@/dummy/qas-users"
 import { Label } from "@radix-ui/react-label";
 import { Button } from "@/components/ui/button";
 import { Plus, PlusCircle } from "lucide-react";
@@ -22,10 +21,10 @@ export default function UsersPage() {
         {/* <AddUser /> */}
       </div>
       <div>
-        <DataTable
+        {/* <DataTable
           columns={columns}
           data={users}
-        />
+        /> */}
       </div>
 
     </div>

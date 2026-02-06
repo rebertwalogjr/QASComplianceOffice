@@ -2,7 +2,6 @@ import { DataTable } from "@/components/ui/data-table";
 import { columns } from "./columns";
 import { Label } from "@radix-ui/react-label";
 import CreateDrawer from "./create-drawer";
-import holidays from "@/dummy/qas-holidays";
 
 export default function FindingTypePage() {
   return (
@@ -12,10 +11,10 @@ export default function FindingTypePage() {
         <CreateDrawer />
       </div>
       <div>
-        <DataTable
+        {/* <DataTable
           columns={columns}
           data={holidays}
-        />
+        /> */}
       </div>
 
     </div>

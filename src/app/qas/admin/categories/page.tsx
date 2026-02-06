@@ -3,23 +3,37 @@ import { columns } from "./columns";
 import { Label } from "@radix-ui/react-label";
 import CreateDrawer from "./create-drawer";
 import { getFindingCategories } from "@/hooks/actions";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 export default async function FindingCategoryage() {
-  const categories = await getFindingCategories();
-  
+  const { data: categories, error } = await getFindingCategories();
   return (
     <div className="@container/main flex flex-col">
-      <div className="flex flex-row px-6 pt-6 justify-between items-center">
-        <Label className="text-md font-semibold text-foreground">Finding Category</Label>
-        <CreateDrawer />
-      </div>
-      <div>
-        <DataTable
-          columns={columns}
-          data={categories}
-        />
-      </div>
-
+      {error ? (
+        <div className="mt-6 mx-4">
+          <Alert variant="destructive" className="bg-red-50 border-destructive">
+            <AlertCircle />
+            <AlertTitle>Connection Error</AlertTitle>
+            <AlertDescription>
+              {error}
+            </AlertDescription>
+          </Alert>
+        </div>
+      ) : (
+        <>
+          <div className="flex flex-row px-6 pt-6 justify-between items-center">
+            <Label className="text-md font-semibold text-foreground">Finding Category</Label>
+            <CreateDrawer />
+          </div>
+          <div>
+            <DataTable
+              columns={columns}
+              data={categories}
+            />
+          </div>
+        </>
+      )}
     </div>
   )
 }

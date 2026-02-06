@@ -9,212 +9,305 @@ datasource db {
 
 model AppSuiteEmployeeMaster {
   employeeNumber String    @id @db.NVarChar(10)
-  lastName       String   @db.NVarChar(255)
-  firstName      String   @db.NVarChar(255)
+  lastName       String    @db.NVarChar(255)
+  firstName      String    @db.NVarChar(255)
   middleName     String?   @db.NVarChar(255)
-  fullName       String   @db.NVarChar(255)
-  emailAddress   String   @unique @db.NVarChar(255)
+  fullName       String    @db.NVarChar(255)
+  emailAddress   String    @unique @db.NVarChar(255)
   department     String?   @db.NVarChar(255)
   position       String?   @db.NVarChar(255)
   isActive       Boolean   @default(true) @db.Bit
-  addedOn        DateTime @default(now()) @db.DateTime
+  addedOn        DateTime  @default(now()) @db.DateTime
   inactiveOn     DateTime? @db.DateTime
-  users Users[]
+  users          User[]
 }
 
 model AuditEngagement {
-  id         Int       @id @default(autoincrement())
-  name       String    @unique @db.NVarChar(50)
-  companyId  Int
-  isActive   Boolean   @default(true) @db.Bit
-  createdBy  Int
-  createdOn  DateTime  @default(now()) @db.DateTime
-  modifiedBy Int?
-  modifiedOn DateTime  @updatedAt
+  id             Int              @id @default(autoincrement())
+  name           String           @unique @db.NVarChar(50)
+  companyId      Int
+  isActive       Boolean          @default(true) @db.Bit
+  createdBy      Int
+  createdOn      DateTime         @default(now()) @db.DateTime
+  modifiedBy     Int?
+  modifiedOn     DateTime         @updatedAt @db.DateTime
+  company        Company          @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+  creator        User             @relation("EngagementCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  modifier       User?            @relation("EngagementModifier", fields: [modifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
   jobTransaction JobTransaction[]
-  auditReport AuditReport[]
-  company    Company   @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+  auditReport    AuditReport[]
 }
 
 model Company {
-  id                    Int                     @id @default(autoincrement())
-  name                  String                  @unique @db.NVarChar(255)
-  code                  String                  @unique @db.NVarChar(15)
-  isActive              Boolean                 @default(true) @db.Bit
+  id                    Int               @id @default(autoincrement())
+  name                  String            @unique @db.NVarChar(255)
+  code                  String            @unique @db.NVarChar(15)
+  isActive              Boolean           @default(true) @db.Bit
   createdBy             Int
-  createdOn             DateTime                @default(now()) @db.DateTime
+  createdOn             DateTime          @default(now()) @db.DateTime
   modifiedBy            Int?
-  modifiedOn            DateTime               @updatedAt
+  modifiedOn            DateTime          @updatedAt @db.DateTime
+  creator               User              @relation("CompanyCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  modifier              User?             @relation("CompanyModifier", fields: [modifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
   auditEngagement       AuditEngagement[]
-  projectDepartmentList ProjectDepartmentList[]
-  users                 Users[]
+  project Project[]
+  users                 User[]
   jobTransaction        JobTransaction[]
-  auditReport          AuditReport[]
+  auditReport           AuditReport[]
+  auditRating           AuditRating[]
 }
 
 model FindingCategory {
-  id         Int       @id @default(autoincrement())
-  name       String    @unique @db.NVarChar(50)
-  isActive   Boolean   @default(true) @db.Bit
-  createdBy  Int
-  createdOn  DateTime  @default(now()) @db.DateTime
-  modifiedBy Int?
-  modifiedOn DateTime  @updatedAt
+  id             Int              @id @default(autoincrement())
+  name           String           @unique @db.NVarChar(50)
+  isActive       Boolean          @default(true) @db.Bit
+  createdBy      Int
+  createdOn      DateTime         @default(now()) @db.DateTime
+  modifiedBy     Int?
+  modifiedOn     DateTime         @updatedAt @db.DateTime
+  creator        User             @relation("CategoryCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  modifier       User?            @relation("CategoryModifier", fields: [modifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
   jobTransaction JobTransaction[]
 }
 
 model JobTransaction {
-  id                           Int       @id @default(autoincrement())
-  jobStatus                    String?   @db.NVarChar(50)
+  id                           Int             @id @default(autoincrement())
+  jobStatus                    String?         @db.NVarChar(50)
   companyId                    Int
-  projectDepartmentId          Int
+  projectId          Int
   auditEngagementId            Int
   typeOfFindingId              Int
   findingCategoryId            Int
-  complianceSecretariat        Int
-  complianceOfficer            Int?
-  supervisor                   Int
+  complianceSecretariatId      Int
+  complianceOfficerId          Int?
+  supervisorId                 Int
   auditReportId                Int
-  auditFindingNumber           String    @db.NVarChar(100)
-  issuedOn                     DateTime? @db.DateTime
-  targetDate                   DateTime? @db.DateTime
+  auditFindingNumber           String          @db.NVarChar(100)
+  issuedOn                     DateTime?       @db.DateTime
+  targetDate                   DateTime?       @db.DateTime
   auditRatingId                Int
-  projectManagerDepartmentHead String?   @db.NVarChar(100)
-  responsibleDepartment        String?   @db.NVarChar(255)
-  responsiblePerson            String?   @db.NVarChar(255)
-  recurringPerProcess          Boolean   @default(false) @db.Bit
-  recurringPerPerson           Boolean   @default(false) @db.Bit
+  projectManagerDepartmentHead String?         @db.NVarChar(100)
+  responsibleDepartment        String?         @db.NVarChar(255)
+  responsiblePerson            String?         @db.NVarChar(255)
+  recurringPerProcess          Boolean         @default(false) @db.Bit
+  recurringPerPerson           Boolean         @default(false) @db.Bit
   recipientGroupId             Int?
-  recipient                    Int?
-  escalation1                  Int?
-  escalation2                  Int?
-  escalation3                  Int?
-  escalation4                  Int?
-  problemCriteria              String?   @db.NVarChar(Max)
-  problemFindings              String?   @db.NVarChar(Max)
-  recommendations              String?   @db.NVarChar(Max)
+  recipientId                  Int?
+  problemCriteria              String?         @db.NVarChar(Max)
+  problemFindings              String?         @db.NVarChar(Max)
+  recommendations              String?         @db.NVarChar(Max)
   verifiedBy                   Int?
-  verifiedOn                   DateTime? @db.DateTime
+  verifiedOn                   DateTime?       @db.DateTime
   approvedBy                   Int?
-  approvedOn                   DateTime? @db.DateTime
-  correctiveAction             String?   @db.NVarChar(Max)
-  correctiveCommitmentDate     DateTime? @db.DateTime
-  preventiveAction             String?   @db.NVarChar(Max)
-  preventiveCommitmentDate     DateTime? @db.DateTime
-  deemedAccepted               Boolean   @default(false) @db.Bit
-  approvedForClosing           Boolean   @default(false) @db.Bit
-  endorsedForApproval          Boolean   @default(false) @db.Bit
-  onHold                       Boolean   @default(false) @db.Bit
-  isActive                     Boolean   @default(true) @db.Bit
-  cancelledOn                  DateTime? @db.DateTime
-  closedOn                     DateTime? @db.DateTime
-  hasBeenReadByAssignee        Boolean   @default(false) @db.Bit
-  readByAssigneeOn             DateTime? @db.DateTime
+  approvedOn                   DateTime?       @db.DateTime
+  correctiveAction             String?         @db.NVarChar(Max)
+  correctiveCommitmentDate     DateTime?       @db.DateTime
+  preventiveAction             String?         @db.NVarChar(Max)
+  preventiveCommitmentDate     DateTime?       @db.DateTime
+  deemedAccepted               Boolean         @default(false) @db.Bit
+  approvedForClosing           Boolean         @default(false) @db.Bit
+  endorsedForApproval          Boolean         @default(false) @db.Bit
+  onHold                       Boolean         @default(false) @db.Bit
+  isActive                     Boolean         @default(true) @db.Bit
+  cancelledOn                  DateTime?       @db.DateTime
+  closedOn                     DateTime?       @db.DateTime
+  hasBeenReadByAssignee        Boolean         @default(false) @db.Bit
+  readByAssigneeOn             DateTime?       @db.DateTime
   createdBy                    Int
-  createdOn                    DateTime  @default(now()) @db.DateTime
+  createdOn                    DateTime        @default(now()) @db.DateTime
   modifiedBy                   Int?
-  modifiedOn                   DateTime  @updatedAt
-  company    Company   @relation(fields: [companyId], references: [id], onUpdate: NoAction)
-  projectDepartmentList ProjectDepartmentList @relation(fields: [projectDepartmentId], references: [id], onUpdate: NoAction)
-  auditEngagement AuditEngagement @relation(fields: [auditEngagementId], references: [id], onUpdate: NoAction)
-  typeOfFinding TypeOfFinding @relation(fields: [typeOfFindingId], references: [id], onUpdate: NoAction)
-  findingCategory FindingCategory @relation(fields: [findingCategoryId], references: [id], onUpdate: NoAction)
+  modifiedOn                   DateTime        @updatedAt @db.DateTime
+  company                      Company         @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+  project        Project         @relation(fields: [projectId], references: [id], onUpdate: NoAction)
+  auditEngagement              AuditEngagement @relation(fields: [auditEngagementId], references: [id], onUpdate: NoAction)
+  typeOfFinding                TypeOfFinding   @relation(fields: [typeOfFindingId], references: [id], onUpdate: NoAction)
+  findingCategory              FindingCategory @relation(fields: [findingCategoryId], references: [id], onUpdate: NoAction)
+  group                        Group?          @relation(fields: [recipientGroupId], references: [id], onUpdate: NoAction)
+  auditReport                  AuditReport     @relation(fields: [auditReportId], references: [id], onUpdate: NoAction)
+  recipient                    User?           @relation("JobTransactionRecipient", fields: [recipientId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  complianceSecretariat        User            @relation("ComplianceSecretariat", fields: [complianceSecretariatId], references: [id], onUpdate: NoAction)
+  complianceOfficer            User?           @relation("ComplianceOfficer", fields: [complianceOfficerId], references: [id], onUpdate: NoAction)
+  supervisor                   User            @relation("Supervisor", fields: [supervisorId], references: [id], onUpdate: NoAction)
+  verifier User? @relation("JobTransactionVerifier", fields: [verifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  approver User? @relation("JobTransactionApprover", fields: [approvedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  creator  User  @relation("JobTransactionCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  modifier User? @relation("JobTransactionModifier", fields: [modifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
 }
 
-model ProjectDepartmentList {
-  id         Int         @id @default(autoincrement())
-  name       String      @unique @db.NVarChar(100)
-  code       String      @unique @db.NVarChar(10)
-  companyId  Int
-  remarks    String?     @db.NVarChar(255)
-  isActive   Boolean     @default(true) @db.Bit
-  createdBy  Int
-  createdOn  DateTime    @default(now()) @db.DateTime
-  modifiedBy Int?
-  modifiedOn DateTime  @updatedAt
-  groupList  GroupList[]
+model Project {
+  id             Int              @id @default(autoincrement())
+  name           String           @unique @db.NVarChar(100)
+  code           String           @unique @db.NVarChar(10)
+  companyId      Int
+  remarks        String?          @db.NVarChar(255)
+  isActive       Boolean          @default(true) @db.Bit
+  createdBy      Int
+  createdOn      DateTime         @default(now()) @db.DateTime
+  modifiedBy     Int?
+  modifiedOn     DateTime         @updatedAt @db.DateTime
+  company        Company          @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+  creator        User             @relation("ProjectCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  modifier       User?            @relation("ProjectModifier", fields: [modifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  groupList      Group[]
   jobTransaction JobTransaction[]
-  auditReport AuditReport[]
-  company    Company     @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+  auditReport    AuditReport[]
 }
 
 model TypeOfFinding {
-  id         Int       @id @default(autoincrement())
-  name       String    @unique @db.NVarChar(50)
-  isActive   Boolean   @default(true) @db.Bit
-  createdBy  Int
-  createdOn  DateTime  @default(now()) @db.DateTime
-  modifiedBy Int?
-  modifiedOn DateTime  @updatedAt
+  id             Int              @id @default(autoincrement())
+  name           String           @unique @db.NVarChar(50)
+  isActive       Boolean          @default(true) @db.Bit
+  createdBy      Int
+  createdOn      DateTime         @default(now()) @db.DateTime
+  modifiedBy     Int?
+  modifiedOn     DateTime         @updatedAt @db.DateTime
+  creator        User             @relation("TypeOfFindingCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  modifier       User?            @relation("TypeOfFindingModifier", fields: [modifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
   jobTransaction JobTransaction[]
 }
 
-model Attachments {
-  id               Int       @id @default(autoincrement())
+model Attachment {
+  id               Int      @id @default(autoincrement())
   jobTransactionId Int?
-  fileName         String?   @db.NVarChar(255)
-  filePath         String?   @db.NVarChar(255)
+  fileName         String?  @db.NVarChar(255)
+  filePath         String?  @db.NVarChar(255)
   fromRecipient    Boolean
-  isActive         Boolean   @default(true) @db.Bit
+  isActive         Boolean  @default(true) @db.Bit
   createdBy        Int
-  createdOn        DateTime  @default(now()) @db.DateTime
+  createdOn        DateTime @default(now()) @db.DateTime
   modifiedBy       Int?
-  modifiedOn       DateTime  @updatedAt
+  modifiedOn       DateTime @updatedAt @db.DateTime
+  creator          User     @relation("AttachmentCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  modifier         User?    @relation("AttachmentModifier", fields: [modifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
 }
 
-model GroupList {
-  id                    Int                   @id @default(autoincrement())
-  name                  String                @unique @db.NVarChar(100)
-  code                  String                @unique @db.NVarChar(10)
-  inChargeId            String                @db.NVarChar(100)
-  projectDepartmentId   Int
-  emailAddress          String                @db.NVarChar(255)
-  remarks               String?               @db.NVarChar(255)
-  isActive              Boolean               @default(true) @db.Bit
+model Group {
+  id                    Int              @id @default(autoincrement())
+  name                  String           @unique @db.NVarChar(100)
+  code                  String           @unique @db.NVarChar(10)
+  projectId   Int
+  inCharge            String           @db.NVarChar(100)
+  emailAddress          String           @db.NVarChar(255)
+  remarks               String?          @db.NVarChar(255)
+  isActive              Boolean          @default(true) @db.Bit
   createdBy             Int
-  createdOn             DateTime              @default(now()) @db.DateTime
+  createdOn             DateTime         @default(now()) @db.DateTime
   modifiedBy            Int?
-  modifiedOn            DateTime              @updatedAt
-  projectDepartmentList ProjectDepartmentList @relation(fields: [projectDepartmentId], references: [id], onUpdate: NoAction)
+  modifiedOn            DateTime         @updatedAt @db.DateTime
+  project Project          @relation(fields: [projectId], references: [id], onUpdate: NoAction)
+  creator               User             @relation("GroupCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  modifier              User?            @relation("GroupModifier", fields: [modifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  jobTransactions       JobTransaction[]
 }
 
-model Users {
-  id                   Int       @id @default(autoincrement())
-  employeeNumber       String    @unique @db.NVarChar(10)
-  username             String    @unique @db.NVarChar(100)
-  password             String    @db.NVarChar(100)
-  emailAddress         String?   @db.NVarChar(255)
+model User {
+  id                   Int      @id @default(autoincrement())
+  employeeNumber       String   @unique @db.NVarChar(10)
+  username             String   @unique @db.NVarChar(100)
+  password             String   @db.NVarChar(100)
+  emailAddress         String?  @db.NVarChar(255)
   accessId             Int
   companyId            Int
-  position             String?   @db.NVarChar(100)
+  position             String?  @db.NVarChar(100)
   escalation1          Int?
   escalation2          Int?
   escalation3          Int?
   escalation4          Int?
-  receiveNotifications Boolean   @default(false) @db.Bit
-  isEscalation         Boolean   @default(false) @db.Bit
-  isActive             Boolean   @default(true) @db.Bit
+  receiveNotifications Boolean  @default(false) @db.Bit
+  isEscalation         Boolean  @default(false) @db.Bit
+  isActive             Boolean  @default(true) @db.Bit
   createdBy            Int
-  createdOn            DateTime  @default(now()) @db.DateTime
+  createdOn            DateTime @default(now()) @db.DateTime
   modifiedBy           Int?
-  modifiedOn           DateTime  @updatedAt
+  modifiedOn           DateTime @updatedAt @db.DateTime
+  escalation1User      User?    @relation("escalation1User", fields: [escalation1], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  escalation2User      User?    @relation("escalation2User", fields: [escalation2], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  escalation3User      User?    @relation("escalation3User", fields: [escalation3], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  escalation4User      User?    @relation("escalation4User", fields: [escalation4], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  creator              User     @relation("UserCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  modifier             User?    @relation("UserModifier", fields: [modifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
   appSuiteEmployeeMaster AppSuiteEmployeeMaster @relation(fields: [employeeNumber], references: [employeeNumber])
-  company              Company   @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+  company                Company                @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+  auditEngagementCreator         AuditEngagement[] @relation("EngagementCreator")
+  auditEngagementModifier        AuditEngagement[] @relation("EngagementModifier")
+  companyCreator                 Company[]         @relation("CompanyCreator")
+  companyModifier                Company[]         @relation("CompanyModifier")
+  findingCategoriesCreator       FindingCategory[] @relation("CategoryCreator")
+  findingCategoriesModifier      FindingCategory[] @relation("CategoryModifier")
+  jobTransactionsCreator         JobTransaction[]  @relation("JobTransactionCreator")
+  jobTransactionsModifier        JobTransaction[]  @relation("JobTransactionModifier")
+  projectCreator  Project[]         @relation("ProjectCreator")
+  projectModifier Project[]         @relation("ProjectModifier")
+  typeOfFindingsCreator          TypeOfFinding[]   @relation("TypeOfFindingCreator")
+  typeOfFindingsModifier         TypeOfFinding[]   @relation("TypeOfFindingModifier")
+  attachmentsCreator             Attachment[]      @relation("AttachmentCreator")
+  attachmentsModifier            Attachment[]      @relation("AttachmentModifier")
+  groupCreator                   Group[]           @relation("GroupCreator")
+  groupModifier                  Group[]           @relation("GroupModifier")
+  userCreator                    User[]            @relation("UserCreator")
+  userModifier                   User[]            @relation("UserModifier")
+  auditReportCreator             AuditReport[]     @relation("AuditReportCreator")
+  auditReportModifier            AuditReport[]     @relation("AuditReportModifier")
+  auditRatingCreator             AuditRating[]     @relation("AuditRatingCreator")
+  auditRatingModifier            AuditRating[]     @relation("AuditRatingModifier")
+  jobTransactionRecipient        JobTransaction[]  @relation("JobTransactionRecipient")
+  escalation1_user               User[]            @relation("escalation1User")
+  escalation2_user               User[]            @relation("escalation2User")
+  escalation3_user               User[]            @relation("escalation3User")
+  escalation4_user               User[]            @relation("escalation4User")
+  complianceSecretariat          JobTransaction[]  @relation("ComplianceSecretariat")
+  complianceOfficer              JobTransaction[]  @relation("ComplianceOfficer")
+  supervisor                     JobTransaction[]  @relation("Supervisor")
+  jobTransactionVerifier JobTransaction[] @relation("JobTransactionVerifier")
+  jobTransactionApprover JobTransaction[] @relation("JobTransactionApprover")
+  holidayCreator Holiday[] @relation("HolidayCreator")
+  holidayModifier Holiday[] @relation("HolidayModifier")
 }
 
 model AuditReport {
-  id Int @id @default(autoincrement())
-  name String @unique @db.NVarChar(100)
-  companyId Int
-  auditEngagementId Int
-  projectDepartmentId Int
-  isClosed Boolean @default(false) @db.Bit
-  isActive Boolean @default(true) @db.Bit
-  createdBy Int
-  createdOn DateTime @default(now()) @db.DateTime
+  id                    Int              @id @default(autoincrement())
+  name                  String           @unique @db.NVarChar(100)
+  companyId             Int
+  auditEngagementId     Int
+  projectId   Int
+  isClosed              Boolean          @default(false) @db.Bit
+  isActive              Boolean          @default(true) @db.Bit
+  createdBy             Int
+  createdOn             DateTime         @default(now()) @db.DateTime
+  modifiedBy            Int?
+  modifiedOn            DateTime         @updatedAt @db.DateTime
+  company               Company          @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+  auditEngagement       AuditEngagement  @relation(fields: [auditEngagementId], references: [id], onUpdate: NoAction)
+  project Project          @relation(fields: [projectId], references: [id], onUpdate: NoAction)
+  creator               User             @relation("AuditReportCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  modifier              User?            @relation("AuditReportModifier", fields: [modifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  jobTransactions       JobTransaction[]
+}
+
+model AuditRating {
+  id         Int      @id @default(autoincrement())
+  name       String   @db.NVarChar(50)
+  companyId  Int
+  isActive   Boolean  @default(true) @db.Bit
+  createdBy  Int
+  createdOn  DateTime @default(now()) @db.DateTime
   modifiedBy Int?
-  modifiedOn DateTime @updatedAt
-  company Company @relation(fields: [companyId], references: [id], onUpdate: NoAction)
-  auditEngagement AuditEngagement @relation(fields: [auditEngagementId], references: [id], onUpdate: NoAction)
-  projectDepartmentList ProjectDepartmentList @relation(fields: [projectDepartmentId], references: [id], onUpdate: NoAction)
+  modifiedOn DateTime @updatedAt @db.DateTime
+  company    Company  @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+  creator    User     @relation("AuditRatingCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  modifier   User?    @relation("AuditRatingModifier", fields: [modifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+}
+
+model Holiday {
+  id Int @id @default(autoincrement())
+  name String @db.NVarChar(255)
+  type String @db.NVarChar(25)
+  date DateTime @db.DateTime
+  isActive Boolean  @default(true) @db.Bit
+  createdBy  Int
+  createdOn  DateTime @default(now()) @db.DateTime
+  modifiedBy Int?
+  modifiedOn DateTime @updatedAt @db.DateTime
+  creator    User     @relation("HolidayCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  modifier   User?    @relation("HolidayModifier", fields: [modifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
 }

@@ -13,29 +13,29 @@ import { PlusCircle, X } from "lucide-react";
 import { toast } from "sonner";
 import { createGroup } from "@/hooks/actions";
 import { Spinner } from "@/components/ui/spinner";
-import { ProjectDepartmentList } from "../../../../../generated/prisma/client";
+import { Project } from "../../../../../generated/prisma/client";
 
 interface CreateDrawerProps {
-  projects: ProjectDepartmentList[]
+  projects: Project[]
 }
 
 export default function CreateDrawer({ projects }: CreateDrawerProps) {
   const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = React.useState(false);
   const [isPending, setIsPending] = React.useState(false);
-  const [formData, setFormData] = React.useState({ name: "", code: "", projectDepartmentId: "", remarks: "", inCharge: "", emailAddress: "" });
+  const [formData, setFormData] = React.useState({ name: "", code: "", projectId: "", remarks: "", inCharge: "", emailAddress: "" });
 
   const handleSubmit = async () => {
     setIsPending(true);
     const data = new FormData();
     data.append("name", formData.name);
     data.append("code", formData.code);
-    data.append("projectDepartmentId", formData.projectDepartmentId);
+    data.append("projectId", formData.projectId);
     data.append("remarks", formData.remarks);
     data.append("inChargeId", formData.inCharge);
     data.append("emailAddress", formData.emailAddress);
 
-    if (!formData.name.trim() || !formData.code.trim() || !formData.projectDepartmentId.trim() || !formData.inCharge.trim() || !formData.emailAddress.trim()) {
+    if (!formData.name.trim() || !formData.code.trim() || !formData.projectId.trim() || !formData.inCharge.trim() || !formData.emailAddress.trim()) {
       toast.error("Please fill in all required fields.");
       setIsPending(false);
       return;
@@ -47,14 +47,19 @@ export default function CreateDrawer({ projects }: CreateDrawerProps) {
       toast.error(response.error);
     } else {
       toast.success("Group created successfully!", { position: "top-center" });
-      setFormData({ name: "", code: "", projectDepartmentId: "", remarks: "", inCharge: "", emailAddress: "" });
+      setFormData({ name: "", code: "", projectId: "", remarks: "", inCharge: "", emailAddress: "" });
       setIsOpen(false);
     }
     setIsPending(false);
   }
 
+  const handleClose = () => {
+    setFormData({ name: "", code: "", projectId: "", remarks: "", inCharge: "", emailAddress: "" });
+      setIsOpen(false);
+  }
+
   return (
-    <Drawer direction={isMobile ? "bottom" : "right"} open={isOpen} onOpenChange={setIsOpen}>
+    <Drawer direction={isMobile ? "bottom" : "right"} open={isOpen} onOpenChange={setIsOpen} onClose={handleClose}>
       <DrawerTrigger asChild>
         <Button variant="default" size="sm" className="rounded-2xl">
           <PlusCircle className="fill-white text-primary" />
@@ -91,7 +96,7 @@ export default function CreateDrawer({ projects }: CreateDrawerProps) {
 
                 <Field>
                   <FieldLabel htmlFor="project">Project / Department</FieldLabel>
-                  <Select onValueChange={(value) => setFormData({ ...formData, projectDepartmentId: value })} >
+                  <Select onValueChange={(value) => setFormData({ ...formData, projectId: value })} >
                     <SelectTrigger id="project">
                       <SelectValue placeholder="Select project or department..." />
                     </SelectTrigger>

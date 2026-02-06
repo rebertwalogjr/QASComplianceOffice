@@ -20,9 +20,9 @@ export default function CreateDrawer() {
 
   const handleSubmit = async () => {
     const data = new FormData()
-    
+
     setIsPending(true)
-    
+
     if (!formData.name.trim() || !formData.code.trim()) {
       toast.error("Please fill in all required fields.");
       setIsPending(false)
@@ -44,8 +44,13 @@ export default function CreateDrawer() {
     setIsPending(false)
   }
 
+  const handleClose = () => {
+    setFormData({ name: "", code: "" })
+    setIsOpen(false)
+  }
+
   return (
-    <Drawer direction={isMobile ? "bottom" : "right"} open={isOpen} onOpenChange={setIsOpen}>
+    <Drawer direction={isMobile ? "bottom" : "right"} open={isOpen} onOpenChange={setIsOpen} onClose={handleClose}>
       <DrawerTrigger asChild>
         <Button variant="default" size="sm" className="rounded-2xl">
           <PlusCircle className="fill-white text-primary" />
