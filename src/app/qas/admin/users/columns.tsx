@@ -4,12 +4,12 @@ import { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ArrowDownAZ, ArrowDownZA, ArrowDown01  } from "lucide-react"
-import User from "@/lib/user"
 import TableCellViewer from "./table-cell-viewer"
+import { User } from "../../../../../generated/prisma/client"
 
 export const columns: ColumnDef<User>[] = [
   {
-    accessorKey: "empId",
+    accessorKey: "employeeNumber",
     header: "Employee Id",
     cell: ({ row }) => {
       return <TableCellViewer item={row.original as User} />
@@ -20,15 +20,15 @@ export const columns: ColumnDef<User>[] = [
     header: "Username",
   },
   {
-    accessorKey: "firstname",
+    accessorKey: "appSuiteEmployeeMaster.firstName",
     header: "Firstname",
   },
   {
-    accessorKey: "lastname",
+    accessorKey: "appSuiteEmployeeMaster.lastName",
     header: "Lastname",
   },
   {
-    accessorKey: "status",
+    accessorKey: "isActive",
     header: ({ column }) => {
       const sorted = column.getIsSorted()
       return <div className="flex items-center justify-between">
@@ -51,15 +51,15 @@ export const columns: ColumnDef<User>[] = [
         </div>
     },
     cell: ({ row }) => {
-      return <Badge variant="outline" className={ row.original.status === "Active" ? "bg-green-50 text-green-500 border-green-500" : "bg-gray-50 text-gray-600 border-gray-600" } >{ row.original.status }</Badge>
+      return <Badge variant="outline" className={ row.original.isActive === true ? "bg-green-50 text-green-500 border-green-500" : "bg-gray-50 text-gray-600 border-gray-600" } >{ row.original.isActive ? "Active" : "Inactive" }</Badge>
     }
   },
   {
-    accessorKey: "email",
+    accessorKey: "emailAddress",
     header: "Email",
   },
   {
-    accessorKey: "company",
+    accessorKey: "company.name",
     header: "Company",
   },
 ]

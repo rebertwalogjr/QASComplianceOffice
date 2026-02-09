@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import User from "@/lib/user";
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -9,6 +8,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import Link from "next/link";
 import { X } from "lucide-react";
 import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
+import { User } from "../../../../../generated/prisma/client";
 
 interface Props {
   item: User
@@ -22,7 +22,7 @@ export default function TableCellViewer({ item, className }: Props) {
     <Drawer direction={isMobile ? "bottom" : "right"}>
       <DrawerTrigger asChild>
         <Button variant="link" className={`text-foreground w-fit px-0 ml-1 text-left ${className}`}>
-          {item.empId}
+          {item.employeeNumber}
         </Button>
       </DrawerTrigger>
 
@@ -46,18 +46,18 @@ export default function TableCellViewer({ item, className }: Props) {
                 <FieldGroup>
 
                   <Field>
-                    <FieldLabel htmlFor="seriesno">Id</FieldLabel>
-                    <Input id="seriesno" defaultValue={item.empId} disabled className="disabled:opacity-70" />
+                    <FieldLabel htmlFor="seriesno">Employee Number</FieldLabel>
+                    <Input id="seriesno" defaultValue={item.employeeNumber} disabled className="disabled:opacity-70" />
                   </Field>
 
                   <Field>
                     <FieldLabel htmlFor="firstname">First Name</FieldLabel>
-                    <Input id="firstname" defaultValue={item.firstname} disabled className="disabled:opacity-70" />
+                    <Input id="firstname" defaultValue={item.employeeNumber} disabled className="disabled:opacity-70" />
                   </Field>
 
                   <Field>
                     <FieldLabel htmlFor="lastname">Last Name</FieldLabel>
-                    <Input id="lastname" defaultValue={item.lastname} disabled className="disabled:opacity-70" />
+                    <Input id="lastname" defaultValue={item.employeeNumber} disabled className="disabled:opacity-70" />
                   </Field>
 
                   <Field>
@@ -67,22 +67,22 @@ export default function TableCellViewer({ item, className }: Props) {
 
                   <Field>
                     <FieldLabel htmlFor="email">Email</FieldLabel>
-                    <Input id="email" defaultValue={item.email} disabled className="disabled:opacity-70" />
+                    <Input id="email" defaultValue={item.emailAddress || "--"} disabled className="disabled:opacity-70" />
                   </Field>
 
                   <Field>
                     <FieldLabel htmlFor="company">Company</FieldLabel>
-                    <Input id="company" defaultValue={item.company} disabled className="disabled:opacity-70" />
+                    <Input id="company" defaultValue={item.companyId || "--"} disabled className="disabled:opacity-70" />
                   </Field>
 
                   <Field>
                     <FieldLabel htmlFor="accesslevel">Access Level</FieldLabel>
-                    <Input id="accesslevel" defaultValue={item.accesslevel} disabled className="disabled:opacity-70" />
+                    <Input id="accesslevel" defaultValue={item.accessId || "--"} disabled className="disabled:opacity-70" />
                   </Field>
 
                   <Field>
                     <FieldLabel htmlFor="status">Status</FieldLabel>
-                    <Input id="status" defaultValue={item.status} disabled className="disabled:opacity-70" />
+                    <Input id="status" defaultValue={item.isActive ? "Active" : "Inactive"} disabled className="disabled:opacity-70" />
                   </Field>
 
                 </FieldGroup>
@@ -93,7 +93,7 @@ export default function TableCellViewer({ item, className }: Props) {
 
         <DrawerFooter>
           <Button asChild>
-            <Link href={`/qas/admin/user/${item.id}`}>Update</Link>
+            <Link href={`/qas/admin/users/${item.id}`}>Update</Link>
           </Button>
           <DrawerClose asChild>
             <Button variant="outline">Close</Button>
