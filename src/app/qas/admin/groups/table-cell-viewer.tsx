@@ -161,6 +161,11 @@ export default function TableCellViewer({ item, className }: Props) {
                   </Field>
 
                   <Field>
+                    <FieldLabel htmlFor="remarks">Remarks</FieldLabel>
+                    <Textarea id="remarks" value={form.remarks || ""} onChange={onInput("remarks")} disabled={!isEditing} className="disabled:opacity-70" />
+                  </Field>
+                  
+                  <Field>
                     <FieldLabel htmlFor="status">Status</FieldLabel>
                     <Select
                       value={form.isActive}
@@ -177,11 +182,6 @@ export default function TableCellViewer({ item, className }: Props) {
                         <SelectItem value="Inactive">Inactive</SelectItem>
                       </SelectContent>
                     </Select>
-                  </Field>
-
-                  <Field>
-                    <FieldLabel htmlFor="remarks">Remarks</FieldLabel>
-                    <Textarea id="remarks" value={form.remarks || ""} onChange={onInput("remarks")} disabled={!isEditing} className="disabled:opacity-70" />
                   </Field>
 
                 </FieldGroup>

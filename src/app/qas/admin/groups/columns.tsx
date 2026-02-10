@@ -48,8 +48,8 @@ export const columns: ColumnDef<Group>[] = [
     }
   },
   {
-    accessorKey: "inChargeId",
-    header: "Group In-Charge",
+    accessorKey: "inCharge",
+    header: "In-Charge",
   },
   {
     accessorKey: "emailAddress",

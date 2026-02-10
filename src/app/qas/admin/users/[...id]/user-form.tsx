@@ -1,100 +1,255 @@
 "use client";
-import { EmployeeSearch } from "@/components/employee-infinite-search";
+
+import { EmployeeCommand } from "@/components/employeeMaster-command";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Field, FieldDescription, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { createUser } from "@/hooks/actions";
-import { User as UserIcon } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { FolderLock, Group, Megaphone, User as UserIcon } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-// import { User, Company } from "../../../../../../generated/prisma/client";
+import { MultiSelectCommand } from "@/components/multiselect-command";
+import { EscalationCommand } from "@/components/escalations-command";
 
 
-export default function UserForm({ mode, initialData, companies }: any) {
+export default function UserForm({ mode, initialData, companies, groups, projects }: any) {
   const isFormModeEdit = mode === "edit"
-
-  const [selectedEmp, setSelectedEmp] = useState(initialData?.employeeNumber || "")
+  const [selectedEmp, setSelectedEmp] = useState(initialData || "")
+  const [selectedEsc1, setSelectedEsc1] = useState(initialData || "")
+  const [selectedGroupIds, setSelectedGroupIds] = useState<number[]>(
+    initialData?.groups?.map((g: any) => g.id) || []
+  );
+  const [selectedProjectIds, setSelectedProjectIds] = useState<number[]>(
+    initialData?.project?.map((g: any) => g.id) || []
+  );
 
   const handleEmployeeSelect = (empNum: string) => {
     setSelectedEmp(empNum);
-    // const emp = employeeMaster.find((e: any) => e.employeeNumber === empNum);
-    // You could use a form library like react-hook-form here to update values
   };
 
+  const handleEsclation1Select = (empNum: string) => {
+    setSelectedEsc1(empNum)
+  }
+
   return (
-    <div className="@container/main py-6 bg-muted">
-      <div className="flex flex-col gap-4 px-3 md:px-40">
+    <div className="@container/main pt-10 pb-6">
+      <div className="flex flex-col gap-8 px-3 md:px-32">
 
-        <Label className="text-lg font-bold">
-          {mode === "edit" ? "Update User" : "Create New User"}
-        </Label>
+        <div className="grid grid-cols-2 gap-8">
+          <div className="flex flex-col gap-4">
 
-        <div className="flex items-center gap-2">
-          <div className="rounded-md border p-2 bg-primary/10 text-primary border-primary">
-            <UserIcon size={16} />
+
+            <div className="flex items-center gap-2">
+              <div className="rounded-md border p-2 bg-primary/10 text-primary border-primary">
+                <UserIcon size={16} />
+              </div>
+              <Label className="text-lg">Personal Information</Label>
+            </div>
+
+            <Card className="shadow-none">
+              <CardContent>
+                <FieldGroup>
+                  <Field>
+                    <FieldLabel>Select Employee</FieldLabel>
+                    {isFormModeEdit ?
+                      <Input value={`${initialData.appSuiteEmployeeMaster.fullName} (${initialData.employeeNumber})`} className="bg-muted" readOnly /> :
+                      <EmployeeCommand onSelect={handleEmployeeSelect} />
+                    }
+                  </Field>
+
+                  <Field>
+                    <FieldLabel htmlFor="empId">Employee Id</FieldLabel>
+                    <Input
+                      id="empId"
+                      value={isFormModeEdit ? initialData?.employeeNumber : (selectedEmp?.employeeNumber || "")}
+                      className="bg-muted"
+                      readOnly />
+                  </Field>
+
+                  <Field>
+                    <FieldLabel htmlFor="firtname">First Name</FieldLabel>
+                    <Input
+                      id="firtname"
+                      value={isFormModeEdit ? initialData.appSuiteEmployeeMaster?.firstName : (selectedEmp?.firstName || "")}
+                      className="bg-muted"
+                      readOnly />
+                  </Field>
+
+                  <Field>
+                    <FieldLabel htmlFor="lastname">Last Name</FieldLabel>
+                    <Input
+                      id="lastname"
+                      value={isFormModeEdit ? initialData.appSuiteEmployeeMaster?.lastName : (selectedEmp?.lastName || "")}
+                      className="bg-muted"
+                      readOnly />
+                  </Field>
+
+                  <Field>
+                    <FieldLabel htmlFor="position">Position</FieldLabel>
+                    <Input
+                      id="position"
+                      value={isFormModeEdit ? initialData?.position : (selectedEmp?.position || "")}
+                      className="bg-muted"
+                      readOnly />
+                  </Field>
+
+                  <Field>
+                    <FieldLabel htmlFor="email">Email Address</FieldLabel>
+                    <Input
+                      id="email"
+                      defaultValue={isFormModeEdit ? initialData?.emailAddress : (selectedEmp?.emailAddress || "")} />
+                  </Field>
+
+                </FieldGroup>
+              </CardContent>
+            </Card>
           </div>
-          <Label className="text-lg">Personal Information</Label>
+
+          <div className="flex flex-col gap-4">
+
+            <div className="flex items-center gap-2">
+              <div className="rounded-md border p-2 bg-cyan-500/10 text-cyan-500 border-cyan-500">
+                <FolderLock size={16} />
+              </div>
+              <Label className="text-lg">Access Information</Label>
+            </div>
+
+            {/* Access Information Card  */}
+
+            <Card className="shadow-none">
+              <CardContent>
+                <FieldSet>
+                  <FieldGroup>
+                    <Field>
+                      <FieldLabel htmlFor="company">Company</FieldLabel>
+                      <Select required>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select company..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {companies.map((company: any) => (
+                            <SelectItem key={company.id} value={company.id.toString()}>
+                              {company.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </Field>
+
+                    <Field>
+                      <FieldLabel htmlFor="userlevel">User Level</FieldLabel>
+                      <Select required>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select level..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="level-a">Compliance Secretariat</SelectItem>
+                          <SelectItem value="level-b">Compliance Officer</SelectItem>
+                          <SelectItem value="level-c">Supervisor</SelectItem>
+                          <SelectItem value="level-d">Recipient</SelectItem>
+                          <SelectItem value="level-e">Admin</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </Field>
+
+                    <Field>
+                      <FieldLabel htmlFor="username">Username</FieldLabel>
+                      <Input id="username" />
+                    </Field>
+
+                    <Field>
+                      <FieldLabel htmlFor="addEmail">Escalation</FieldLabel>
+                      <div className="flex gap-3 items-center">
+                        <Checkbox />
+                        <FieldDescription>Add to Escalation?</FieldDescription>
+                      </div>
+                    </Field>
+
+
+
+                  </FieldGroup>
+
+                </FieldSet>
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
-        <Card className="shadow-none">
-          <CardContent className="pt-6">
-            <FieldGroup>
-              <Field>
-                <FieldLabel>Select Employee</FieldLabel>
-                { isFormModeEdit ?
-                  <Input value={`${initialData.lastname}, ${initialData?.firstname} (${initialData.employeeNumber})`}  disabled className="bg-muted" />
-                  : <EmployeeSearch onSelect={handleEmployeeSelect}/>
-              }
-                {/* <Select
-                  defaultValue={selectedEmp}
-                  disabled={isFormModeEdit}
-                >
-                  <SelectTrigger><SelectValue placeholder="Search employee..." /></SelectTrigger>
-                  <SelectContent>
-                    {employeeMaster.map((emp: any) => (
-                      <SelectItem key={emp.employeeNumber} value={emp.employeeNumber}>
-                        {emp.firstName} {emp.lastName}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select> */}
-              </Field>
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-2">
+            <div className="rounded-md border p-2 bg-green-500/10 text-green-500 border-green-500">
+              <Group size={16} />
+            </div>
+            <Label className="text-lg">Groups & Projects</Label>
+          </div>
 
-              {/* 2. Auto-filled Fields based on selection */}
-              <div className="grid grid-cols-2 gap-4">
+          <Card className="shadow-none">
+            <CardContent>
+              <div className="grid grid-cols-2 gap-8">
                 <Field>
-                  <FieldLabel>Employee ID</FieldLabel>
-                  <Input value={selectedEmp} readOnly className="bg-muted" />
+                  <FieldLabel htmlFor="group">User Group</FieldLabel>
+                  <MultiSelectCommand
+                    groups={groups}
+                    selectedIds={selectedGroupIds}
+                    onChange={setSelectedGroupIds} />
                 </Field>
+
                 <Field>
-                  <FieldLabel>First Name</FieldLabel>
-                  {/* <Input value={currentEmployee?.firstName || ""} readOnly className="bg-muted" /> */}
+                  <FieldLabel htmlFor="project">Project</FieldLabel>
+                  <MultiSelectCommand
+                    groups={projects}
+                    selectedIds={selectedProjectIds}
+                    onChange={setSelectedProjectIds} />
                 </Field>
               </div>
+            </CardContent>
+          </Card>
 
-              {/* 3. Company Selection */}
-              <Field>
-                <FieldLabel>Company</FieldLabel>
-                <Select defaultValue={initialData?.companyId?.toString()}>
-                  <SelectTrigger><SelectValue placeholder="Select company..." /></SelectTrigger>
-                  <SelectContent>
-                    {companies.map((comp: any) => (
-                      <SelectItem key={comp.id} value={comp.id.toString()}>
-                        {comp.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
+        </div>
 
-              {/* ... rest of your form fields ... */}
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-2">
+            <div className="rounded-md border p-2 bg-orange-500/10 text-orange-500 border-orange-500">
+              <Megaphone size={16} />
+            </div>
+            <Label className="text-lg">Set Escalation</Label>
+          </div>
 
-            </FieldGroup>
-          </CardContent>
-        </Card>
+          {/* Set Escalation Card */}
+          <Card className="shadow-none">
+            <CardContent>
+              <FieldSet>
+                <FieldGroup>
+
+                  <Field>
+                    <FieldLabel htmlFor="escalation">First Escalation</FieldLabel>
+                    <EscalationCommand onSelect={handleEsclation1Select} />
+                  </Field>
+
+                  <Field>
+                    <FieldLabel htmlFor="escalation">Second Escalation</FieldLabel>
+                    <EscalationCommand onSelect={handleEsclation1Select} />
+                  </Field>
+
+                  <Field>
+                    <FieldLabel htmlFor="escalation">Third Escalation</FieldLabel>
+                    <EscalationCommand onSelect={handleEsclation1Select} />
+                  </Field>
+
+                  <Field>
+                    <FieldLabel htmlFor="escalation">Fourth Escalation</FieldLabel>
+                    <EscalationCommand onSelect={handleEsclation1Select} />
+                  </Field>
+
+                </FieldGroup>
+
+              </FieldSet>
+            </CardContent>
+          </Card>
+        </div>
 
         <div className="flex justify-end gap-2">
           <Button variant="outline" asChild><Link href="/qas/admin/users">Cancel</Link></Button>

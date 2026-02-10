@@ -2,7 +2,6 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { Prisma } from "../../generated/prisma/client";
 import { dbQuery } from "@/lib/prisma-db-utils";
 
 // Company Actions
@@ -15,7 +14,7 @@ export async function getCompanies() {
 export async function createCompany(formData: FormData) {
   const name = formData.get("name") as string;
   const code = formData.get("code") as string;
-  const currentUserId = 3004;
+  const currentUserId = 1002;
   const { data, error } = await dbQuery(
     prisma.company.create({
       data: {
@@ -34,7 +33,7 @@ export async function updateCompany(formData: FormData, companyId: number) {
   const name = formData.get("name") as string;
   const code = formData.get("code") as string;
   const isActive = formData.get("isActive") === "true";
-  const currentUserId = 3004;
+  const currentUserId = 1002;
   const { data, error } = await dbQuery(
     prisma.company.update({
       where: { id: companyId },
@@ -91,7 +90,7 @@ export async function createProject(formData: FormData) {
   const code = formData.get("code") as string;
   const companyId = Number(formData.get("companyId"));
   const remarks = formData.get("remarks") as string;
-  const currentUserId = 3004;
+  const currentUserId = 1002;
   const { data, error } = await dbQuery(
     prisma.project.create({
       data: {
@@ -114,7 +113,7 @@ export async function updateProject(formData: FormData, projectId: number) {
   const companyId = Number(formData.get("companyId"));
   const remarks = formData.get("remarks") as string;
   const isActive = formData.get("isActive") === "true";
-  const currentUserId = 3004;
+  const currentUserId = 1002;
   const { data, error } = await dbQuery(
     prisma.project.update({
       where: { id: projectId },
@@ -143,7 +142,7 @@ export async function getFindingTypes() {
 
 export async function createFindingType(formData: FormData) {
   const name = formData.get("name") as string;
-  const currentUserId = 3004;
+  const currentUserId = 1002;
   const { data, error } = await dbQuery(
     prisma.typeOfFinding.create({
       data: {
@@ -160,7 +159,7 @@ export async function createFindingType(formData: FormData) {
 export async function updateFindingType(formData: FormData, typeId: number) {
   const name = formData.get("name") as string;
   const isActive = formData.get("isActive") === "true";
-  const currentUserId = 3004;
+  const currentUserId = 1002;
   const { data, error } = await dbQuery(
     prisma.typeOfFinding.update({
       where: { id: typeId },
@@ -186,7 +185,7 @@ export async function getFindingCategories() {
 
 export async function createFindingCategory(formData: FormData) {
   const name = formData.get("name") as string;
-  const currentUserId = 3004;
+  const currentUserId = 1002;
   const { data, error } = await dbQuery(
     prisma.findingCategory.create({
       data: {
@@ -203,7 +202,7 @@ export async function createFindingCategory(formData: FormData) {
 export async function updateFindingCategory(formData: FormData, categoryId: number) {
   const name = formData.get("name") as string;
   const isActive = formData.get("isActive") === "true";
-  const currentUserId = 3004;
+  const currentUserId = 1002;
   const { data, error } = await dbQuery(
     prisma.findingCategory.update({
       where: { id: categoryId },
@@ -244,7 +243,7 @@ export async function getActiveAuditEngagements() {
 export async function createAuditEngagement(formData: FormData) {
   const name = formData.get("name") as string;
   const companyId = Number(formData.get("companyId"));
-  const currentUserId = 3004;
+  const currentUserId = 1002;
   const { data, error } = await dbQuery(
     prisma.auditEngagement.create({
       data: {
@@ -263,7 +262,7 @@ export async function updateAuditEngagement(formData: FormData, engagementId: nu
   const name = formData.get("name") as string;
   const companyId = Number(formData.get("companyId"));
   const isActive = formData.get("isActive") === "true";
-  const currentUserId = 3004;
+  const currentUserId = 1002;
   const { data, error } = await dbQuery(
     prisma.auditEngagement.update({
       where: { id: engagementId },
@@ -292,6 +291,19 @@ export async function getGroups() {
   )
 }
 
+export async function getActiveGroups() {
+  return await dbQuery(
+    prisma.group.findMany({
+      where: {
+        isActive: true
+      },
+      include: {
+        project: true,
+      }
+    })
+  )
+}
+
 export async function createGroup(formData: FormData) {
   const name = formData.get("name") as string;
   const code = formData.get("code") as string;
@@ -299,17 +311,21 @@ export async function createGroup(formData: FormData) {
   const inCharge = formData.get("inCharge") as string;
   const emailAddress = formData.get("emailAddress") as string;
   const remarks = formData.get("remarks") as string;
-  const currentUserId = 3004;
+  const currentUserId = 1002;
   const { data, error } = await dbQuery(
     prisma.group.create({
       data: {
         name,
         code,
-        projectId,
+        project: {
+          connect: { id: projectId }
+        },
         inCharge,
         emailAddress,
         remarks,
-        createdBy: currentUserId,
+        creator: {
+          connect: { id: currentUserId }
+        },
       },
     })
   )
@@ -326,7 +342,7 @@ export async function updateGroup(formData: FormData, groupId: number) {
   const emailAddress = formData.get("emailAddress") as string;
   const remarks = formData.get("remarks") as string;
   const isActive = formData.get("isActive") === "true";
-  const currentUserId = 3004;
+  const currentUserId = 1002;
   const { data, error } = await dbQuery(
     prisma.group.update({
       where: { id: groupId },
@@ -366,7 +382,7 @@ export async function createAuditReport(formData: FormData) {
   const projectId = Number(formData.get("projectId"));
   const auditEngagementId = Number(formData.get("auditEngagementId"));
   const companyId = Number(formData.get("companyId"));
-  const currentUserId = 3004;
+  const currentUserId = 1002;
   const { data, error } = await dbQuery(
     prisma.auditReport.create({
       data: {
@@ -389,7 +405,7 @@ export async function updateAuditReport(formData: FormData, auditReportId: numbe
   const companyId = Number(formData.get("companyId"));
   const auditEngagementId = Number(formData.get("auditEngagementId"));
   const isActive = formData.get("isActive") === "true";
-  const currentUserId = 3004;
+  const currentUserId = 1002;
   const { data, error } = await dbQuery(
     prisma.auditReport.update({
       where: { id: auditReportId },
@@ -410,14 +426,14 @@ export async function updateAuditReport(formData: FormData, auditReportId: numbe
 }
 
 // Stored Proc Actions
-export async function execAppSuiteEmployeeMasterUpdateAll(){
+export async function execAppSuiteEmployeeMasterUpdateAll() {
   return await dbQuery(
     prisma.$executeRaw`EXEC [dbo].[pr_SQLJOB_AppSuiteEmployeeMasterUpdateAll]`
   )
 }
 
 //AppSuite Actions
-export async function getEmployees(search: string = "", skip: number = 0){
+export async function getEmployees(search: string = "", skip: number = 0) {
   return await dbQuery(
     prisma.appSuiteEmployeeMaster.findMany({
       where: {
@@ -429,13 +445,13 @@ export async function getEmployees(search: string = "", skip: number = 0){
       },
       take: 20,
       skip: skip,
-      orderBy: {lastName: 'asc' }
+      orderBy: { lastName: 'asc' }
     })
   )
 }
 
 // Users Actions
-export async function getUsers(){
+export async function getUsers() {
   return await dbQuery(
     prisma.user.findMany({
       include: {
@@ -446,7 +462,7 @@ export async function getUsers(){
   )
 }
 
-export async function getUserById(id: number){
+export async function getUserById(id: number) {
   return await dbQuery(
     prisma.user.findFirst({
       where: {
@@ -459,13 +475,42 @@ export async function getUserById(id: number){
   )
 }
 
-export async function createUser(formData: FormData){
+export async function getEscalationUser(search: string = "", skip: number = 0) {
+  return await dbQuery(
+    prisma.user.findMany({
+      where: {
+        isEscalation: true,
+        OR: [
+          { appSuiteEmployeeMaster: { firstName: { contains: search } } },
+          { appSuiteEmployeeMaster: { lastName: { contains: search } } },
+          { employeeNumber: { contains: search } }
+        ],
+      },
+      select: {
+        id: true,
+        employeeNumber: true,
+        appSuiteEmployeeMaster: {
+          select: {
+            firstName: true,
+            lastName: true,
+            fullName: true
+          }
+        }
+      },
+      take: 20,
+      skip: skip,
+      orderBy: { appSuiteEmployeeMaster: { lastName: 'asc' } }
+    })
+  )
+}
+
+export async function createUser(formData: FormData) {
   const employeeNumber = '1'
   const username = formData.get("username") as string;
   const password = formData.get("password") as string;
   const emailAddress = formData.get("emailAddress") as string;
   const companyId = Number(formData.get("companyId"));
-  const currentUserId = 3004;
+  const currentUserId = 1002;
   const accessId = 1
   const position = formData.get("position") as string;
   const escalation1 = 1
@@ -510,7 +555,7 @@ export async function updateUser(formData: FormData, id: number) {
   const escalation4 = 1
   const isEscalation = formData.get("isEscalation") ? true : false
   const isActive = formData.get("isActive") === "true";
-  const currentUserId = 3004;
+  const currentUserId = 1002;
   const { data, error } = await dbQuery(
     prisma.user.update({
       where: { id },

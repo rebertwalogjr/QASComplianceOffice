@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useInView } from "react-intersection-observer";
 import { Command, CommandInput, CommandList, CommandItem, CommandEmpty, CommandGroup } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { getEmployees } from "@/hooks/actions";
+import { getEscalationUser } from "@/hooks/actions";
 import { Button } from "./ui/button";
 import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -17,7 +17,7 @@ function useDebounce(value: string, delay: number) {
   return debouncedValue;
 }
 
-export function EmployeeSearch({ onSelect }: { onSelect: (emp: any) => void }) {
+export function EscalationCommand({ onSelect }: { onSelect: (emp: any) => void }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [employees, setEmployees] = useState<any[]>([]);
@@ -38,7 +38,7 @@ export function EmployeeSearch({ onSelect }: { onSelect: (emp: any) => void }) {
   useEffect(() => {
     const fetchInitial = async () => {
       setLoading(true);
-      const res = await getEmployees(debouncedSearch, 0);
+      const res = await getEscalationUser(debouncedSearch, 0);
       setEmployees(res.data || []);
       setHasMore((res.data || []).length === 20);
       setLoading(false);
@@ -51,7 +51,7 @@ export function EmployeeSearch({ onSelect }: { onSelect: (emp: any) => void }) {
     if (inView && hasMore && !loading) {
       const loadMore = async () => {
         setLoading(true);
-        const res = await getEmployees(search, employees.length);
+        const res = await getEscalationUser(search, employees.length);
         const newData = res.data || [];
         setEmployees((prev) => [...prev, ...newData]);
         setHasMore(newData.length === 20);
@@ -74,7 +74,7 @@ export function EmployeeSearch({ onSelect }: { onSelect: (emp: any) => void }) {
           className="w-full justify-between font-normal"
         >
           {selectedEmp 
-            ? `${selectedEmp.firstName} ${selectedEmp.lastName} (${selectedEmp.employeeNumber})`
+            ? `${selectedEmp.appSuiteEmployeeMaster.fullName} (${selectedEmp.employeeNumber})`
             : "Select employee..."}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
@@ -105,7 +105,7 @@ export function EmployeeSearch({ onSelect }: { onSelect: (emp: any) => void }) {
                     className={cn("mr-2 h-4 w-4", selectedEmp?.employeeNumber === emp.employeeNumber ? "opacity-100" : "opacity-0")}
                   />
                   <div className="flex flex-col">
-                    <span>{emp.lastName}, {emp.firstName}</span>
+                    <span>{emp.appSuiteEmployeeMaster.fullName}</span>
                     <span className="text-xs text-muted-foreground">{emp.employeeNumber}</span>
                   </div>
                 </CommandItem>

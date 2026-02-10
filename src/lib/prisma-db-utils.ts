@@ -23,6 +23,8 @@ export async function dbQuery<T>(query: Promise<T>) {
       return { data: null as T, error: "Failed to connect to MSSQL. Check network/VPN or credentials."}
     }
 
+    console.log(error)
+
     return { data: null as T, error: "An unexpected system error occured."}
   }
 }

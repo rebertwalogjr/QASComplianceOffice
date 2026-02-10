@@ -32,7 +32,7 @@ export default function CreateDrawer({ projects }: CreateDrawerProps) {
     data.append("code", formData.code);
     data.append("projectId", formData.projectId);
     data.append("remarks", formData.remarks);
-    data.append("inChargeId", formData.inCharge);
+    data.append("inCharge", formData.inCharge);
     data.append("emailAddress", formData.emailAddress);
 
     if (!formData.name.trim() || !formData.code.trim() || !formData.projectId.trim() || !formData.inCharge.trim() || !formData.emailAddress.trim()) {
@@ -85,13 +85,13 @@ export default function CreateDrawer({ projects }: CreateDrawerProps) {
               <FieldGroup>
 
                 <Field>
-                  <FieldLabel htmlFor="groupCode">Group Code</FieldLabel>
-                  <Input id="groupCode" value={formData.code} onChange={(e) => setFormData({ ...formData, code: e.target.value })} />
+                  <FieldLabel htmlFor="groupName">Name</FieldLabel>
+                  <Input id="groupName" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
                 </Field>
 
                 <Field>
-                  <FieldLabel htmlFor="groupName">Name</FieldLabel>
-                  <Input id="groupName" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
+                  <FieldLabel htmlFor="groupCode">Code</FieldLabel>
+                  <Input id="groupCode" value={formData.code} onChange={(e) => setFormData({ ...formData, code: e.target.value })} />
                 </Field>
 
                 <Field>
