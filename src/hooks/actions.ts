@@ -437,11 +437,20 @@ export async function getEmployees(search: string = "", skip: number = 0) {
   return await dbQuery(
     prisma.appSuiteEmployeeMaster.findMany({
       where: {
+        isActive: true,
         OR: [
           { firstName: { contains: search } },
           { lastName: { contains: search } },
           { employeeNumber: { contains: search } }
         ]
+      },
+      select: {
+        employeeNumber: true,
+        firstName: true,
+        lastName: true,
+        fullName: true,
+        emailAddress: true,
+        position: true
       },
       take: 20,
       skip: skip,
@@ -580,4 +589,15 @@ export async function updateUser(formData: FormData, id: number) {
   if (error) { return { data, error } }
   revalidatePath("/auditreports");
   return { data, error }
+}
+
+// Role actions
+export async function getActiveRoles() {
+  return await dbQuery(
+    prisma.role.findMany({
+      where: {
+        isActive: true
+      }
+    })
+  )
 }

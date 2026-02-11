@@ -1,17 +1,17 @@
 "use client"
 
 import { createContext, useContext } from "react"
-import { AuditEngagement, AuditReport, Company, GroupList, ProjectDepartmentList } from "../../generated/prisma/client"
+import { AuditEngagement, AuditReport, Company, Group, Project } from "../../generated/prisma/client"
 
 interface LookupsContextProps {
   companies?: Company[]
-  projects?: ProjectDepartmentList[]
+  projects?: Project[]
   auditEngagement?: AuditEngagement[]
-  groups?: GroupList[]
+  groups?: Group[]
   auditReports?: AuditReport[]
   activeCompanies?: Company[]
-  activeProjects?: ProjectDepartmentList[]
-  activeGroups?: GroupList[]
+  activeProjects?: Project[]
+  activeGroups?: Group[]
   activeAuditEngagements?: AuditEngagement[]
   activeAuditReports?: AuditReport[]
 }

@@ -21,11 +21,11 @@ import { cn } from "@/lib/utils";
 import { Label } from "./ui/label";
 
 export function MultiSelectCommand({
-  groups,
+  records,
   selectedIds,
   onChange
 }: {
-  groups: any[],
+  records: any[],
   selectedIds: number[],
   onChange: (ids: number[]) => void
 }) {
@@ -59,18 +59,18 @@ export function MultiSelectCommand({
             <CommandList>
               <CommandEmpty>No record found.</CommandEmpty>
               <CommandGroup>
-                {groups.map((group) => (
+                {records.map((rec) => (
                   <CommandItem
-                    key={group.id}
-                    onSelect={() => handleSelect(group.id)}
+                    key={rec.id}
+                    onSelect={() => handleSelect(rec.id)}
                   >
                     <Check
                       className={cn(
                         "mr-2 h-4 w-4",
-                        selectedIds.includes(group.id) ? "opacity-100" : "opacity-0"
+                        selectedIds.includes(rec.id) ? "opacity-100" : "opacity-0"
                       )}
                     />
-                    {group.name}
+                    {rec.name}
                   </CommandItem>
                 ))}
               </CommandGroup>
@@ -80,7 +80,7 @@ export function MultiSelectCommand({
       </Popover>
       <div className="flex flex-wrap gap-1 mt-1">
         {selectedIds.map((id) => {
-          const group = groups.find((g) => g.id === id);
+          const group = records.find((g) => g.id === id);
           return (
             <Badge key={id} variant="secondary" className="flex items-center gap-1 pl-4">
               <Label className="text-sm">{group?.name}</Label>

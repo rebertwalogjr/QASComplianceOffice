@@ -224,10 +224,10 @@ model User {
   escalation2User           User?                  @relation("escalation2User", fields: [escalation2], references: [id], onUpdate: NoAction, onDelete: NoAction)
   escalation3User           User?                  @relation("escalation3User", fields: [escalation3], references: [id], onUpdate: NoAction, onDelete: NoAction)
   escalation4User           User?                  @relation("escalation4User", fields: [escalation4], references: [id], onUpdate: NoAction, onDelete: NoAction)
-  creator                   User?                   @relation("UserCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  creator                   User?                  @relation("UserCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
   modifier                  User?                  @relation("UserModifier", fields: [modifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
   appSuiteEmployeeMaster    AppSuiteEmployeeMaster @relation(fields: [employeeNumber], references: [employeeNumber])
-  company                   Company?                @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+  company                   Company?               @relation(fields: [companyId], references: [id], onUpdate: NoAction)
   auditEngagementCreator    AuditEngagement[]      @relation("EngagementCreator")
   auditEngagementModifier   AuditEngagement[]      @relation("EngagementModifier")
   companyCreator            Company[]              @relation("CompanyCreator")
@@ -262,6 +262,11 @@ model User {
   jobTransactionApprover    JobTransaction[]       @relation("JobTransactionApprover")
   holidayCreator            Holiday[]              @relation("HolidayCreator")
   holidayModifier           Holiday[]              @relation("HolidayModifier")
+  accessLevelCreator        Role[]                 @relation("AccessLevelCreator")
+  accessLevelModifier       Role[]                 @relation("AccessLevelModifier")
+  userAccessCreator         UserRole[]             @relation("UserAccessCreator")
+  userAccessModifier        UserRole[]             @relation("UserAccessModifier")
+  userRoles                 UserRole[]
 }
 
 model AuditReport {
@@ -310,4 +315,33 @@ model Holiday {
   modifiedOn DateTime @updatedAt @db.DateTime
   creator    User     @relation("HolidayCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
   modifier   User?    @relation("HolidayModifier", fields: [modifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+}
+
+model Role {
+  id         Int        @id @default(autoincrement())
+  name       String     @unique @db.NVarChar(100)
+  isActive   Boolean    @default(true) @db.Bit
+  createdBy  Int
+  createdOn  DateTime   @default(now()) @db.DateTime
+  modifiedBy Int?
+  modifiedOn DateTime   @updatedAt @db.DateTime
+  creator    User       @relation("AccessLevelCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  modifier   User?      @relation("AccessLevelModifier", fields: [modifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  userRoles  UserRole[]
+}
+
+model UserRole {
+  userId     Int
+  roleId     Int
+  isActive   Boolean  @default(true) @db.Bit
+  createdBy  Int
+  createdOn  DateTime @default(now()) @db.DateTime
+  modifiedBy Int?
+  modifiedOn DateTime @updatedAt @db.DateTime
+  user       User     @relation(fields: [userId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  role       Role     @relation(fields: [roleId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  creator    User     @relation("UserAccessCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  modifier   User?    @relation("UserAccessModifier", fields: [modifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+
+  @@id([userId, roleId])
 }

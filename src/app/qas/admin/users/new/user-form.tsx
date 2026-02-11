@@ -13,24 +13,31 @@ import Link from "next/link";
 import { useState } from "react";
 import { MultiSelectCommand } from "@/components/multiselect-command";
 import { EscalationCommand } from "@/components/escalations-command";
+import { AppSuiteEmployeeMaster } from "../../../../../../generated/prisma/client";
 
-export default function UserForm({ mode, initialData, companies, groups, projects }: any) {
-  const isFormModeEdit = mode === "edit"
-  const [selectedEmp, setSelectedEmp] = useState(initialData || "")
+type selectedEmployee = {
+  employeeNumber: string
+  firstName: string
+  lastName: string
+  emailAddress: string
+  position: string
+  fullName: string
+} | null
+
+export default function UserForm({ mode, companies, groups, projects, roles }: any) {
+
+  const [selectedEmp, setSelectedEmp] = useState<selectedEmployee>(null)
+  const [selectedGroupIds, setSelectedGroupIds] = useState<number[]>([])
+  const [selectedProjectIds, setSelectedProjectIds] = useState<number[]>([])
+  const [selectedRoleIds, setSelectedRoleIds] = useState<number[]>([])
   const [escalations, setEscalation] = useState({
     first: null,
     second: null,
     third: null,
     fourth: null
   })
-  const [selectedGroupIds, setSelectedGroupIds] = useState<number[]>(
-    initialData?.groups?.map((g: any) => g.id) || []
-  );
-  const [selectedProjectIds, setSelectedProjectIds] = useState<number[]>(
-    initialData?.project?.map((g: any) => g.id) || []
-  );
 
-  const handleEmployeeSelect = (empNum: string) => {
+  const handleEmployeeSelect = (empNum: selectedEmployee) => {
     setSelectedEmp(empNum);
   };
 
@@ -45,6 +52,15 @@ export default function UserForm({ mode, initialData, companies, groups, project
     }));
   };
 
+  const generateUsername = (firstName: string, lastName: string): string => {
+    if (!firstName || !lastName) return "";
+    const firstLetter = firstName.trim().charAt(0);
+    const username = (firstLetter + lastName)
+      .replace(/\s+/g, "")
+      .toLowerCase();
+    return username;
+  }
+
   const handleSave = () => {
     console.log(escalations)
   }
@@ -52,6 +68,8 @@ export default function UserForm({ mode, initialData, companies, groups, project
   return (
     <div className="@container/main pt-10 pb-6">
       <div className="flex flex-col gap-8 px-3 md:px-32">
+
+        <Label>Create Form</Label>
 
         <div className="grid lg:grid-cols-2 grid-cols-1 gap-8">
           <div className="flex flex-col gap-4">
@@ -68,17 +86,14 @@ export default function UserForm({ mode, initialData, companies, groups, project
                 <FieldGroup>
                   <Field>
                     <FieldLabel>Select Employee</FieldLabel>
-                    {isFormModeEdit ?
-                      <Input value={`${initialData.appSuiteEmployeeMaster.fullName} (${initialData.employeeNumber})`} className="bg-muted" readOnly /> :
-                      <EmployeeCommand onSelect={handleEmployeeSelect} />
-                    }
+                    <EmployeeCommand onSelect={handleEmployeeSelect} />
                   </Field>
 
                   <Field>
                     <FieldLabel htmlFor="empId">Employee Id</FieldLabel>
                     <Input
                       id="empId"
-                      value={isFormModeEdit ? initialData?.employeeNumber : (selectedEmp?.employeeNumber || "")}
+                      value={(selectedEmp?.employeeNumber || "")}
                       className="bg-muted"
                       readOnly />
                   </Field>
@@ -87,7 +102,7 @@ export default function UserForm({ mode, initialData, companies, groups, project
                     <FieldLabel htmlFor="firtname">First Name</FieldLabel>
                     <Input
                       id="firtname"
-                      value={isFormModeEdit ? initialData.appSuiteEmployeeMaster?.firstName : (selectedEmp?.firstName || "")}
+                      value={(selectedEmp?.firstName || "")}
                       className="bg-muted"
                       readOnly />
                   </Field>
@@ -96,7 +111,7 @@ export default function UserForm({ mode, initialData, companies, groups, project
                     <FieldLabel htmlFor="lastname">Last Name</FieldLabel>
                     <Input
                       id="lastname"
-                      value={isFormModeEdit ? initialData.appSuiteEmployeeMaster?.lastName : (selectedEmp?.lastName || "")}
+                      value={(selectedEmp?.lastName || "")}
                       className="bg-muted"
                       readOnly />
                   </Field>
@@ -105,7 +120,7 @@ export default function UserForm({ mode, initialData, companies, groups, project
                     <FieldLabel htmlFor="position">Position</FieldLabel>
                     <Input
                       id="position"
-                      value={isFormModeEdit ? initialData?.position : (selectedEmp?.position || "")}
+                      value={(selectedEmp?.position || "")}
                       className="bg-muted"
                       readOnly />
                   </Field>
@@ -114,7 +129,7 @@ export default function UserForm({ mode, initialData, companies, groups, project
                     <FieldLabel htmlFor="email">Email Address</FieldLabel>
                     <Input
                       id="email"
-                      defaultValue={isFormModeEdit ? initialData?.emailAddress : (selectedEmp?.emailAddress || "")} />
+                      defaultValue={(selectedEmp?.emailAddress || "")} />
                   </Field>
 
                 </FieldGroup>
@@ -155,18 +170,10 @@ export default function UserForm({ mode, initialData, companies, groups, project
 
                     <Field>
                       <FieldLabel htmlFor="userlevel">User Level</FieldLabel>
-                      <Select required>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select level..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="level-a">Compliance Secretariat</SelectItem>
-                          <SelectItem value="level-b">Compliance Officer</SelectItem>
-                          <SelectItem value="level-c">Supervisor</SelectItem>
-                          <SelectItem value="level-d">Recipient</SelectItem>
-                          <SelectItem value="level-e">Admin</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <MultiSelectCommand
+                        records={roles}
+                        selectedIds={selectedRoleIds}
+                        onChange={setSelectedRoleIds} />
                     </Field>
 
                     <Field>
