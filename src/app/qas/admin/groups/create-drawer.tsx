@@ -11,9 +11,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PlusCircle, X } from "lucide-react";
 import { toast } from "sonner";
-import { createGroup } from "@/hooks/actions";
 import { Spinner } from "@/components/ui/spinner";
 import { Project } from "../../../../../generated/prisma/client";
+import { createGroup } from "@/prisma-actions/group";
 
 interface CreateDrawerProps {
   projects: Project[]

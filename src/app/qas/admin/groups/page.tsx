@@ -2,10 +2,11 @@ import { DataTable } from "@/components/ui/data-table";
 import { columns } from "./columns";
 import { Label } from "@radix-ui/react-label";
 import CreateDrawer from "./create-drawer";
-import { getGroups, getProjects, getActiveProjects } from "@/hooks/actions";
 import { LookupsProvider } from "@/context/lookups-context";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { getGroups } from "@/prisma-actions/group";
+import { getActiveProjects, getProjects } from "@/prisma-actions/project";
 
 export default async function GroupsPage() {
   const [groupsRes, projectsRes, activeProjectsRes] = await Promise.all([getGroups(), getProjects(), getActiveProjects()]);

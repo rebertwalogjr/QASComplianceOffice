@@ -9,8 +9,8 @@ import { Separator } from "@/components/ui/separator";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PlusCircle, X } from "lucide-react";
 import { toast } from "sonner";
-import { createFindingCategory } from "@/hooks/actions";
 import { Spinner } from "@/components/ui/spinner";
+import { createFindingCategory } from "@/prisma-actions/finding-category";
 
 export default function CreateDrawer() {
   const isMobile = useIsMobile();

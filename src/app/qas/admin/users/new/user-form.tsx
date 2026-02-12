@@ -14,6 +14,11 @@ import { useState } from "react";
 import { MultiSelectCommand } from "@/components/multiselect-command";
 import { EscalationCommand } from "@/components/escalations-command";
 import { AppSuiteEmployeeMaster } from "../../../../../../generated/prisma/client";
+import { generateUserName } from "@/lib/utils";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { createUser } from "@/prisma-actions/user";
+import { Spinner } from "@/components/ui/spinner";
 
 type selectedEmployee = {
   employeeNumber: string
@@ -25,11 +30,17 @@ type selectedEmployee = {
 } | null
 
 export default function UserForm({ mode, companies, groups, projects, roles }: any) {
+  const router = useRouter()
 
-  const [selectedEmp, setSelectedEmp] = useState<selectedEmployee>(null)
+  const [isPending, setIsPending] = useState(false)
+  const [selectedEmployee, setSelectedEmployee] = useState<selectedEmployee>(null)
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string>("")
   const [selectedGroupIds, setSelectedGroupIds] = useState<number[]>([])
   const [selectedProjectIds, setSelectedProjectIds] = useState<number[]>([])
   const [selectedRoleIds, setSelectedRoleIds] = useState<number[]>([])
+  const [genUsername, setGenUsername] = useState("")
+  const [email, setEmail] = useState<string>(selectedEmployee?.emailAddress || "")
+  const [isEscalation, setIsEscalation] = useState<boolean>(false)
   const [escalations, setEscalation] = useState({
     first: null,
     second: null,
@@ -37,39 +48,53 @@ export default function UserForm({ mode, companies, groups, projects, roles }: a
     fourth: null
   })
 
-  const handleEmployeeSelect = (empNum: selectedEmployee) => {
-    setSelectedEmp(empNum);
-  };
-
-  // const handleEsclationSelect = (empNum: string) => {
-  //   setSelectedEscalation(empNum)
-  // }
+  const handleEmployeeSelect = (emp: selectedEmployee) => {
+    setSelectedEmployee(emp)
+    if (emp) {
+      const username = generateUserName(emp.firstName, emp.lastName)
+      setGenUsername(username)
+    } else {
+      setGenUsername("")
+    }
+  }
 
   const handleEscalationSelect = (level: keyof typeof escalations, user: any) => {
     setEscalation((prev) => ({
       ...prev,
       [level]: user,
-    }));
-  };
-
-  const generateUsername = (firstName: string, lastName: string): string => {
-    if (!firstName || !lastName) return "";
-    const firstLetter = firstName.trim().charAt(0);
-    const username = (firstLetter + lastName)
-      .replace(/\s+/g, "")
-      .toLowerCase();
-    return username;
+    }))
   }
 
-  const handleSave = () => {
-    console.log(escalations)
+  const handleSubmit = async() => {
+    setIsPending(true)
+    const formData = {
+      employeeNumber: selectedEmployee?.employeeNumber,
+      username: genUsername,
+      emailAddress: email,
+      companyId: selectedCompanyId,
+      roleIds: selectedRoleIds,
+      groupIds: selectedGroupIds,
+      projectIds: selectedProjectIds,
+      escalations: escalations,
+      isEscalation: isEscalation,
+    }
+
+    const response = await createUser(formData)
+
+    if (response.error) {
+      toast.error("Error: " + response.error)
+    } else {
+      toast.success("User created successfully!");
+      router.push("/qas/admin/users")
+      router.refresh()
+    }
+
+    setIsPending(false)
   }
 
   return (
     <div className="@container/main pt-10 pb-6">
       <div className="flex flex-col gap-8 px-3 md:px-32">
-
-        <Label>Create Form</Label>
 
         <div className="grid lg:grid-cols-2 grid-cols-1 gap-8">
           <div className="flex flex-col gap-4">
@@ -93,7 +118,7 @@ export default function UserForm({ mode, companies, groups, projects, roles }: a
                     <FieldLabel htmlFor="empId">Employee Id</FieldLabel>
                     <Input
                       id="empId"
-                      value={(selectedEmp?.employeeNumber || "")}
+                      value={(selectedEmployee?.employeeNumber || "")}
                       className="bg-muted"
                       readOnly />
                   </Field>
@@ -102,7 +127,7 @@ export default function UserForm({ mode, companies, groups, projects, roles }: a
                     <FieldLabel htmlFor="firtname">First Name</FieldLabel>
                     <Input
                       id="firtname"
-                      value={(selectedEmp?.firstName || "")}
+                      value={(selectedEmployee?.firstName || "")}
                       className="bg-muted"
                       readOnly />
                   </Field>
@@ -111,7 +136,7 @@ export default function UserForm({ mode, companies, groups, projects, roles }: a
                     <FieldLabel htmlFor="lastname">Last Name</FieldLabel>
                     <Input
                       id="lastname"
-                      value={(selectedEmp?.lastName || "")}
+                      value={(selectedEmployee?.lastName || "")}
                       className="bg-muted"
                       readOnly />
                   </Field>
@@ -120,7 +145,7 @@ export default function UserForm({ mode, companies, groups, projects, roles }: a
                     <FieldLabel htmlFor="position">Position</FieldLabel>
                     <Input
                       id="position"
-                      value={(selectedEmp?.position || "")}
+                      value={(selectedEmployee?.position || "")}
                       className="bg-muted"
                       readOnly />
                   </Field>
@@ -129,7 +154,9 @@ export default function UserForm({ mode, companies, groups, projects, roles }: a
                     <FieldLabel htmlFor="email">Email Address</FieldLabel>
                     <Input
                       id="email"
-                      defaultValue={(selectedEmp?.emailAddress || "")} />
+                      defaultValue={(selectedEmployee?.emailAddress || "")} 
+                      onChange={(e) => setEmail(e.target.value)}
+                      />
                   </Field>
 
                 </FieldGroup>
@@ -154,14 +181,25 @@ export default function UserForm({ mode, companies, groups, projects, roles }: a
                   <FieldGroup>
                     <Field>
                       <FieldLabel htmlFor="company">Company</FieldLabel>
-                      <Select required>
+                      <Select
+                        required
+                        value={selectedCompanyId?.toString()}
+                        onValueChange={(value) => setSelectedCompanyId(value)}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Select company..." />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent
+                         className="w-[calc(100vw-32px)] md:w-full p-0"
+                         align="start"
+                         position="popper"
+                         sideOffset={4}
+                         >
                           {companies.map((company: any) => (
                             <SelectItem key={company.id} value={company.id.toString()}>
-                              {company.name}
+                              <span className="truncate inline-block max-w-[80vw] md:max-w-none">
+                                {company.name}
+                              </span>
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -178,18 +216,20 @@ export default function UserForm({ mode, companies, groups, projects, roles }: a
 
                     <Field>
                       <FieldLabel htmlFor="username">Username</FieldLabel>
-                      <Input id="username" />
+                      <Input id="username" value={genUsername} onChange={(e) => setGenUsername(e.target.value)} />
                     </Field>
 
                     <Field>
                       <FieldLabel htmlFor="addEmail">Escalation</FieldLabel>
                       <div className="flex gap-3 items-center">
-                        <Checkbox />
+                        <Checkbox
+                          id="isEscalation"
+                          checked={isEscalation}
+                          onCheckedChange={(checked: boolean) => setIsEscalation(checked)}
+                        />
                         <FieldDescription>Add to Escalation?</FieldDescription>
                       </div>
                     </Field>
-
-
 
                   </FieldGroup>
 
@@ -273,9 +313,19 @@ export default function UserForm({ mode, companies, groups, projects, roles }: a
         </div>
 
         <div className="flex justify-end gap-2">
-          <Button variant="outline" asChild><Link href="/qas/admin/users">Cancel</Link></Button>
-          <Button onClick={handleSave}>Save User</Button>
+          <Button variant="outline" disabled={isPending} asChild><Link href="/qas/admin/users">Cancel</Link></Button>
+          <Button onClick={handleSubmit} disabled={isPending}>
+            { isPending ? (
+              <>
+                Saving
+                <Spinner className="mr-2" />
+              </>
+            ) : (
+              "Save"
+            )}
+          </Button>
         </div>
+
       </div>
     </div>
   );

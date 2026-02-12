@@ -11,7 +11,7 @@ import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { User } from "../../../../../generated/prisma/client";
 
 interface Props {
-  item: User
+  item: any
   className?: string
 }
 
@@ -52,12 +52,12 @@ export default function TableCellViewer({ item, className }: Props) {
 
                   <Field>
                     <FieldLabel htmlFor="firstname">First Name</FieldLabel>
-                    <Input id="firstname" defaultValue={item.employeeNumber} disabled className="disabled:opacity-70" />
+                    <Input id="firstname" defaultValue={item.appSuiteEmployeeMaster.firstName} disabled className="disabled:opacity-70" />
                   </Field>
 
                   <Field>
                     <FieldLabel htmlFor="lastname">Last Name</FieldLabel>
-                    <Input id="lastname" defaultValue={item.employeeNumber} disabled className="disabled:opacity-70" />
+                    <Input id="lastname" defaultValue={item.appSuiteEmployeeMaster.lastName} disabled className="disabled:opacity-70" />
                   </Field>
 
                   <Field>
@@ -72,13 +72,13 @@ export default function TableCellViewer({ item, className }: Props) {
 
                   <Field>
                     <FieldLabel htmlFor="company">Company</FieldLabel>
-                    <Input id="company" defaultValue={item.companyId || "--"} disabled className="disabled:opacity-70" />
+                    <Input id="company" defaultValue={item.company.name || "--"} disabled className="disabled:opacity-70" />
                   </Field>
 
-                  <Field>
+                  {/* <Field>
                     <FieldLabel htmlFor="accesslevel">Access Level</FieldLabel>
                     <Input id="accesslevel" defaultValue={item.accessId || "--"} disabled className="disabled:opacity-70" />
-                  </Field>
+                  </Field> */}
 
                   <Field>
                     <FieldLabel htmlFor="status">Status</FieldLabel>

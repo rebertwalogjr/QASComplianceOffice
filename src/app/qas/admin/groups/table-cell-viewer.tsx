@@ -15,9 +15,9 @@ import { Field, FieldDescription, FieldGroup, FieldLabel, FieldLegend, FieldSet 
 import { Status } from "@/lib/common-types";
 import { useLookups } from "@/context/lookups-context";
 import { toast } from "sonner";
-import { updateGroup } from "@/hooks/actions";
 import { Spinner } from "@/components/ui/spinner";
 import { Group } from "../../../../../generated/prisma/client";
+import { updateGroup } from "@/prisma-actions/group";
 
 interface Props {
   item: Group

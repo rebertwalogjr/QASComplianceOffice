@@ -151,6 +151,8 @@ model Project {
   groupList      Group[]
   jobTransaction JobTransaction[]
   auditReport    AuditReport[]
+
+  userProjects UserProject[]
 }
 
 model TypeOfFinding {
@@ -198,6 +200,7 @@ model Group {
   creator         User             @relation("GroupCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
   modifier        User?            @relation("GroupModifier", fields: [modifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
   jobTransactions JobTransaction[]
+  userGroups      UserGroup[]
 }
 
 model User {
@@ -266,7 +269,13 @@ model User {
   accessLevelModifier       Role[]                 @relation("AccessLevelModifier")
   userAccessCreator         UserRole[]             @relation("UserAccessCreator")
   userAccessModifier        UserRole[]             @relation("UserAccessModifier")
+  userGroupCreator          UserGroup[]            @relation("UserGroupCreator")
+  userGroupModifier         UserGroup[]            @relation("UserGroupModifier")
   userRoles                 UserRole[]
+  userGroups                UserGroup[]
+  userProjectCreator        UserProject[]          @relation("UserProjectCreator")
+  userProjectModifier       UserProject[]          @relation("UserProjectModifier")
+  userProjects              UserProject[]
 }
 
 model AuditReport {
@@ -344,4 +353,36 @@ model UserRole {
   modifier   User?    @relation("UserAccessModifier", fields: [modifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
 
   @@id([userId, roleId])
+}
+
+model UserGroup {
+  userId     Int
+  groupId    Int
+  isActive   Boolean  @default(true) @db.Bit
+  createdBy  Int
+  createdOn  DateTime @default(now()) @db.DateTime
+  modifiedBy Int?
+  modifiedOn DateTime @updatedAt @db.DateTime
+  user       User     @relation(fields: [userId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  group      Group    @relation(fields: [groupId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  creator    User     @relation("UserGroupCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  modifier   User?    @relation("UserGroupModifier", fields: [modifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+
+  @@id([userId, groupId])
+}
+
+model UserProject {
+  userId     Int
+  projectId  Int
+  isActive   Boolean  @default(true) @db.Bit
+  createdBy  Int
+  createdOn  DateTime @default(now()) @db.DateTime
+  modifiedBy Int?
+  modifiedOn DateTime @updatedAt @db.DateTime
+  user       User     @relation(fields: [userId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  project    Project  @relation(fields: [projectId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  creator    User     @relation("UserProjectCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  modifier   User?    @relation("UserProjectModifier", fields: [modifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+
+  @@id([userId, projectId])
 }

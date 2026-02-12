@@ -12,9 +12,9 @@ import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Status } from "@/lib/common-types";
 import { useLookups } from "@/context/lookups-context";
 import { toast } from "sonner";
-import { updateAuditEngagement } from "@/hooks/actions";
 import { Spinner } from "@/components/ui/spinner";
 import { AuditEngagement } from "../../../../../generated/prisma/client";
+import { updateAuditEngagement } from "@/prisma-actions/engagement";
 
 interface Props {
   item: AuditEngagement

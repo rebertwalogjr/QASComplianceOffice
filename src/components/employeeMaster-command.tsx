@@ -3,10 +3,10 @@ import { useState, useEffect } from "react";
 import { useInView } from "react-intersection-observer";
 import { Command, CommandInput, CommandList, CommandItem, CommandEmpty, CommandGroup } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { getEmployees } from "@/hooks/actions";
 import { Button } from "./ui/button";
 import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getEmployees } from "@/prisma-actions/appsuite";
 
 function useDebounce(value: string, delay: number) {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -24,8 +24,8 @@ export function EmployeeCommand({ onSelect }: { onSelect: (emp: any) => void }) 
   const [selectedEmp, setSelectedEmp] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const { ref, inView } = useInView();
 
+  const { ref, inView } = useInView();
   const debouncedSearch = useDebounce(search, 500)
 
   useEffect(() => {
@@ -64,24 +64,32 @@ export function EmployeeCommand({ onSelect }: { onSelect: (emp: any) => void }) 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        {/* <Button variant="outline" className="w-full justify-between">
-          Select Employee...
-        </Button> */}
         <Button
           variant="outline"
           role="combobox"
           aria-expanded={open}
           className="w-full justify-between font-normal"
         >
-          {selectedEmp 
-            ? `${selectedEmp.fullName} (${selectedEmp.employeeNumber})`
-            : "Select employee..."}
+          <span className="truncate mr-2">
+            {selectedEmp
+              ? `${selectedEmp.fullName} (${selectedEmp.employeeNumber})`
+              : "Select employee..."}
+          </span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[400px] p-0">
-        <Command shouldFilter={false}> {/* Important: Manual filtering */}
-          <CommandInput placeholder="Search name or ID..." value={search} onValueChange={setSearch} />
+      <PopoverContent
+        className="w-[calc(100vw-12px)] md:w-[400px] p-0"
+        align="start"
+        sideOffset={4}
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
+        <Command shouldFilter={false} className="w-full"> {/* Important: Manual filtering */}
+          <CommandInput
+            value={search}
+            placeholder="Search name or ID..."
+            onValueChange={setSearch}
+          />
           <CommandList>
             {loading && employees.length === 0 && (
               <div className="flex items-center justify-center p-4">
@@ -101,7 +109,7 @@ export function EmployeeCommand({ onSelect }: { onSelect: (emp: any) => void }) 
                     setOpen(false)
                   }}
                 >
-                  <Check 
+                  <Check
                     className={cn("mr-2 h-4 w-4", selectedEmp?.employeeNumber === emp.employeeNumber ? "opacity-100" : "opacity-0")}
                   />
                   <div className="flex flex-col">

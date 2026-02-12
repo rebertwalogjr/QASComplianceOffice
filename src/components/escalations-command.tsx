@@ -3,10 +3,19 @@ import { useState, useEffect } from "react";
 import { useInView } from "react-intersection-observer";
 import { Command, CommandInput, CommandList, CommandItem, CommandEmpty, CommandGroup } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { getEscalationUser } from "@/hooks/actions";
 import { Button } from "./ui/button";
 import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getEscalationUser } from "@/prisma-actions/user";
+
+interface EscalationCommandProps {
+  onSelect: (data: any) => void
+  defaultValue?: {
+    id: number;
+    fullName: string;
+    employeeNumber: string
+  } | null
+}
 
 function useDebounce(value: string, delay: number) {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -17,11 +26,11 @@ function useDebounce(value: string, delay: number) {
   return debouncedValue;
 }
 
-export function EscalationCommand({ onSelect }: { onSelect: (emp: any) => void }) {
+export function EscalationCommand({ onSelect, defaultValue }: EscalationCommandProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [employees, setEmployees] = useState<any[]>([]);
-  const [selectedEmp, setSelectedEmp] = useState<any>(null);
+  const [records, setRecords] = useState<any[]>([]);
+  const [selected, setSelected] = useState<any>(defaultValue || null);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const { ref, inView } = useInView();
@@ -34,12 +43,18 @@ export function EscalationCommand({ onSelect }: { onSelect: (emp: any) => void }
     }
   }, [open]);
 
+  useEffect(() => {
+    if (defaultValue) {
+      setSelected(defaultValue)
+    }
+  }, [defaultValue])
+
   // Initial and Search fetch
   useEffect(() => {
     const fetchInitial = async () => {
       setLoading(true);
       const res = await getEscalationUser(debouncedSearch, 0);
-      setEmployees(res.data || []);
+      setRecords(res.data || []);
       setHasMore((res.data || []).length === 20);
       setLoading(false);
     };
@@ -51,15 +66,31 @@ export function EscalationCommand({ onSelect }: { onSelect: (emp: any) => void }
     if (inView && hasMore && !loading) {
       const loadMore = async () => {
         setLoading(true);
-        const res = await getEscalationUser(search, employees.length);
+        const res = await getEscalationUser(search, records.length);
         const newData = res.data || [];
-        setEmployees((prev) => [...prev, ...newData]);
+        setRecords((prev) => [...prev, ...newData]);
         setHasMore(newData.length === 20);
         setLoading(false);
       };
       loadMore();
     }
-  }, [inView, hasMore, loading, debouncedSearch, employees.length]);
+  }, [inView, hasMore, loading, debouncedSearch, records.length]);
+
+  const getDisplayData = (user: any) => {
+    if (!user) return null
+    if (user.appSuiteEmployeeMaster) {
+      return {
+        name: user.appSuiteEmployeeMaster.fullName,
+        number: user.employeeNumber
+      }
+    }
+    return {
+      name: user.fullName,
+      number: user.employeeNumber
+    }
+  }
+
+  const displayData = getDisplayData(selected)
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -73,17 +104,28 @@ export function EscalationCommand({ onSelect }: { onSelect: (emp: any) => void }
           aria-expanded={open}
           className="w-full justify-between font-normal"
         >
-          {selectedEmp 
-            ? `${selectedEmp.appSuiteEmployeeMaster.fullName} (${selectedEmp.employeeNumber})`
-            : "Select employee..."}
+          <span className="truncate mr-2">
+            {displayData
+              ? `${displayData.name} (${displayData.number})`
+              : "Select employee..."}
+          </span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[400px] p-0">
+      <PopoverContent
+        className="w-[calc(100vw-12px)] md:w-[400px] p-0"
+        align="start"
+        sideOffset={4}
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
         <Command shouldFilter={false}> {/* Important: Manual filtering */}
-          <CommandInput placeholder="Search name or ID..." value={search} onValueChange={setSearch} />
+          <CommandInput
+            value={search}
+            placeholder="Search name or ID..."
+            onValueChange={setSearch}
+          />
           <CommandList>
-            {loading && employees.length === 0 && (
+            {loading && records.length === 0 && (
               <div className="flex items-center justify-center p-4">
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
                 <span className="text-sm">Searching...</span>
@@ -91,29 +133,37 @@ export function EscalationCommand({ onSelect }: { onSelect: (emp: any) => void }
             )}
             <CommandEmpty>No employee found.</CommandEmpty>
             <CommandGroup>
-              {employees.map((emp) => (
-                <CommandItem
-                  key={emp.employeeNumber}
-                  value={emp.employeeNumber}
-                  onSelect={() => {
-                    setSelectedEmp(emp)
-                    onSelect(emp)
-                    setOpen(false)
-                  }}
-                >
-                  <Check 
-                    className={cn("mr-2 h-4 w-4", selectedEmp?.employeeNumber === emp.employeeNumber ? "opacity-100" : "opacity-0")}
-                  />
-                  <div className="flex flex-col">
-                    <span>{emp.appSuiteEmployeeMaster.fullName}</span>
-                    <span className="text-xs text-muted-foreground">{emp.employeeNumber}</span>
-                  </div>
-                </CommandItem>
-              ))}
+              {records.map((rec) => {
+                const recDisplay = getDisplayData(rec)
+                return (
+                  <CommandItem
+                    key={rec.employeeNumber}
+                    value={rec.employeeNumber}
+                    onSelect={() => {
+                      const flatData = {
+                        id: rec.id,
+                        fullName: recDisplay?.name,
+                        employeeNumber: recDisplay?.number
+                      }
+                      setSelected(flatData)
+                      onSelect(flatData)
+                      setOpen(false)
+                    }}
+                  >
+                    <Check
+                      className={cn("mr-2 h-4 w-4", selected?.employeeNumber === rec.employeeNumber ? "opacity-100" : "opacity-0")}
+                    />
+                    <div className="flex flex-col">
+                      <span>{recDisplay?.name}</span>
+                      <span className="text-xs text-muted-foreground">{recDisplay?.number}</span>
+                    </div>
+                  </CommandItem>
+                )
+              })}
             </CommandGroup>
             {/* The Invisible Intersection Target */}
             <div ref={ref} className="h-4 w-full">
-              {loading && employees.length > 0 && (
+              {loading && records.length > 0 && (
                 <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
               )}
             </div>

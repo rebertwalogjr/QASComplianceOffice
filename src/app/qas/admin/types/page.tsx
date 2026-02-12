@@ -2,9 +2,9 @@ import { DataTable } from "@/components/ui/data-table";
 import { columns } from "./columns";
 import { Label } from "@radix-ui/react-label";
 import CreateDrawer from "./create-drawer";
-import { getFindingTypes } from "@/hooks/actions";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { getFindingTypes } from "@/prisma-actions/finding-type";
 
 export default async function FindingTypePage() {
   const { data: findingType, error } = await getFindingTypes();

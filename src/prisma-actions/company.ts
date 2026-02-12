@@ -1,0 +1,66 @@
+"use server"
+
+import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
+import { dbQuery } from "@/lib/prisma-db-utils";
+
+export async function getCompanies() {
+  return await dbQuery(
+    prisma.company.findMany()
+  )
+}
+
+export async function createCompany(formData: FormData) {
+  const name = formData.get("name") as string;
+  const code = formData.get("code") as string;
+  const currentUserId = 1002;
+  const { data, error } = await dbQuery(
+    prisma.company.create({
+      data: {
+        name,
+        code,
+        createdBy: currentUserId
+      }
+    })
+  )
+  if (error) { return { data, error } }
+  revalidatePath("/companies")
+  return { data, error }
+}
+
+export async function updateCompany(formData: FormData, companyId: number) {
+  const name = formData.get("name") as string;
+  const code = formData.get("code") as string;
+  const isActive = formData.get("isActive") === "true";
+  const currentUserId = 1002;
+  const { data, error } = await dbQuery(
+    prisma.company.update({
+      where: { id: companyId },
+      data: {
+        name,
+        code,
+        isActive,
+        modifiedBy: currentUserId,
+        modifiedOn: new Date(),
+      }
+    })
+  )
+  if (error) { return { data, error } }
+  revalidatePath("/companies");
+  return { data, error };
+}
+
+export async function deleteCompany(companyId: number) {
+  const { data, error } = await dbQuery(
+    prisma.company.delete({ where: { id: companyId } })
+  )
+  revalidatePath("/companies");
+  return { data, error };
+}
+
+export async function getActiveCompanies() {
+  const { data, error } = await dbQuery(
+    prisma.company.findMany({ where: { isActive: true } })
+  )
+  return { data, error }
+}

@@ -2,10 +2,11 @@ import { DataTable } from "@/components/ui/data-table";
 import { columns } from "./columns";
 import { Label } from "@/components/ui/label";
 import CreateDrawer from "./create-drawer";
-import { getActiveCompanies, getAuditEngagements, getCompanies } from "@/hooks/actions";
 import { LookupsProvider } from "@/context/lookups-context";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { getAuditEngagements } from "@/prisma-actions/engagement";
+import { getActiveCompanies, getCompanies } from "@/prisma-actions/company";
 
 export default async function AuditEngagementPage() {
 

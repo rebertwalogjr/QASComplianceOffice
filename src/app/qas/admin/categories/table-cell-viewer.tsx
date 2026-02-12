@@ -10,10 +10,10 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { X } from "lucide-react";
 import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Status } from "@/lib/common-types";
-import { updateFindingCategory } from "@/hooks/actions";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
 import { FindingCategory } from "../../../../../generated/prisma/client";
+import { updateFindingCategory } from "@/prisma-actions/finding-category";
 
 interface Props {
   item: FindingCategory

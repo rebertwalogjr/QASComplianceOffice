@@ -3,9 +3,10 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ArrowDownAZ, ArrowDownZA, ArrowDown01  } from "lucide-react"
+import { ArrowDownAZ, ArrowDownZA, ArrowDown01, AlertTriangle  } from "lucide-react"
 import TableCellViewer from "./table-cell-viewer"
 import { User } from "../../../../../generated/prisma/client"
+import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 export const columns: ColumnDef<User>[] = [
   {
@@ -61,5 +62,28 @@ export const columns: ColumnDef<User>[] = [
   {
     accessorKey: "company.name",
     header: "Company",
+    cell: ({ row }) => {
+      const company = row.original.companyId ? (row.original as any).company : null
+      const companyIsActive = company ? company.isActive : null
+      return (
+        <div className="flex items-center gap-2">
+          {companyIsActive === false && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <AlertTriangle className="h-4 w-4 text-amber-500" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Warning: This company is currently inactive.</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+          <span className={companyIsActive === false ? "text-muted-foreground" : ""}>
+            {company?.name || "No Company"}
+          </span>
+        </div>
+      )
+    }
   },
 ]

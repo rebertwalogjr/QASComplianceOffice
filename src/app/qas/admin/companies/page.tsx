@@ -2,9 +2,9 @@ import { DataTable } from "@/components/ui/data-table";
 import { columns } from "./columns";
 import { Label } from "@radix-ui/react-label";
 import CreateDrawer from "./create-drawer";
-import { getCompanies } from "@/hooks/actions";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { getCompanies } from "@/prisma-actions/company";
 
 export default async function CompaniesPage() {
   const { data: companies, error } = await getCompanies()

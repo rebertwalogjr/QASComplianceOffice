@@ -9,10 +9,10 @@ import { Separator } from "@/components/ui/separator";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PlusCircle, X } from "lucide-react";
 import { toast } from "sonner";
-import { createAuditEngagement } from "@/hooks/actions";
 import { Spinner } from "@/components/ui/spinner";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Company } from "../../../../../generated/prisma/client";
+import { createAuditEngagement } from "@/prisma-actions/engagement";
 
 interface CreateDrawerProps {
   companies: Company[]

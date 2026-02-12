@@ -11,12 +11,9 @@ import { X } from "lucide-react";
 import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Status } from "@/lib/common-types";
 import { toast } from "sonner";
-import { deleteCompany, updateCompany } from "@/hooks/actions";
-import ActionDialog from "@/components/action-dialog";
-import { DialogClose } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { Company } from "../../../../../generated/prisma/client";
+import { updateCompany } from "@/prisma-actions/company";
 
 interface Props {
   item: Company

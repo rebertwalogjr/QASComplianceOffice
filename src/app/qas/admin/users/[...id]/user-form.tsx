@@ -13,30 +13,61 @@ import Link from "next/link";
 import { useState } from "react";
 import { MultiSelectCommand } from "@/components/multiselect-command";
 import { EscalationCommand } from "@/components/escalations-command";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { updateUser } from "@/prisma-actions/user";
+import { Spinner } from "@/components/ui/spinner";
 
-export default function UserForm({ mode, initialData, companies, groups, projects }: any) {
-  const isFormModeEdit = mode === "edit"
-  const [selectedEmp, setSelectedEmp] = useState(initialData || "")
-  const [escalations, setEscalation] = useState({
-    first: null,
-    second: null,
-    third: null,
-    fourth: null
-  })
+type selectedEmployee = {
+  employeeNumber: string
+  firstName: string
+  lastName: string
+  emailAddress: string
+  position: string
+  fullName: string
+} | null
+
+export default function UserForm({ initialData, companies, groups, projects, roles }: any) {
+  const router = useRouter()
+
+  const [isPending, setIsPending] = useState(false)
+  const employeePersonalData: selectedEmployee = initialData.appSuiteEmployeeMaster
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string>(initialData?.companyId ? initialData.companyId.toString() : "")
+  const [genUsername, setGenUsername] = useState(initialData?.username || "")
+  const [isEscalation, setIsEscalation] = useState<boolean>(initialData.isEscalation)
+  const [isActive, setIsActive] = useState<boolean>(initialData.isActive)
+  const [email, setEmail] = useState<string>(initialData.emailAddress)
+  const [selectedRoleIds, setSelectedRoleIds] = useState<number[]>(
+    initialData?.userRoles?.map((ur: any) => ur.role.id) || []
+  )
   const [selectedGroupIds, setSelectedGroupIds] = useState<number[]>(
-    initialData?.groups?.map((g: any) => g.id) || []
-  );
+    initialData?.userGroups?.map((g: any) => g.group.id) || []
+  )
   const [selectedProjectIds, setSelectedProjectIds] = useState<number[]>(
-    initialData?.project?.map((g: any) => g.id) || []
-  );
-
-  const handleEmployeeSelect = (empNum: string) => {
-    setSelectedEmp(empNum);
-  };
-
-  // const handleEsclationSelect = (empNum: string) => {
-  //   setSelectedEscalation(empNum)
-  // }
+    initialData?.userProjects?.map((p: any) => p.project.id) || []
+  )
+  const [escalations, setEscalation] = useState({
+    first: initialData?.escalation1User ? {
+      id: initialData.escalation1User.id,
+      fullName: initialData.escalation1User.appSuiteEmployeeMaster.fullName,
+      employeeNumber: initialData.escalation1User.appSuiteEmployeeMaster.employeeNumber
+    } : null,
+    second: initialData?.escalation2User ? {
+      id: initialData.escalation2User.id,
+      fullName: initialData.escalation2User.appSuiteEmployeeMaster.fullName,
+      employeeNumber: initialData.escalation1User.appSuiteEmployeeMaster.employeeNumber
+    } : null,
+    third: initialData?.escalation3User ? {
+      id: initialData.escalation3User.id,
+      fullName: initialData.escalation3User.appSuiteEmployeeMaster.fullName,
+      employeeNumber: initialData.escalation1User.appSuiteEmployeeMaster.employeeNumber
+    } : null,
+    fourth: initialData?.escalation4User ? {
+      id: initialData.escalation4User.id,
+      fullName: initialData.escalation4User.appSuiteEmployeeMaster.fullName,
+      employeeNumber: initialData.escalation1User.appSuiteEmployeeMaster.employeeNumber
+    } : null
+  })
 
   const handleEscalationSelect = (level: keyof typeof escalations, user: any) => {
     setEscalation((prev) => ({
@@ -45,8 +76,32 @@ export default function UserForm({ mode, initialData, companies, groups, project
     }));
   };
 
-  const handleSave = () => {
-    console.log(escalations)
+  const handleSave = async () => {
+    setIsPending(true)
+    const formData = {
+      username: genUsername,
+      emailAddress: email,
+      companyId: selectedCompanyId,
+      roleIds: selectedRoleIds,
+      groupIds: selectedGroupIds,
+      projectIds: selectedProjectIds,
+      escalations: escalations,
+      isEscalation: isEscalation,
+      userId: initialData.id,
+      isActive: isActive,
+    }
+
+    const response = await updateUser(initialData.id, formData)
+
+    if (response.error) {
+      toast.error("Error: " + response.error)
+    } else {
+      toast.success("User updated successfully!");
+      router.push("/qas/admin/users")
+      router.refresh()
+    }
+
+    setIsPending(false)
   }
 
   return (
@@ -68,17 +123,14 @@ export default function UserForm({ mode, initialData, companies, groups, project
                 <FieldGroup>
                   <Field>
                     <FieldLabel>Select Employee</FieldLabel>
-                    {isFormModeEdit ?
-                      <Input value={`${initialData.appSuiteEmployeeMaster.fullName} (${initialData.employeeNumber})`} className="bg-muted" readOnly /> :
-                      <EmployeeCommand onSelect={handleEmployeeSelect} />
-                    }
+                    <Input value={`${employeePersonalData?.fullName} (${initialData.employeeNumber})`} className="bg-muted" readOnly />
                   </Field>
 
                   <Field>
                     <FieldLabel htmlFor="empId">Employee Id</FieldLabel>
                     <Input
                       id="empId"
-                      value={isFormModeEdit ? initialData?.employeeNumber : (selectedEmp?.employeeNumber || "")}
+                      value={initialData?.employeeNumber}
                       className="bg-muted"
                       readOnly />
                   </Field>
@@ -87,7 +139,7 @@ export default function UserForm({ mode, initialData, companies, groups, project
                     <FieldLabel htmlFor="firtname">First Name</FieldLabel>
                     <Input
                       id="firtname"
-                      value={isFormModeEdit ? initialData.appSuiteEmployeeMaster?.firstName : (selectedEmp?.firstName || "")}
+                      value={employeePersonalData?.firstName}
                       className="bg-muted"
                       readOnly />
                   </Field>
@@ -96,7 +148,7 @@ export default function UserForm({ mode, initialData, companies, groups, project
                     <FieldLabel htmlFor="lastname">Last Name</FieldLabel>
                     <Input
                       id="lastname"
-                      value={isFormModeEdit ? initialData.appSuiteEmployeeMaster?.lastName : (selectedEmp?.lastName || "")}
+                      value={employeePersonalData?.lastName}
                       className="bg-muted"
                       readOnly />
                   </Field>
@@ -105,7 +157,7 @@ export default function UserForm({ mode, initialData, companies, groups, project
                     <FieldLabel htmlFor="position">Position</FieldLabel>
                     <Input
                       id="position"
-                      value={isFormModeEdit ? initialData?.position : (selectedEmp?.position || "")}
+                      value={employeePersonalData?.position}
                       className="bg-muted"
                       readOnly />
                   </Field>
@@ -114,7 +166,9 @@ export default function UserForm({ mode, initialData, companies, groups, project
                     <FieldLabel htmlFor="email">Email Address</FieldLabel>
                     <Input
                       id="email"
-                      defaultValue={isFormModeEdit ? initialData?.emailAddress : (selectedEmp?.emailAddress || "")} />
+                      defaultValue={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
                   </Field>
 
                 </FieldGroup>
@@ -139,14 +193,25 @@ export default function UserForm({ mode, initialData, companies, groups, project
                   <FieldGroup>
                     <Field>
                       <FieldLabel htmlFor="company">Company</FieldLabel>
-                      <Select required>
+                      <Select
+                        required
+                        value={selectedCompanyId}
+                        onValueChange={(value) => setSelectedCompanyId(value)}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Select company..." />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent 
+                        className="w-[calc(100vw-24px)] md:w-full p-0"
+                        align="start"
+                        position="popper"
+                        sideOffset={4}
+                        >
                           {companies.map((company: any) => (
                             <SelectItem key={company.id} value={company.id.toString()}>
-                              {company.name}
+                              <span className="truncate inline-block max-w-[80vw] md:max-w-none">
+                                {company.name}
+                              </span>
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -155,38 +220,48 @@ export default function UserForm({ mode, initialData, companies, groups, project
 
                     <Field>
                       <FieldLabel htmlFor="userlevel">User Level</FieldLabel>
-                      <Select required>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select level..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="level-a">Compliance Secretariat</SelectItem>
-                          <SelectItem value="level-b">Compliance Officer</SelectItem>
-                          <SelectItem value="level-c">Supervisor</SelectItem>
-                          <SelectItem value="level-d">Recipient</SelectItem>
-                          <SelectItem value="level-e">Admin</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <MultiSelectCommand
+                        records={roles}
+                        selectedIds={selectedRoleIds}
+                        onChange={setSelectedRoleIds} />
                     </Field>
 
                     <Field>
                       <FieldLabel htmlFor="username">Username</FieldLabel>
-                      <Input id="username" />
+                      <Input id="username" value={genUsername} onChange={(e) => setGenUsername(e.target.value)} />
                     </Field>
 
                     <Field>
                       <FieldLabel htmlFor="addEmail">Escalation</FieldLabel>
                       <div className="flex gap-3 items-center">
-                        <Checkbox />
+                        <Checkbox
+                          id="isEscalation"
+                          checked={isEscalation}
+                          onCheckedChange={(checked: boolean) => setIsEscalation(checked)}
+                        />
                         <FieldDescription>Add to Escalation?</FieldDescription>
                       </div>
                     </Field>
 
-
-
                   </FieldGroup>
 
                 </FieldSet>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-none">
+              <CardContent>
+                <Field>
+                  <FieldLabel>Ticking this will change the user status.</FieldLabel>
+                  <div className="flex gap-3 items-center">
+                    <Checkbox
+                      id="isActive"
+                      checked={isActive}
+                      onCheckedChange={(checked: boolean) => setIsActive(checked)}
+                    />
+                    <FieldDescription>{isActive ? "Active" : "Inactive"}</FieldDescription>
+                  </div>
+                </Field>
               </CardContent>
             </Card>
           </div>
@@ -240,22 +315,34 @@ export default function UserForm({ mode, initialData, companies, groups, project
 
                   <Field>
                     <FieldLabel htmlFor="escalation">First Escalation</FieldLabel>
-                    <EscalationCommand onSelect={(user) => handleEscalationSelect("first", user)} />
+                    <EscalationCommand
+                      defaultValue={escalations.first}
+                      onSelect={(user) => handleEscalationSelect("first", user)}
+                    />
                   </Field>
 
                   <Field>
                     <FieldLabel htmlFor="escalation">Second Escalation</FieldLabel>
-                    <EscalationCommand onSelect={(user) => handleEscalationSelect("second", user)} />
+                    <EscalationCommand
+                      defaultValue={escalations.second}
+                      onSelect={(user) => handleEscalationSelect("second", user)}
+                    />
                   </Field>
 
                   <Field>
                     <FieldLabel htmlFor="escalation">Third Escalation</FieldLabel>
-                    <EscalationCommand onSelect={(user) => handleEscalationSelect("third", user)} />
+                    <EscalationCommand
+                      defaultValue={escalations.third}
+                      onSelect={(user) => handleEscalationSelect("third", user)}
+                    />
                   </Field>
 
                   <Field>
                     <FieldLabel htmlFor="escalation">Fourth Escalation</FieldLabel>
-                    <EscalationCommand onSelect={(user) => handleEscalationSelect("fourth", user)} />
+                    <EscalationCommand
+                      defaultValue={escalations.fourth}
+                      onSelect={(user) => handleEscalationSelect("fourth", user)}
+                    />
                   </Field>
 
                 </FieldGroup>
@@ -266,8 +353,17 @@ export default function UserForm({ mode, initialData, companies, groups, project
         </div>
 
         <div className="flex justify-end gap-2">
-          <Button variant="outline" asChild><Link href="/qas/admin/users">Cancel</Link></Button>
-          <Button onClick={handleSave}>Save User</Button>
+          <Button variant="outline" disabled={isPending} asChild><Link href="/qas/admin/users">Cancel</Link></Button>
+          <Button onClick={handleSave} disabled={isPending}>
+            {isPending ? (
+              <>
+                Saving
+                <Spinner className="mr-2" />
+              </>
+            ) : (
+              "Save"
+            )}
+          </Button>
         </div>
       </div>
     </div>

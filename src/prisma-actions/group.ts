@@ -1,0 +1,88 @@
+"use server"
+
+import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
+import { dbQuery } from "@/lib/prisma-db-utils";
+
+export async function getGroups() {
+  return await dbQuery(
+    prisma.group.findMany({
+      include: {
+        project: true,
+      }
+    })
+  )
+}
+
+export async function getActiveGroups() {
+  return await dbQuery(
+    prisma.group.findMany({
+      where: {
+        isActive: true
+      },
+      include: {
+        project: true,
+      }
+    })
+  )
+}
+
+export async function createGroup(formData: FormData) {
+  const name = formData.get("name") as string;
+  const code = formData.get("code") as string;
+  const projectId = Number(formData.get("projectId"));
+  const inCharge = formData.get("inCharge") as string;
+  const emailAddress = formData.get("emailAddress") as string;
+  const remarks = formData.get("remarks") as string;
+  const currentUserId = 1002;
+  const { data, error } = await dbQuery(
+    prisma.group.create({
+      data: {
+        name,
+        code,
+        project: {
+          connect: { id: projectId }
+        },
+        inCharge,
+        emailAddress,
+        remarks,
+        creator: {
+          connect: { id: currentUserId }
+        },
+      },
+    })
+  )
+  if (error) { return { data, error } }
+  revalidatePath("/groups")
+  return { data, error }
+}
+
+export async function updateGroup(formData: FormData, groupId: number) {
+  const name = formData.get("name") as string;
+  const code = formData.get("code") as string;
+  const projectId = Number(formData.get("projectId"));
+  const inCharge = formData.get("inCharge") as string;
+  const emailAddress = formData.get("emailAddress") as string;
+  const remarks = formData.get("remarks") as string;
+  const isActive = formData.get("isActive") === "true";
+  const currentUserId = 1002;
+  const { data, error } = await dbQuery(
+    prisma.group.update({
+      where: { id: groupId },
+      data: {
+        name,
+        code,
+        projectId,
+        inCharge,
+        emailAddress,
+        remarks,
+        isActive,
+        modifiedBy: currentUserId,
+        modifiedOn: new Date(),
+      }
+    })
+  )
+  if (error) { return { data, error } }
+  revalidatePath("/groups")
+  return { data, error }
+}

@@ -8,12 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { createProject } from "@/hooks/actions";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PlusCircle, X } from "lucide-react";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
 import { Company } from "../../../../../generated/prisma/client";
+import { createProject } from "@/prisma-actions/project";
 
 interface CreateDrawerProps {
   companies: Company[]

@@ -11,9 +11,9 @@ import { X } from "lucide-react";
 import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Status } from "@/lib/common-types";
 import { toast } from "sonner";
-import { updateFindingType } from "@/hooks/actions";
 import { Spinner } from "@/components/ui/spinner";
 import { TypeOfFinding } from "../../../../../generated/prisma/client";
+import { updateFindingType } from "@/prisma-actions/finding-type";
 
 interface Props {
   item: TypeOfFinding

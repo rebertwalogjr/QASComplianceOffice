@@ -12,10 +12,10 @@ import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Status } from "@/lib/common-types";
 import { Textarea } from "@/components/ui/textarea";
 import { useLookups } from "@/context/lookups-context";
-import { updateProject } from "@/hooks/actions";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
 import { Project } from "../../../../../generated/prisma/client";
+import { updateProject } from "@/prisma-actions/project";
 
 
 interface Props {

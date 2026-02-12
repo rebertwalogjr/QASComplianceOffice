@@ -11,10 +11,9 @@ import { X } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Status } from "@/lib/common-types";
-import Escalation from "@/lib/escalation";
 
 interface Props {
-  item: Escalation
+  item: any
   className?: string
 }
 

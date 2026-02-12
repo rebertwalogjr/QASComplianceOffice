@@ -2,9 +2,9 @@ import { DataTable } from "@/components/ui/data-table";
 import { columns } from "./columns";
 import { Label } from "@radix-ui/react-label";
 import CreateDrawer from "./create-drawer";
-import { getFindingCategories } from "@/hooks/actions";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { getFindingCategories } from "@/prisma-actions/finding-category";
 
 export default async function FindingCategoryage() {
   const { data: categories, error } = await getFindingCategories();

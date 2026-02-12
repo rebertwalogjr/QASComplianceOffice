@@ -1,29 +1,32 @@
-import { getActiveCompanies, getActiveGroups, getActiveProjects, getUserById } from "@/hooks/actions"
+import { getActiveCompanies } from "@/prisma-actions/company"
 import UserForm from "./user-form"
+import { getUserById } from "@/prisma-actions/user"
+import { getActiveGroups } from "@/prisma-actions/group"
+import { getActiveProjects } from "@/prisma-actions/project"
+import { getActiveRoles } from "@/prisma-actions/role"
 
 export default async function UserPage({ params } : { params : Promise<{ id?: string[]}>}) {
   const resolvedParams = await params
   const slug = resolvedParams.id?.[0]
-  const isCreate = slug === "new"
-  const mode = isCreate ? "create" : "edit"
-  const userId = isCreate ? null : Number(slug)
+  const userId = Number(slug)
 
-  const [companiesRes, userToEditRes, activeGroupRes, activeProjectRes] = await Promise.all([
-    getActiveCompanies(), 
-    userId ? getUserById(Number(userId)) : Promise.resolve({data: null, error: null}),
+  const [companiesRes, userToEditRes, activeGroupRes, activeProjectRes, activeRoleRes] = await Promise.all([
+    getActiveCompanies(),
+    getUserById(Number(userId)),
     getActiveGroups(),
-    getActiveProjects()
+    getActiveProjects(),
+    getActiveRoles()
   ])
 
-  const error = companiesRes.error || userToEditRes.error || activeGroupRes.error
+  const error = companiesRes.error || userToEditRes.error || activeGroupRes.error || activeGroupRes.error || activeRoleRes.error
 
   return (
     <UserForm
-      mode={mode}
       initialData={userToEditRes.data}
       companies={companiesRes.data}
       groups={activeGroupRes.data}
       projects={activeProjectRes.data}
+      roles={activeRoleRes.data}
     />
   )
 }
