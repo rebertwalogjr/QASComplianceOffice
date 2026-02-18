@@ -47,7 +47,7 @@ export const columns: ColumnDef<AuditReport>[] = [
     accessorKey: "projectId.name",
     header: "Project",
     cell: ({ row }) => {
-      const project = row.original.projectId ? (row.original as any).projectDepartmentList : null
+      const project = row.original.projectId ? (row.original as any).project : null
       const isActive = project ? project.isActive : null
       return (
         <div className="flex items-center gap-2">

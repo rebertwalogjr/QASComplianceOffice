@@ -2,13 +2,14 @@
 
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown } from "lucide-react";
+import { AlertTriangle, ArrowUpDown } from "lucide-react";
 import TableCellViewer from "./table-cell-viewer";
 import StatusBadge from "@/components/status-badge";
 import PopoverStatusFilter from "./popover-status-filter";
-import Transaction from "@/lib/transaction";
+import { JobTransaction } from "../../../../generated/prisma/client";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-export const columns: ColumnDef<Transaction>[] = [
+export const columns: ColumnDef<JobTransaction>[] = [
   {
     accessorKey: "id",
     header: ({ column }) => {
@@ -27,11 +28,11 @@ export const columns: ColumnDef<Transaction>[] = [
       )
     },
     cell: ({ row }) => {
-      return <TableCellViewer item={row.original as Transaction} className={row.original.status === "Closed" ? "opacity-50" : ""} />
+      return <TableCellViewer item={row.original as JobTransaction} className={row.original.jobStatus === "Closed" ? "opacity-50" : ""} />
     },
   },
   {
-    accessorKey: "auditNo",
+    accessorKey: "auditReport.name",
     header: "Audit Finding No.",
     // cell: ({row}) => {
     //   return <div className={row.original.status === "Closed" ? "opacity-50" : ""}>{row.original.auditNo}</div>
@@ -40,12 +41,12 @@ export const columns: ColumnDef<Transaction>[] = [
   {
     accessorKey: "computedStatus",
     accessorFn: row => {
-      if (row.status === "Open") {
-        if (row.secondaryStatus === "New") return "New"
-        if (row.secondaryStatus === "On-Hold") return "On-Hold"
+      if (row.jobStatus?.toLowerCase() === "open") {
+        // if (row.secondaryStatus === "New") return "New"
+        // if (row.secondaryStatus === "On-Hold") return "On-Hold"
         return "Open"
       }
-      return row.status
+      return row.jobStatus
     },
     header: ({ column }) => (
       <div className="flex items-center justify-between">
@@ -89,12 +90,58 @@ export const columns: ColumnDef<Transaction>[] = [
   //   }
   // },
   {
-    accessorKey: "company",
+    accessorKey: "company.name",
     header: "Company",
+    cell: ({ row }) => {
+      const company = row.original.companyId ? (row.original as any).company : null
+      const companyIsActive = company ? company.isActive : null
+      return (
+        <div className="flex items-center gap-2">
+          {companyIsActive === false && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <AlertTriangle className="h-4 w-4 text-amber-500" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Warning: This company is currently inactive.</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+          <span className={companyIsActive === false ? "text-muted-foreground" : ""}>
+            {company?.name || "No Company"}
+          </span>
+        </div>
+      )
+    }
   },
   {
-    accessorKey: "project",
-    header: "Project / Department",
+    accessorKey: "projectId.name",
+    header: "Project/Department",
+    cell: ({ row }) => {
+      const project = row.original.projectId ? (row.original as any).project : null
+      const isActive = project ? project.isActive : null
+      return (
+        <div className="flex items-center gap-2">
+          {isActive === false && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <AlertTriangle className="h-4 w-4 text-amber-500" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Warning: This project is currently inactive.</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+          <span className={isActive === false ? "text-muted-foreground" : ""}>
+            {project?.name || "No Company"}
+          </span>
+        </div>
+      )
+    }
   },
   // { accessorKey: "responsiblePerson", header: "Responsible Person" },
   // { accessorKey: "engagement", header: "Audit Engagement" },

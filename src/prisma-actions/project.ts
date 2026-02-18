@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { dbQuery } from "@/lib/prisma-db-utils";
+import { Prisma } from "../../generated/prisma/client";
 
 export async function getProjects() {
   return await dbQuery(
@@ -14,7 +15,7 @@ export async function getProjects() {
   )
 }
 
-export async function getActiveProjects() {
+export async function getActiveProjects() : Promise<{ data: ActiveProjectPayload[] | null, error: any}> {
   return await dbQuery(
     prisma.project.findMany({
       where: { isActive: true }
@@ -69,3 +70,8 @@ export async function updateProject(formData: FormData, projectId: number) {
   revalidatePath("/projects")
   return { data, error }
 }
+
+// Projects Payload
+export type ActiveProjectPayload = Prisma.ProjectGetPayload<{
+  select: { id: true; name: true; code: true; companyId: true }
+}>

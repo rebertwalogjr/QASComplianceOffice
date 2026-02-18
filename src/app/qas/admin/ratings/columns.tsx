@@ -3,9 +3,10 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ArrowDownAZ, ArrowDownZA, ArrowDown01  } from "lucide-react"
+import { ArrowDownAZ, ArrowDownZA, ArrowDown01, AlertTriangle  } from "lucide-react"
 import TableCellViewer from "./table-cell-viewer"
-import AuditRating from "@/lib/audit-rating"
+import { AuditRating } from "../../../../../generated/prisma/client"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 export const columns: ColumnDef<AuditRating>[] = [
   {
@@ -16,8 +17,31 @@ export const columns: ColumnDef<AuditRating>[] = [
     }
   },
   {
-    accessorKey: "company",
-    header: "Company"
+    accessorKey: "company.name",
+    header: "Company",
+    cell: ({ row }) => {
+      const company = row.original.companyId ? (row.original as any).company : null
+      const companyIsActive = company ? company.isActive : null
+      return (
+        <div className="flex items-center gap-2">
+          {companyIsActive === false && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <AlertTriangle className="h-4 w-4 text-amber-500" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Warning: This company is currently inactive.</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+          <span className={companyIsActive === false ? "text-muted-foreground" : ""}>
+            {company?.name || "No Company"}
+          </span>
+        </div>
+      )
+    }
   },
   {
     accessorKey: "status",
@@ -43,7 +67,7 @@ export const columns: ColumnDef<AuditRating>[] = [
         </div>
     },
     cell: ({ row }) => {
-      return <Badge variant="outline" className={ row.original.status === "Active" ? "bg-green-50 text-green-500 border-green-500" : "bg-gray-50 text-gray-600 border-gray-600" } >{ row.original.status }</Badge>
+      return <Badge variant="outline" className={ row.original.isActive === true ? "bg-green-50 text-green-500 border-green-500" : "bg-gray-50 text-gray-600 border-gray-600" } >{ row.original.isActive ? "Active" : "Inactive" }</Badge>
     }
   },
 ]

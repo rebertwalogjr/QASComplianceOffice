@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { dbQuery } from "@/lib/prisma-db-utils";
+import { Prisma } from "../../generated/prisma/client";
 
 export async function getGroups() {
   return await dbQuery(
@@ -14,14 +15,11 @@ export async function getGroups() {
   )
 }
 
-export async function getActiveGroups() {
+export async function getActiveGroups() : Promise<{ data: ActiveGroupPayload[] | null, error: any}> {
   return await dbQuery(
     prisma.group.findMany({
       where: {
         isActive: true
-      },
-      include: {
-        project: true,
       }
     })
   )
@@ -86,3 +84,8 @@ export async function updateGroup(formData: FormData, groupId: number) {
   revalidatePath("/groups")
   return { data, error }
 }
+
+// group payload
+export type ActiveGroupPayload = Prisma.GroupGetPayload<{
+  select: { id: true, name: true, code: true, projectId: true },
+}>

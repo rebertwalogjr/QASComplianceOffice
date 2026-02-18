@@ -9,22 +9,34 @@ import { Separator } from "@/components/ui/separator";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PlusCircle, X } from "lucide-react";
 import { toast } from "sonner";
-import { createAuditReport } from "@/prisma-actions/audit-number";
+import { createAuditReport } from "@/prisma-actions/audit-report";
 import { Spinner } from "@/components/ui/spinner";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Company, Project, AuditEngagement } from "../../../../../generated/prisma/client";
+import { ActiveCompanyPayload } from "@/prisma-actions/company";
+import { ActiveProjectPayload } from "@/prisma-actions/project";
+import { ActiveEngagementPayload } from "@/prisma-actions/engagement";
 
 interface CreateDrawerProps {
-  companies: Company[]
-  projects: Project[]
-  auditEngagements: AuditEngagement[]
+  companies: ActiveCompanyPayload[]
+  projects: ActiveProjectPayload[]
+  auditEngagements: ActiveEngagementPayload[]
 }
 
 export default function CreateDrawer({ companies, projects, auditEngagements }: CreateDrawerProps) {
   const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = React.useState(false);
   const [isPending, setIsPending] = React.useState(false);
-  const [formData, setFormData] = React.useState({ name: "", companyId: "", projectDepartmentId: "", auditEngagementId: "" });
+  const [formData, setFormData] = React.useState({ name: "", companyId: "", projectDepartmentId: "", auditEngagementId: "" })
+
+  const filteredProjects = React.useMemo(() => {
+    if (!formData.companyId) return [];
+    return projects.filter(p => p.companyId.toString() === formData.companyId);
+  }, [formData.companyId, projects]);
+
+  const filteredEngagements = React.useMemo(() => {
+    if (!formData.companyId) return [];
+    return auditEngagements.filter(e => e.companyId.toString() === formData.companyId);
+  }, [formData.companyId, auditEngagements]);
 
   const handleSubmit = async () => {
     setIsPending(true)
@@ -39,7 +51,7 @@ export default function CreateDrawer({ companies, projects, auditEngagements }: 
 
     data.append("name", formData.name)
     data.append("companyId", formData.companyId)
-    data.append("projectDepartmentId", formData.projectDepartmentId)
+    data.append("projectId", formData.projectDepartmentId)
     data.append("auditEngagementId", formData.auditEngagementId)
 
     const response = await createAuditReport(data)
@@ -88,10 +100,15 @@ export default function CreateDrawer({ companies, projects, auditEngagements }: 
                 <FieldGroup>
 
                   <Field>
+                    <FieldLabel htmlFor="name">Audit Number</FieldLabel>
+                    <Input id="name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
+                  </Field>
+
+                  <Field>
                     <FieldLabel htmlFor="company">Company</FieldLabel>
                     <Select
                       value={formData.companyId}
-                      onValueChange={(value) => setFormData({ ...formData, companyId: value })}
+                      onValueChange={(value) => setFormData({ ...formData, companyId: value, projectDepartmentId: "", auditEngagementId: "" })}
                     >
                       <SelectTrigger id="company">
                         <SelectValue placeholder="Select a company" />
@@ -113,13 +130,14 @@ export default function CreateDrawer({ companies, projects, auditEngagements }: 
                     <Select
                       value={formData.projectDepartmentId}
                       onValueChange={(value) => setFormData({ ...formData, projectDepartmentId: value })}
+                      disabled={!formData.companyId}
                     >
                       <SelectTrigger id="project">
-                        <SelectValue placeholder="Select a project" />
+                        <SelectValue placeholder={formData.companyId ? "Select a project" : "Select a company first."} />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectGroup>
-                          {projects.map((project) => (
+                          {filteredProjects.map((project) => (
                             <SelectItem key={project.id} value={project.id.toString()}>
                               {project.name}
                             </SelectItem>
@@ -130,22 +148,18 @@ export default function CreateDrawer({ companies, projects, auditEngagements }: 
                   </Field>
 
                   <Field>
-                    <FieldLabel htmlFor="name">Audit Number</FieldLabel>
-                    <Input id="name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
-                  </Field>
-
-                  <Field>
                     <FieldLabel htmlFor="engagement">Engagement</FieldLabel>
                     <Select
                       value={formData.auditEngagementId}
                       onValueChange={(value) => setFormData({ ...formData, auditEngagementId: value })}
+                      disabled={!formData.companyId}
                     >
                       <SelectTrigger id="engagement">
-                        <SelectValue placeholder="Select a audit engagement" />
+                        <SelectValue placeholder={formData.companyId ? "Select a engagement" : "Select a company first."} />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectGroup>
-                          {auditEngagements.map((auditEngagement) => (
+                          {filteredEngagements.map((auditEngagement) => (
                             <SelectItem key={auditEngagement.id} value={auditEngagement.id.toString()}>
                               {auditEngagement.name}
                             </SelectItem>

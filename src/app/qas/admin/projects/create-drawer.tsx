@@ -14,9 +14,10 @@ import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
 import { Company } from "../../../../../generated/prisma/client";
 import { createProject } from "@/prisma-actions/project";
+import { ActiveCompanyPayload } from "@/prisma-actions/company";
 
 interface CreateDrawerProps {
-  companies: Company[]
+  companies: ActiveCompanyPayload[] | null
 }
 
 export default function CreateDrawer({ companies }: CreateDrawerProps) {
@@ -111,7 +112,7 @@ export default function CreateDrawer({ companies }: CreateDrawerProps) {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
-                        {companies.map((company) => (
+                        {companies?.map((company) => (
                           <SelectItem key={company.id} value={company.id.toString()}>
                             {company.name}
                           </SelectItem>

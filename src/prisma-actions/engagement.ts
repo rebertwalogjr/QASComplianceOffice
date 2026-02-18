@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { dbQuery } from "@/lib/prisma-db-utils";
+import { Prisma } from "../../generated/prisma/client";
 
 export async function getAuditEngagements() {
   return await dbQuery(
@@ -14,7 +15,7 @@ export async function getAuditEngagements() {
   )
 }
 
-export async function getActiveAuditEngagements() {
+export async function getActiveAuditEngagements() : Promise<{ data: ActiveEngagementPayload[] | null, error: any}> {
   return await dbQuery(
     prisma.auditEngagement.findMany({
       where: {
@@ -63,3 +64,8 @@ export async function updateAuditEngagement(formData: FormData, engagementId: nu
   revalidatePath("/engagements")
   return { data, error }
 }
+
+// enagement payload
+export type ActiveEngagementPayload = Prisma.AuditEngagementGetPayload<{
+  select: { id: true; name: true; companyId: true; }
+}>

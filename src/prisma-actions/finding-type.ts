@@ -3,10 +3,19 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { dbQuery } from "@/lib/prisma-db-utils";
+import { Prisma } from "../../generated/prisma/client";
 
 export async function getFindingTypes() {
   return await dbQuery(
     prisma.typeOfFinding.findMany()
+  )
+}
+
+export async function getActiveFindingTypes() : Promise<{ data: ActiveFindingTypePayload[] | null, error: any}> {
+  return await dbQuery(
+    prisma.typeOfFinding.findMany({
+      where: { isActive: true }
+    })
   )
 }
 
@@ -45,3 +54,8 @@ export async function updateFindingType(formData: FormData, typeId: number) {
   revalidatePath("/types")
   return { data, error }
 }
+
+// finding types payload
+export type ActiveFindingTypePayload = Prisma.TypeOfFindingGetPayload<{
+  select: { id: true; name: true;}
+}>

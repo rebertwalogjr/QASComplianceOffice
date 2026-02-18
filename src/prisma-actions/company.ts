@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { dbQuery } from "@/lib/prisma-db-utils";
+import { Prisma } from "../../generated/prisma/client";
 
 export async function getCompanies() {
   return await dbQuery(
@@ -58,9 +59,15 @@ export async function deleteCompany(companyId: number) {
   return { data, error };
 }
 
-export async function getActiveCompanies() {
-  const { data, error } = await dbQuery(
-    prisma.company.findMany({ where: { isActive: true } })
+export async function getActiveCompanies() : Promise<{ data: ActiveCompanyPayload[] | null, error: any}> {
+  return await dbQuery(
+    prisma.company.findMany({ 
+      where: { isActive: true }
+    })
   )
-  return { data, error }
 }
+
+// Company Payload
+export type ActiveCompanyPayload = Prisma.CompanyGetPayload<{
+  select: { id: true; name: true; code: true }
+}>

@@ -12,11 +12,11 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { PlusCircle, X } from "lucide-react";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
-import { Project } from "../../../../../generated/prisma/client";
 import { createGroup } from "@/prisma-actions/group";
+import { ActiveProjectPayload } from "@/prisma-actions/project";
 
 interface CreateDrawerProps {
-  projects: Project[]
+  projects: ActiveProjectPayload[]
 }
 
 export default function CreateDrawer({ projects }: CreateDrawerProps) {

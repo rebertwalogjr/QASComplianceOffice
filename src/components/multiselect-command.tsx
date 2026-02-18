@@ -23,11 +23,13 @@ import { Label } from "./ui/label";
 export function MultiSelectCommand({
   records,
   selectedIds,
-  onChange
+  onChange,
+  disabled
 }: {
   records: any[],
   selectedIds: number[],
-  onChange: (ids: number[]) => void
+  onChange: (ids: number[]) => void,
+  disabled?: boolean
 }) {
   const [open, setOpen] = React.useState(false);
 
@@ -48,7 +50,7 @@ export function MultiSelectCommand({
 
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button variant="outline" className="w-full justify-between font-normal">
+          <Button variant="outline" className="w-full justify-between font-normal" disabled={disabled}>
             {selectedIds.length > 0 ? `${selectedIds.length} selected` : "Select item..."}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
@@ -86,9 +88,9 @@ export function MultiSelectCommand({
         {selectedIds.map((id) => {
           const group = records.find((g) => g.id === id);
           return (
-            <Badge key={id} variant="secondary" className="flex items-center gap-1 pl-4">
+            <Badge key={id} variant="secondary" className={cn("flex items-center gap-1 pl-4", disabled ? "opacity-50" : "")}>
               <Label className="text-sm">{group?.name}</Label>
-              <Button variant="ghost" size="icon-sm" className="hover:text-destructive cursor-pointer" onClick={() => handleUnselect(id)}>
+              <Button variant="ghost" size="icon-sm" className="hover:text-destructive cursor-pointer" onClick={() => handleUnselect(id)} disabled={disabled}>
                 <X className="h-3 w-3" />
               </Button>
             </Badge>

@@ -3,13 +3,14 @@ import { columns } from "./columns";
 import { Label } from "@radix-ui/react-label";
 import CreateDrawer from "./create-drawer";
 import { LookupsProvider } from "@/context/lookups-context";
-import { getAuditReports } from "@/prisma-actions/audit-number";
+import { getAuditReports } from "@/prisma-actions/audit-report";
 import { getActiveCompanies } from "@/prisma-actions/company";
 import { getActiveProjects } from "@/prisma-actions/project";
 import { getActiveAuditEngagements } from "@/prisma-actions/engagement";
 
 export default async function AuditReportsPage() {
-  const [auditReportsRes, activeCompaniesRes, activeProjectsRes, activeAuditEngagementsRes] = await Promise.all([getAuditReports(), getActiveCompanies(), getActiveProjects(), getActiveAuditEngagements()]);
+  const [auditReportsRes, activeCompaniesRes, activeProjectsRes, activeAuditEngagementsRes] = await Promise.all([
+    getAuditReports(), getActiveCompanies(), getActiveProjects(), getActiveAuditEngagements()]);
 
   const auditReports = auditReportsRes.data ?? []
   const activeCompanies = activeCompaniesRes.data ?? []

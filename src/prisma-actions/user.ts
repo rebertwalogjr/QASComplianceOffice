@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { dbQuery } from "@/lib/prisma-db-utils";
+import { Prisma } from "../../generated/prisma/client";
 
 export async function getUsers() {
   return await dbQuery(
@@ -15,101 +16,11 @@ export async function getUsers() {
   )
 }
 
-export async function getUserById(id: number) {
+export async function getUserById(id: number) : Promise<{ data: UserInfoPayload | null , error: any }> {
   return await dbQuery(
-    prisma.user.findFirst({
-      where: {
-        id: id
-      },
-      include: {
-        appSuiteEmployeeMaster: {
-          select: {
-            fullName: true,
-            firstName: true,
-            lastName: true,
-            position: true,
-            emailAddress: true
-          }
-        },
-        userRoles: {
-          where: { isActive: true },
-          select: {
-            role: {
-              select: {
-                id: true
-              }
-            }
-          },
-        },
-        userGroups: {
-          where: { isActive: true },
-          select: {
-            group: {
-              select: {
-                id: true,
-                name: true,
-                isActive: true
-              }
-            }
-          }
-        },
-        userProjects: {
-          where: { isActive: true },
-          select: {
-            project: {
-              select: {
-                id: true,
-                name: true,
-                isActive: true
-              }
-            }
-          }
-        },
-        escalation1User: {
-          select: {
-            id: true,
-            appSuiteEmployeeMaster: {
-              select: {
-                fullName: true,
-                employeeNumber: true
-              }
-            }
-          }
-        },
-        escalation2User: {
-          select: {
-            id: true,
-            appSuiteEmployeeMaster: {
-              select: {
-                fullName: true,
-                employeeNumber: true
-              }
-            }
-          }
-        },
-        escalation3User: {
-          select: {
-            id: true,
-            appSuiteEmployeeMaster: {
-              select: {
-                fullName: true,
-                employeeNumber: true
-              }
-            }
-          }
-        },
-        escalation4User: {
-          select: {
-            id: true,
-            appSuiteEmployeeMaster: {
-              select: {
-                fullName: true,
-                employeeNumber: true
-              }
-            }
-          }
-        },
-      }
+    prisma.user.findUnique({
+      where: { id },
+      include: userInfoInclude
     })
   )
 }
@@ -319,3 +230,108 @@ export async function updateUser(userId: number, formData: any) {
   revalidatePath("/qas/admin/users");
   return { data, error }
 }
+
+export async function getActiveComplianceOfficers() : Promise<{data: UserBasicPayload[] | null, error: any}> {
+  return await dbQuery(
+    prisma.user.findMany({
+      where: {
+        isActive: true,
+        userRoles: {
+          some: { roleId: 1003, isActive: true}
+        }
+      },
+      select: userBasicSelect
+    })
+  )
+}
+
+export async function getActiveSupervisors() : Promise<{data: UserBasicPayload[] | null, error: any}> {
+  return await dbQuery(
+    prisma.user.findMany({
+      where: {
+        isActive: true,
+        userRoles: {
+          some: { roleId: 1002, isActive: true}
+        }
+      },
+      select: userBasicSelect
+    })
+  )
+}
+
+export async function getActiveRecipients() : Promise<{data: UserBasicPayload[] | null, error: any}> {
+  return await dbQuery(
+    prisma.user.findMany({
+      where: {
+        isActive: true,
+        userRoles: {
+          some: { roleId: 1004, isActive: true}
+        }
+      },
+      select: userBasicSelect
+    })
+  )
+}
+
+// user payload
+const escalationSelect = {
+  select: { 
+    id: true, 
+    appSuiteEmployeeMaster: { select: { fullName: true, employeeNumber: true } } 
+  }
+};
+
+const userInfoInclude = {
+  appSuiteEmployeeMaster: {
+    select: { fullName: true, firstName: true, lastName: true, position: true, emailAddress: true, employeeNumber: true }
+  },
+  userRoles: {
+    where: { isActive: true },
+    select: { role: { select: { id: true } } },
+  },
+  userGroups: {
+    where: { isActive: true },
+    select: { group: { select: { id: true, name: true, isActive: true } } }
+  },
+  userProjects: {
+    where: { isActive: true },
+    select: { project: { select: { id: true, name: true, isActive: true } } }
+  },
+  escalation1User: escalationSelect,
+  escalation2User: escalationSelect,
+  escalation3User: escalationSelect,
+  escalation4User: escalationSelect,
+} satisfies Prisma.UserInclude;
+
+const userBasicSelect = {
+  id: true,
+  employeeNumber: true,
+  emailAddress: true,
+  username: true,
+  escalation1User: escalationSelect,
+  escalation2User: escalationSelect,
+  escalation3User: escalationSelect,
+  escalation4User: escalationSelect,
+  appSuiteEmployeeMaster: {
+    select: { fullName: true }
+  },
+  company: {
+    select: { id: true, name: true }
+  },
+  userGroups: {
+    where: { isActive: true },
+    select: { groupId: true }
+  },
+  userProjects: {
+    where: { isActive: true },
+    select: { projectId: true }
+  }
+} satisfies Prisma.UserSelect;
+
+export type UserInfoPayload = Prisma.UserGetPayload<{
+  include:  typeof userInfoInclude
+}>
+
+export type UserBasicPayload = Prisma.UserGetPayload<{
+  select: typeof userBasicSelect
+}>

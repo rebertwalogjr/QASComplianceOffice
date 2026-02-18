@@ -35,7 +35,7 @@ export default function TableCellViewer({ item, className }: Props) {
     code: item.code,
     companyId: item.companyId,
     remarks: item.remarks,
-    status: item.isActive ? "Active" : "Inactive",
+    isActive: item.isActive ? "Active" : "Inactive",
   })
 
   const handleUpdate = () => {
@@ -49,7 +49,7 @@ export default function TableCellViewer({ item, className }: Props) {
 
     formData.append("name", form.name)
     formData.append("code", form.code)
-    formData.append("isActive", form.status === "Active" ? "true" : "false")
+    formData.append("isActive", form.isActive === "Active" ? "true" : "false")
     formData.append("companyId", form.companyId?.toString())
     formData.append("remarks", form.remarks || "")
 
@@ -73,7 +73,7 @@ export default function TableCellViewer({ item, className }: Props) {
       code: item.code,
       companyId: item.companyId,
       remarks: item.remarks,
-      status: item.isActive ? "Active" : "Inactive",
+      isActive: item.isActive ? "Active" : "Inactive",
     })
     setIsEditing(false)
   }
@@ -158,7 +158,7 @@ export default function TableCellViewer({ item, className }: Props) {
                   <Field>
                     <FieldLabel htmlFor="status">Status</FieldLabel>
                     <Select
-                      value={form.status}
+                      value={form.isActive}
                       onValueChange={(v) => {
                         if (!isEditing) return
                         if (!isStatus(v)) return

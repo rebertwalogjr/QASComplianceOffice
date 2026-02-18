@@ -1,24 +1,24 @@
-"use client"
-
+import { getTransactions } from "@/prisma-actions/transaction"
 import { columns } from "./columns"
 import { DataTable } from "@/components/ui/data-table"
-// import Transaction from "@/lib/transaction";
 
 
-export default function Default() {
+export default async function Default() {
+
+  const { data: transactions, error } = await getTransactions()
 
   return (
 
     <div className="@container/main flex flex-1 flex-col gap-2">
-      {/* <DataTable
+      <DataTable
         columns={columns}
-        data={qData}
-        getRowClassName={(row) => {
-          if (row.status === "Closed" || row.status === "Cancelled") return "bg-accent"
-          // if (row.status === "Open" && row.secondaryStatus === "New") return "bg-primary/20"
-          return ""
-        }}
-      /> */}
+        data={transactions}
+        // getRowClassName={(row) => {
+        //   if (row.jobStatus === "Closed" || row.jobStatus === "Cancelled") return "bg-accent"
+        //   // if (row.status === "Open" && row.secondaryStatus === "New") return "bg-primary/20"
+        //   return ""
+        // }}
+      />
     </div>
   )
 }

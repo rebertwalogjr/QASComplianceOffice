@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { dbQuery } from "@/lib/prisma-db-utils";
+import { Prisma } from "../../generated/prisma/client";
 
 export async function getFindingCategories() {
   return await dbQuery(
@@ -45,3 +46,16 @@ export async function updateFindingCategory(formData: FormData, categoryId: numb
   revalidatePath("/categories")
   return { data, error }
 }
+
+export async function getActiveFindingCategories() : Promise<{ data: ActiveFindingCategoryPayload[] | null, error: any}> {
+  return await dbQuery(
+    prisma.findingCategory.findMany({
+      where: { isActive: true }
+    })
+  )
+}
+
+// finding category payload
+export type ActiveFindingCategoryPayload = Prisma.FindingCategoryGetPayload<{
+  select: { id: true, name: true; }
+}>

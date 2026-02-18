@@ -3,8 +3,9 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { dbQuery } from "@/lib/prisma-db-utils";
+import { Prisma } from "../../generated/prisma/client";
 
-export async function getEmployees(search: string = "", skip: number = 0) {
+export async function getEmployees(search: string = "", skip: number = 0) : Promise<{data: EmployeePayload[] | null, error: any}> {
   return await dbQuery(
     prisma.appSuiteEmployeeMaster.findMany({
       where: {
@@ -15,17 +16,21 @@ export async function getEmployees(search: string = "", skip: number = 0) {
           { employeeNumber: { contains: search } }
         ]
       },
-      select: {
-        employeeNumber: true,
-        firstName: true,
-        lastName: true,
-        fullName: true,
-        emailAddress: true,
-        position: true
-      },
       take: 20,
       skip: skip,
       orderBy: { lastName: 'asc' }
     })
   )
 }
+
+// appsuite payload
+export type EmployeePayload = Prisma.AppSuiteEmployeeMasterGetPayload<{
+  select: {
+    employeeNumber: true,
+    firstName: true,
+    lastName: true,
+    fullName: true,
+    emailAddress: true,
+    position: true
+  }
+}>

@@ -13,7 +13,7 @@ import { Status } from "@/lib/common-types";
 import { AuditReport } from "../../../../../generated/prisma/client";
 import { useLookups } from "@/context/lookups-context";
 import { toast } from "sonner";
-import { updateAuditReport } from "@/prisma-actions/audit-number";
+import { updateAuditReport } from "@/prisma-actions/audit-report";
 import { Spinner } from "@/components/ui/spinner";
 
 interface Props {
@@ -35,6 +35,17 @@ export default function TableCellViewer({ item, className }: Props) {
     auditEngagementId: item.auditEngagementId,
     isActive: item.isActive ? "Active" : "Inactive",
   })
+
+  const filteredProjects = React.useMemo(() => {
+      if (!form.companyId) return [];
+      return activeProjects?.filter(p => p.companyId === form.companyId);
+    }, [form.companyId, activeProjects]);
+  
+    const filteredEngagements = React.useMemo(() => {
+      if (!form.companyId) return [];
+      return activeAuditEngagements?.filter(e => e.companyId === form.companyId);
+    }, [form.companyId, activeAuditEngagements]);
+  
 
   const handleUpdate = () => {
     setIsEditing(true)
@@ -160,7 +171,7 @@ export default function TableCellViewer({ item, className }: Props) {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectGroup>
-                          {activeProjects?.map((projects) => (
+                          {filteredProjects?.map((projects) => (
                             <SelectItem key={projects.id} value={projects.id.toString()}>
                               {projects.name}
                             </SelectItem>
@@ -183,7 +194,7 @@ export default function TableCellViewer({ item, className }: Props) {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectGroup>
-                          {activeAuditEngagements?.map((engagements) => (
+                          {filteredEngagements?.map((engagements) => (
                             <SelectItem key={engagements.id} value={engagements.id.toString()}>
                               {engagements.name}
                             </SelectItem>

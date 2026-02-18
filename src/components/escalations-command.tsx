@@ -15,6 +15,7 @@ interface EscalationCommandProps {
     fullName: string;
     employeeNumber: string
   } | null
+  disabled?: boolean
 }
 
 function useDebounce(value: string, delay: number) {
@@ -26,7 +27,7 @@ function useDebounce(value: string, delay: number) {
   return debouncedValue;
 }
 
-export function EscalationCommand({ onSelect, defaultValue }: EscalationCommandProps) {
+export function EscalationCommand({ onSelect, defaultValue, disabled }: EscalationCommandProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [records, setRecords] = useState<any[]>([]);
@@ -95,14 +96,12 @@ export function EscalationCommand({ onSelect, defaultValue }: EscalationCommandP
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        {/* <Button variant="outline" className="w-full justify-between">
-          Select Employee...
-        </Button> */}
         <Button
           variant="outline"
           role="combobox"
           aria-expanded={open}
           className="w-full justify-between font-normal"
+          disabled={disabled}
         >
           <span className="truncate mr-2">
             {displayData
