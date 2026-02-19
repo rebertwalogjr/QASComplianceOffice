@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import Transaction from "@/lib/transaction";
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -8,9 +7,10 @@ import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, Dr
 import { useIsMobile } from "@/hooks/use-mobile";
 import Link from "next/link";
 import { X } from "lucide-react";
+import { TransactionBasicPaylod } from "@/prisma-actions/transaction";
 
 interface Props {
-  item: Transaction
+  item: TransactionBasicPaylod
   className?: string
 }
 
@@ -47,47 +47,47 @@ export default function TableCellViewer({ item, className }: Props) {
 
             <div className="flex flex-col gap-3">
               <Label htmlFor="auditno">Audit Finding No.</Label>
-              <Input id="auditno" defaultValue={item.auditNo} readOnly />
+              <Input id="auditno" defaultValue={item.auditFindingNumber} readOnly />
             </div>
 
             <div className="flex flex-col gap-3">
               <Label htmlFor="company">Company</Label>
-              <Input id="company" defaultValue={item.company} readOnly />
+              <Input id="company" defaultValue={item.company.name} readOnly />
             </div>
 
             <div className="flex flex-col gap-3">
               <Label htmlFor="project">Project</Label>
-              <Input id="project" defaultValue={item.project} readOnly />
+              <Input id="project" defaultValue={item.project.name} readOnly />
             </div>
 
             <div className="flex flex-col gap-3">
               <Label htmlFor="status">Status</Label>
-              <Input id="status" defaultValue={item.status} readOnly />
+              <Input id="status" defaultValue={item.jobStatus ?? ""} readOnly />
             </div>
 
             <div className="flex flex-col gap-3">
               <Label htmlFor="rating">Rating</Label>
-              <Input id="rating" defaultValue={item.rating} readOnly />
+              <Input id="rating" defaultValue={item.auditRating.name} readOnly />
             </div>
 
             <div className="flex flex-col gap-3">
               <Label htmlFor="engagement">Engagement</Label>
-              <Input id="engagement" defaultValue={item.engagement} readOnly />
+              <Input id="engagement" defaultValue={item.auditEngagement.name} readOnly />
             </div>
 
             <div className="flex flex-col gap-3">
               <Label htmlFor="category">Category</Label>
-              <Input id="category" defaultValue={item.category} readOnly />
+              <Input id="category" defaultValue={item.findingCategory.name} readOnly />
             </div>
 
             <div className="flex flex-col gap-3">
-              <Label htmlFor="details">Details</Label>
-              <Input id="details" defaultValue={item.details} readOnly />
+              <Label htmlFor="details">Recipient</Label>
+              <Input id="details" defaultValue={item.recipient?.appSuiteEmployeeMaster.fullName} readOnly />
             </div>
 
             <div className="flex flex-col gap-3">
               <Label htmlFor="approvedDate">Date Approved</Label>
-              <Input id="approvedDate" defaultValue={item.approvedDate} readOnly />
+              <Input id="approvedDate" defaultValue={item.approvedOn?.toDateString() ?? ""} readOnly />
             </div>
 
           </form>

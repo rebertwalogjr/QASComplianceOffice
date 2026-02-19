@@ -77,7 +77,6 @@ export async function createUser(formData: any) {
           username,
           password: "12345",
           emailAddress,
-          accessId: 1, // remove na to
           companyId: companyId ? Number(companyId) : null,
           isEscalation,
           createdBy: currentUser,

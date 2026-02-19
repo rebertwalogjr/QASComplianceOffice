@@ -4,178 +4,80 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import StatusBadge from "@/components/status-badge";
+import { AuditTrailPayload } from "@/prisma-actions/audit-trail";
+import { format } from "date-fns";
+import { UserHoverCard } from "@/components/user-hover-card";
+import { groupAuditTrails } from "@/lib/utils";
 
-export default function AuditTrail() {
+export default function AuditTrail({ data }: { data: AuditTrailPayload[] | null }) {
+
+  if (!data || data.length === 0) return <div>No history found.</div>;
+
+  const groupedData = groupAuditTrails(data)
+
   return (
     <div className="flex flex-col gap-4 md:px-12">
 
-      <Label className="text-muted-foreground">Today</Label>
-
-      <Item variant="outline" className="">
-        <ItemMedia variant="icon">
-          <User2 />
-        </ItemMedia>
-        <ItemContent>
-            <ItemTitle><div><strong>Rebert Walog Jr</strong> tag the entry as closed.</div></ItemTitle>
-            <ItemDescription className="md:hidden">1:20 PM</ItemDescription>
-            <StatusBadge status="Closed" />
-        </ItemContent>
-        <ItemContent className="hidden md:block">
-          <ItemDescription>1:20 PM</ItemDescription>
-        </ItemContent>
-      </Item>
-
-      <Item variant="outline" className="">
-        <ItemMedia variant="icon">
-          <User2 />
-        </ItemMedia>
-        <ItemContent>
-          <ItemTitle><div><strong>Maria Makiling</strong> tag the entry for closing.</div></ItemTitle>
-          <ItemDescription className="md:hidden">12:45 PM</ItemDescription>
-          <StatusBadge status="For Closing" />
-        </ItemContent>
-        <ItemContent className="hidden md:block">
-          <ItemDescription>12:45 PM</ItemDescription>
-        </ItemContent>
-      </Item>
-
-      <Item variant="outline" className="">
-        <ItemMedia variant="icon">
-          <User2 />
-        </ItemMedia>
-        <ItemContent>
-          <ItemTitle>
-            <div><strong>Alvaro</strong> accepted the entry with comment.</div>
-          </ItemTitle>
-          <ItemDescription className="md:hidden">9:45 AM</ItemDescription>
-          <ItemDescription className="line-clamp-none">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Recusandae mollitia, natus corrupti minus ad tenetur dolor, eligendi officia reiciendis hic quasi obcaecati? Aspernatur, deserunt? Dolorum aliquam quidem doloribus eaque minus!</ItemDescription>
-          <StatusBadge status="Accepted" />
-        </ItemContent>
-        <ItemContent className="hidden md:block">
-          <ItemDescription>9:45 AM</ItemDescription>
-        </ItemContent>
-      </Item>
-
-      <Separator />
-
-      <Label className="text-muted-foreground">This Week</Label>
-
-      <Item variant="outline" className="">
-        <ItemMedia variant="icon">
-          <User2 />
-        </ItemMedia>
-        <ItemContent>
-          <ItemTitle><div><strong>Pedro</strong> approved the entry with comment.</div></ItemTitle>
-          <ItemDescription className="md:hidden">Yesterday 9:45 AM</ItemDescription>
-          <ItemDescription className="line-clamp-none">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Recusandae mollitia, natus corrupti minus ad tenetur dolor, eligendi officia reiciendis hic quasi obcaecati? Aspernatur, deserunt? Dolorum aliquam quidem doloribus eaque minus!</ItemDescription>
-          <StatusBadge status="Approved" />
-        </ItemContent>
-        <ItemContent className="hidden md:block">
-          <ItemDescription>Yesterday 9:45 AM</ItemDescription>
-        </ItemContent>
-      </Item>
-
-      <Separator />
-
-      <Label className="text-muted-foreground">Last Week</Label>
-
-      <Item variant="outline" className="">
-        <ItemMedia variant="icon">
-          <User2 />
-        </ItemMedia>
-        <ItemContent>
-          <ItemTitle><div><strong>Rebert Walog Jr</strong> verified the entry with comment.</div></ItemTitle>
-          <ItemDescription className="md:hidden">11/8 2:56 PM</ItemDescription>
-          <ItemDescription className="line-clamp-none">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Recusandae mollitia, natus corrupti minus ad tenetur dolor, eligendi officia reiciendis hic quasi obcaecati? Aspernatur, deserunt? Dolorum aliquam quidem doloribus eaque minus!</ItemDescription>
-          <StatusBadge status="Verified" />
-        </ItemContent>
-        <ItemContent className="hidden md:block">
-          <ItemDescription>11/8 2:56 PM</ItemDescription>
-        </ItemContent>
-      </Item>
-
       <Item variant="outline" className="bg-muted">
-        <ItemMedia variant="icon">
-          <LucideClockFading className="text-muted-foreground" />
+        <ItemMedia variant="icon" className="mr-2">
+          <LucideClockFading className="text-muted-foreground animate-spin" />
         </ItemMedia>
         <ItemContent>
-          <ItemTitle>Waiting for Compliance Officer's approval...</ItemTitle>
+          <ItemTitle><span className="text-muted-foreground">Currently verifying by the supervisor</span></ItemTitle>
         </ItemContent>
       </Item>
 
-      <Item variant="outline" className="">
-        <ItemMedia variant="icon">
-          <User2 />
-        </ItemMedia>
-        <ItemContent>
-          <ItemTitle><div><strong>You</strong> updated the entry.</div></ItemTitle>
-          <ItemDescription className="md:hidden">11/8 11:17 AM</ItemDescription>
-        </ItemContent>
-        <ItemContent className="hidden md:block">
-          <ItemDescription>11/8 11:17 AM</ItemDescription>
-        </ItemContent>
-      </Item>
 
-      <Item variant="outline" className="">
-        <ItemMedia variant="icon">
-          <User2 />
-        </ItemMedia>
-        <ItemContent>
-          <ItemTitle><div><strong>Rebert Walog Jr</strong> declined the entry with comment.</div></ItemTitle>
-          <ItemDescription className="md:hidden">11/7 4:35 PM</ItemDescription>
-          <ItemDescription className="line-clamp-none">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Recusandae mollitia, natus corrupti minus ad tenetur dolor, eligendi officia reiciendis hic quasi obcaecati? Aspernatur, deserunt? Dolorum aliquam quidem doloribus eaque minus!</ItemDescription>
-          <StatusBadge status="Declined" />
-        </ItemContent>
-        <ItemContent className="hidden md:block">
-          <ItemDescription>11/7 4:35 PM</ItemDescription>
-        </ItemContent>
-      </Item>
+      {Object.entries(groupedData).map(([label, trails]) => {
+        // Skip rendering the group if it's empty
+        if (trails.length === 0) return null;
 
-      <Item variant="outline" className="bg-muted">
-        <ItemMedia variant="icon">
-          <LucideClockFading className="text-muted-foreground" />
-        </ItemMedia>
-        <ItemContent>
-          <ItemTitle>Waiting for Compliance Officer's approval...</ItemTitle>
-        </ItemContent>
-      </Item>
+        return (
+          <div key={label} className="flex flex-col gap-4">
+            {/* The Distinction Label */}
+            <div className="flex items-center gap-4">
+              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground whitespace-nowrap">
+                {label}
+              </span>
+              <div className="h-px w-full bg-border/60" />
+            </div>
 
-      <Item variant="outline" className="">
-        <ItemMedia variant="icon">
-          <User2 />
-        </ItemMedia>
-        <ItemContent>
-          <ItemTitle><div><strong>Maria Makiling</strong> verified the entry with comment.</div></ItemTitle>
-          <ItemDescription className="md:hidden">11/5 1:23 PM</ItemDescription>
-          <ItemDescription className="line-clamp-none">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Recusandae mollitia, natus corrupti minus ad tenetur dolor, eligendi officia reiciendis hic quasi obcaecati? Aspernatur, deserunt? Dolorum aliquam quidem doloribus eaque minus!</ItemDescription>
-          <StatusBadge status="Verified" />
-        </ItemContent>
-        <ItemContent className="hidden md:block">
-          <ItemDescription>11/5 1:23 PM</ItemDescription>
-        </ItemContent>
-      </Item>
-
-      <Item variant="outline" className="bg-muted">
-        <ItemMedia variant="icon">
-          <LucideClockFading className="text-muted-foreground" />
-        </ItemMedia>
-        <ItemContent>
-          <ItemTitle>Endorsed to team leader.</ItemTitle>
-        </ItemContent>
-      </Item>
-
-      <Item variant="outline" className="">
-        <ItemMedia variant="icon">
-          <User2 />
-        </ItemMedia>
-        <ItemContent>
-          <ItemTitle><div><strong>You</strong> created an entry.</div></ItemTitle>
-          <ItemDescription className="md:hidden">11/2 9:47 AM</ItemDescription>
-        </ItemContent>
-        <ItemContent className="hidden md:block">
-          <ItemDescription>11/2 9:47 AM</ItemDescription>
-        </ItemContent>
-      </Item>
+            {/* The Trails for this group */}
+            <div className="flex flex-col gap-3">
+              {trails.map((t) => (
+                <Item key={t.id} variant="outline" className="relative overflow-hidden ...">
+                  <ItemMedia variant="icon" className="mr-2">
+                    <User2 size={18} />
+                  </ItemMedia>
+                  <ItemContent className="flex-1 flex flex-col gap-1">
+                    <div className="flex justify-between items-start w-full">
+                      <ItemTitle className="text-sm">
+                        {/* <span className="font-bold text-foreground">{t.creator.appSuiteEmployeeMaster.firstName}</span> */}
+                        <UserHoverCard data={t.creator.appSuiteEmployeeMaster} />
+                        {" "}
+                        <span className="font-normal">{t.actionTaken.toLowerCase()}</span>
+                      </ItemTitle>
+                      <div className="text-xs text-muted-foreground whitespace-nowrap ml-4">
+                        {format(new Date(t.createdOn), "h:mm aa")}
+                      </div>
+                    </div>
+                    {t.comment && (
+                      <p className="text-sm text-muted-foreground mt-1 line-clamp-3">
+                        {t.comment}
+                      </p>
+                    )}
+                    {t.tag && (
+                      <div className="mt-2">
+                        <StatusBadge status={t.jobStatus.toLowerCase()} />
+                      </div>
+                    )}
+                  </ItemContent>
+                </Item>
+              ))}
+            </div>
+          </div>
+        );
+      })}
 
     </div>
   )

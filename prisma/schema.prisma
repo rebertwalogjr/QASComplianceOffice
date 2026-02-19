@@ -124,6 +124,7 @@ model JobTransaction {
   findingCategory              FindingCategory @relation(fields: [findingCategoryId], references: [id], onUpdate: NoAction)
   group                        Group?          @relation(fields: [recipientGroupId], references: [id], onUpdate: NoAction)
   auditReport                  AuditReport     @relation(fields: [auditReportId], references: [id], onUpdate: NoAction)
+  auditRating                  AuditRating     @relation(fields: [auditRatingId], references: [id], onUpdate: NoAction)
   recipient                    User?           @relation("JobTransactionRecipient", fields: [recipientId], references: [id], onUpdate: NoAction, onDelete: NoAction)
   complianceSecretariat        User            @relation("ComplianceSecretariat", fields: [complianceSecretariatId], references: [id], onUpdate: NoAction)
   complianceOfficer            User?           @relation("ComplianceOfficer", fields: [complianceOfficerId], references: [id], onUpdate: NoAction)
@@ -132,6 +133,7 @@ model JobTransaction {
   approver                     User?           @relation("JobTransactionApprover", fields: [approvedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
   creator                      User            @relation("JobTransactionCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
   modifier                     User?           @relation("JobTransactionModifier", fields: [modifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  auditTrails                  AuditTrail[]
 }
 
 model Project {
@@ -151,8 +153,7 @@ model Project {
   groupList      Group[]
   jobTransaction JobTransaction[]
   auditReport    AuditReport[]
-
-  userProjects UserProject[]
+  userProjects   UserProject[]
 }
 
 model TypeOfFinding {
@@ -209,7 +210,6 @@ model User {
   username                  String                 @unique @db.NVarChar(100)
   password                  String                 @db.NVarChar(100)
   emailAddress              String?                @db.NVarChar(255)
-  accessId                  Int
   companyId                 Int?
   position                  String?                @db.NVarChar(100)
   escalation1               Int?
@@ -276,6 +276,7 @@ model User {
   userProjectCreator        UserProject[]          @relation("UserProjectCreator")
   userProjectModifier       UserProject[]          @relation("UserProjectModifier")
   userProjects              UserProject[]
+  auditTrails               AuditTrail[]           @relation("AuditTrailCreator")
 }
 
 model AuditReport {
@@ -299,17 +300,18 @@ model AuditReport {
 }
 
 model AuditRating {
-  id         Int      @id @default(autoincrement())
-  name       String   @db.NVarChar(50)
-  companyId  Int
-  isActive   Boolean  @default(true) @db.Bit
-  createdBy  Int
-  createdOn  DateTime @default(now()) @db.DateTime
-  modifiedBy Int?
-  modifiedOn DateTime @updatedAt @db.DateTime
-  company    Company  @relation(fields: [companyId], references: [id], onUpdate: NoAction)
-  creator    User     @relation("AuditRatingCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
-  modifier   User?    @relation("AuditRatingModifier", fields: [modifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  id              Int              @id @default(autoincrement())
+  name            String           @db.NVarChar(50)
+  companyId       Int
+  isActive        Boolean          @default(true) @db.Bit
+  createdBy       Int
+  createdOn       DateTime         @default(now()) @db.DateTime
+  modifiedBy      Int?
+  modifiedOn      DateTime         @updatedAt @db.DateTime
+  company         Company          @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+  creator         User             @relation("AuditRatingCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  modifier        User?            @relation("AuditRatingModifier", fields: [modifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  jobTransactions JobTransaction[]
 }
 
 model Holiday {
@@ -385,4 +387,17 @@ model UserProject {
   modifier   User?    @relation("UserProjectModifier", fields: [modifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
 
   @@id([userId, projectId])
+}
+
+model AuditTrail {
+  id               Int            @id @default(autoincrement())
+  jobTransactionId Int
+  jobStatus        String
+  actionTaken      String
+  tag              String?
+  comment          String?        @db.NVarChar(Max)
+  createdBy        Int
+  createdOn        DateTime       @default(now()) @db.DateTime
+  jobTransaction   JobTransaction @relation(fields: [jobTransactionId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  creator          User           @relation("AuditTrailCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
 }

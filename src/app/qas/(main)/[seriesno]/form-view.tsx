@@ -1,10 +1,12 @@
-import { ChevronDown, Circle, Dot, File, FileText, LucideBadgeInfo, TextSelection } from "lucide-react";
+import { ChevronDown, Circle, Dot, File, FileText, Group, LucideBadgeInfo, MegaphoneIcon, TextSelection } from "lucide-react";
 import { SeriesDescription, SeriesGroup, SeriesHeader, SeriesLabel, SeriesMedia, SeriesContainer, SeriesValue, SeriesItem } from "@/components/series-item";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import AttachmentViewer from "@/components/attachment-viewer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { TransactionPayload } from "@/prisma-actions/transaction";
+import { UserHoverCard } from "@/components/user-hover-card";
 
 const BadgeYesNo = (str: string) => {
   const val = str.toLowerCase()
@@ -15,7 +17,7 @@ const BadgeYesNo = (str: string) => {
   </>
 }
 
-export default function FormView() {
+export default function FormView( { data } : { data: TransactionPayload | null}) {
   return (
     <div className="flex flex-col gap-4 md:px-12">
 
@@ -30,20 +32,20 @@ export default function FormView() {
         </CardHeader>
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
-            <Label className="text-muted-foreground">Auditor</Label>
-            <Label className="col-span-2">Juan Dela Cruz</Label>
+            <Label className="text-muted-foreground">Compliance Secretariat</Label>
+            <UserHoverCard data={data?.complianceSecretariat.appSuiteEmployeeMaster} />
           </div>
         </CardContent>
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Company</Label>
-            <Label className="col-span-2">DMCI Homes Project Developers, Inc.</Label>
+            <Label className="col-span-2">{ data?.company.name }</Label>
           </div>
         </CardContent>
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Project</Label>
-            <Label className="col-span-2">Construction</Label>
+            <Label className="col-span-2">{ data?.project.name }</Label>
           </div>
         </CardContent>
         <CardContent className="">
@@ -55,31 +57,41 @@ export default function FormView() {
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Type of Findings</Label>
-            <Label className="col-span-2">Positive Observation</Label>
+            <Label className="col-span-2">{ data?.typeOfFinding.name }</Label>
           </div>
         </CardContent>
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Findings Category</Label>
-            <Label className="col-span-2">Operations</Label>
+            <Label className="col-span-2">{ data?.findingCategory.name }</Label>
+          </div>
+        </CardContent>
+        <CardContent className="">
+          <div className="grid md:grid-cols-3 gap-2 items-start">
+            <Label className="text-muted-foreground">Compliance Officer</Label>
+            {/* <Label className="col-span-2">{ data?.complianceOfficer?.appSuiteEmployeeMaster.fullName }</Label> */}
+            <UserHoverCard data={data?.complianceOfficer?.appSuiteEmployeeMaster} />
+          </div>
+        </CardContent>
+        <CardContent className="">
+          <div className="grid md:grid-cols-3 gap-2 items-start">
+            <Label className="text-muted-foreground">Supervisor</Label>
+            {/* <Label className="col-span-2">{ data?.supervisor?.appSuiteEmployeeMaster.fullName }</Label> */}
+            <UserHoverCard data={ data?.supervisor?.appSuiteEmployeeMaster } />
           </div>
         </CardContent>
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Verified By</Label>
-            <Label className="col-span-2">Juan Dela Cruz</Label>
+            {/* <Label className="col-span-2">{ data?.verifier?.appSuiteEmployeeMaster.fullName ?? "--" }</Label> */}
+            { data?.verifier ? <UserHoverCard data={data?.verifier?.appSuiteEmployeeMaster} /> : <Label>--</Label>}
           </div>
         </CardContent>
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Approved By</Label>
-            <Label className="col-span-2">Juan Dela Cruz</Label>
-          </div>
-        </CardContent>
-        <CardContent className="">
-          <div className="grid md:grid-cols-3 gap-2 items-start">
-            <Label className="text-muted-foreground">Request for Closing</Label>
-            <Label className="col-span-2">{BadgeYesNo("Yes")}</Label>
+            {/* <Label className="col-span-2">{ data?.approver?.appSuiteEmployeeMaster.fullName ?? "--" }</Label> */}
+            { data?.approver ? <UserHoverCard data={data?.approver?.appSuiteEmployeeMaster} /> : <Label>--</Label>}
           </div>
         </CardContent>
       </Card>
@@ -96,61 +108,130 @@ export default function FormView() {
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Audit Engagement</Label>
-            <Label className="col-span-2">Site Warehousing Audit Cycle 3</Label>
+            <Label className="col-span-2">{ data?.auditEngagement.name }</Label>
+          </div>
+        </CardContent>
+        <CardContent className="">
+          <div className="grid md:grid-cols-3 gap-2 items-start">
+            <Label className="text-muted-foreground">Audit Report No.</Label>
+            <Label className="col-span-2">{ data?.auditReport.name }</Label>
           </div>
         </CardContent>
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Audit Finding No.</Label>
-            <Label className="col-span-2">IAD-REPORT-2005-11-46</Label>
-          </div>
-        </CardContent>
-        <CardContent className="">
-          <div className="grid md:grid-cols-3 gap-2 items-start">
-            <Label className="text-muted-foreground">Date & Time Issued</Label>
-            <Label className="col-span-2">11/14/2025 5:03:00 PM</Label>
-          </div>
-        </CardContent>
-        <CardContent className="">
-          <div className="grid md:grid-cols-3 gap-2 items-start">
-            <Label className="text-muted-foreground">Target Date</Label>
-            <Label className="col-span-2">11/18/2025</Label>
+            <Label className="col-span-2">{ data?.auditFindingNumber ?? "--" }</Label>
           </div>
         </CardContent>
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Audit Rating</Label>
-            <Label className="col-span-2">Adequate</Label>
+            <Label className="col-span-2">{ data?.auditRating.name }</Label>
           </div>
         </CardContent>
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
-            <Label className="text-muted-foreground">Project Manager / Dept. Head</Label>
-            <Label className="col-span-2">Juan Dela Cruz</Label>
+            <Label className="text-muted-foreground">Date & Time Issued</Label>
+            <Label className="col-span-2">{ data?.issuedOn?.toDateString() ?? "--" }</Label>
+          </div>
+        </CardContent>
+        <CardContent className="">
+          <div className="grid md:grid-cols-3 gap-2 items-start">
+            <Label className="text-muted-foreground">Target Date</Label>
+            <Label className="col-span-2">{ data?.targetDate?.toDateString() ?? "--"}</Label>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="shadow-none">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <div className="rounded-md border p-2 bg-orange-500/10 text-orange-500 border-orange-500">
+              <MegaphoneIcon size={16}/>
+            </div>
+            Recipient & Escalation
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="">
+          <div className="grid md:grid-cols-3 gap-2 items-start">
+            <Label className="text-muted-foreground">Recipient Group</Label>
+            <Label className="col-span-2">{ data?.group?.name }</Label>
+          </div>
+        </CardContent>
+        <CardContent className="">
+          <div className="grid md:grid-cols-3 gap-2 items-start">
+            <Label className="text-muted-foreground">Issued To</Label>
+            {/* <Label className="col-span-2">{ data?.recipient?.appSuiteEmployeeMaster.fullName }</Label> */}
+            <UserHoverCard data={ data?.recipient?.appSuiteEmployeeMaster } />
+          </div>
+        </CardContent>
+        <CardContent className="">
+          <div className="grid md:grid-cols-3 gap-2 items-start">
+            <Label className="text-muted-foreground">First Escalation</Label>
+            {/* <Label className="col-span-2">{ data?.recipient?.escalation1User?.appSuiteEmployeeMaster.fullName }</Label> */}
+            {data?.recipient?.escalation1User ? <UserHoverCard data={data?.recipient?.escalation1User?.appSuiteEmployeeMaster} /> : <Label>--</Label>}
+          </div>
+        </CardContent>
+        <CardContent className="">
+          <div className="grid md:grid-cols-3 gap-2 items-start">
+            <Label className="text-muted-foreground">Second Escalation</Label>
+            {/* <Label className="col-span-2">{ data?.recipient?.escalation2User?.appSuiteEmployeeMaster.fullName }</Label> */}
+            {data?.recipient?.escalation2User ? <UserHoverCard data={data?.recipient?.escalation2User?.appSuiteEmployeeMaster} /> : <Label>--</Label>}
+          </div>
+        </CardContent>
+        <CardContent className="">
+          <div className="grid md:grid-cols-3 gap-2 items-start">
+            <Label className="text-muted-foreground">Third Escalation</Label>
+            {/* <Label className="col-span-2">{ data?.recipient?.escalation3User?.appSuiteEmployeeMaster.fullName }</Label> */}
+            {data?.recipient?.escalation3User ? <UserHoverCard data={data?.recipient?.escalation3User?.appSuiteEmployeeMaster} /> : <Label>--</Label>}
+          </div>
+        </CardContent>
+        <CardContent className="">
+          <div className="grid md:grid-cols-3 gap-2 items-start">
+            <Label className="text-muted-foreground">Fouth Escalation</Label>
+            {/* <Label className="col-span-2">{ data?.recipient?.escalation4User?.appSuiteEmployeeMaster.fullName }</Label> */}
+            {data?.recipient?.escalation4User ? <UserHoverCard data={data?.recipient?.escalation4User?.appSuiteEmployeeMaster} /> : <Label>--</Label>}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="shadow-none">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <div className="rounded-md border p-2 bg-yellow-500/10 text-yellow-500 border-yellow-500">
+              <Group size={16}/>
+            </div>
+            Responsible Person
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="">
+          <div className="grid md:grid-cols-3 gap-2 items-start">
+            <Label className="text-muted-foreground">Project Manager / Department Head</Label>
+            <Label className="col-span-2">{ data?.projectManagerDepartmentHead ?? "--" }</Label>
           </div>
         </CardContent>
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Responsible Person</Label>
-            <Label className="col-span-2">Juan Dela Cruz</Label>
+            <Label className="col-span-2">{ data?.responsiblePerson ?? "--" }</Label>
           </div>
         </CardContent>
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Responsible Department</Label>
-            <Label className="col-span-2">Information Technology</Label>
+            <Label className="col-span-2">{ data?.responsibleDepartment ?? "--" }</Label>
           </div>
         </CardContent>
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Recurring Per Process</Label>
-            <Label className="col-span-2">{BadgeYesNo("No")}</Label>
+            <Label className="col-span-2">{BadgeYesNo(data?.recurringPerPerson ? "Yes" : "No")}</Label>
           </div>
         </CardContent>
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Recurring Per Person</Label>
-            <Label className="col-span-2">{BadgeYesNo("No")}</Label>
+            <Label className="col-span-2">{BadgeYesNo(data?.recurringPerPerson ? "Yes" : "No")}</Label>
           </div>
         </CardContent>
       </Card>
@@ -167,19 +248,19 @@ export default function FormView() {
         <CardContent className="">
           <div className="grid gap-2 items-start">
             <Label className="text-muted-foreground">Criteria</Label>
-            <Textarea className="bg-muted resize-none min-h-24"  readOnly />
+            <Textarea className="bg-muted resize-none min-h-24" value={ data?.problemCriteria ?? ""}  readOnly />
           </div>
         </CardContent>
         <CardContent className="">
           <div className="grid gap-2 items-start">
             <Label className="text-muted-foreground">Findings</Label>
-            <Textarea className="bg-muted resize-none min-h-24" readOnly />
+            <Textarea className="bg-muted resize-none min-h-24" value={ data?.problemFindings ?? ""} readOnly />
           </div>
         </CardContent>
         <CardContent className="">
           <div className="grid gap-2 items-start">
             <Label className="text-muted-foreground">Recommendations</Label>
-            <Textarea className="bg-muted resize-none min-h-24" readOnly />
+            <Textarea className="bg-muted resize-none min-h-24" value={ data?.recommendations ?? ""} readOnly />
           </div>
         </CardContent>
         <CardContent className="">

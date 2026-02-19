@@ -1,5 +1,7 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { isToday, isYesterday, isThisWeek, format, parseISO } from "date-fns";
+import { AuditTrailPayload } from "@/prisma-actions/audit-trail";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -24,4 +26,29 @@ export function formatLongDate( input: Date | string | undefined ) {
     day: "numeric",
     year: "numeric"
   }).format(d)
+}
+
+export function groupAuditTrails(data: AuditTrailPayload[]) {
+  const groups: Record<string, AuditTrailPayload[]> = {
+    Today: [],
+    Yesterday: [],
+    "This Week": [],
+    Earlier: [],
+  };
+
+  data.forEach((trail) => {
+    const date = new Date(trail.createdOn);
+    
+    if (isToday(date)) {
+      groups["Today"].push(trail);
+    } else if (isYesterday(date)) {
+      groups["Yesterday"].push(trail);
+    } else if (isThisWeek(date)) {
+      groups["This Week"].push(trail);
+    } else {
+      groups["Earlier"].push(trail);
+    }
+  });
+
+  return groups;
 }

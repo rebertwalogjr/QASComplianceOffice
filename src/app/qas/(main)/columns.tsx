@@ -8,8 +8,9 @@ import StatusBadge from "@/components/status-badge";
 import PopoverStatusFilter from "./popover-status-filter";
 import { JobTransaction } from "../../../../generated/prisma/client";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { TransactionBasicPaylod } from "@/prisma-actions/transaction";
 
-export const columns: ColumnDef<JobTransaction>[] = [
+export const columns: ColumnDef<TransactionBasicPaylod>[] = [
   {
     accessorKey: "id",
     header: ({ column }) => {
@@ -28,7 +29,7 @@ export const columns: ColumnDef<JobTransaction>[] = [
       )
     },
     cell: ({ row }) => {
-      return <TableCellViewer item={row.original as JobTransaction} className={row.original.jobStatus === "Closed" ? "opacity-50" : ""} />
+      return <TableCellViewer item={row.original as TransactionBasicPaylod} className={row.original.jobStatus === "Closed" ? "opacity-50" : ""} />
     },
   },
   {
@@ -93,7 +94,7 @@ export const columns: ColumnDef<JobTransaction>[] = [
     accessorKey: "company.name",
     header: "Company",
     cell: ({ row }) => {
-      const company = row.original.companyId ? (row.original as any).company : null
+      const company = row.original.company ? (row.original as any).company : null
       const companyIsActive = company ? company.isActive : null
       return (
         <div className="flex items-center gap-2">
@@ -120,7 +121,7 @@ export const columns: ColumnDef<JobTransaction>[] = [
     accessorKey: "projectId.name",
     header: "Project/Department",
     cell: ({ row }) => {
-      const project = row.original.projectId ? (row.original as any).project : null
+      const project = row.original.project ? (row.original as any).project : null
       const isActive = project ? project.isActive : null
       return (
         <div className="flex items-center gap-2">

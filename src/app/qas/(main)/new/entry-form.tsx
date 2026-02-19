@@ -121,7 +121,7 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
                 <FieldGroup>
 
                   <Field>
-                    <FieldLabel htmlFor="complianceSecretariatId">Auditor</FieldLabel>
+                    <FieldLabel htmlFor="complianceSecretariatId">Compliance Secretariat</FieldLabel>
                     <Input name="complianceSecretariat" placeholder="Rebert L. Walog Jr (9112154)" value="1002" readOnly />
                   </Field>
 
@@ -256,7 +256,7 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
               <FieldSet>
                 <FieldGroup>
                   <Field>
-                    <FieldLabel htmlFor="teamleader">Audit Engagement</FieldLabel>
+                    <FieldLabel htmlFor="auditEngagement">Audit Engagement</FieldLabel>
                     <Select 
                     name="auditEngagement"
                     required
@@ -430,7 +430,7 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
 
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-2 mt-4">
-            <div className="rounded-md border p-2 bg-orange-500/10 text-orange-500 border-orange-500">
+            <div className="rounded-md border p-2 bg-yellow-500/10 text-yellow-500 border-yellow-500">
               <Group size={16} />
             </div>
             <Label className="text-lg">Responsible Person</Label>
