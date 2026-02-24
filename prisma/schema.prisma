@@ -134,6 +134,7 @@ model JobTransaction {
   creator                      User            @relation("JobTransactionCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
   modifier                     User?           @relation("JobTransactionModifier", fields: [modifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
   auditTrails                  AuditTrail[]
+  attachments                  Attachment[]
 }
 
 model Project {
@@ -170,18 +171,20 @@ model TypeOfFinding {
 }
 
 model Attachment {
-  id               Int      @id @default(autoincrement())
-  jobTransactionId Int?
-  fileName         String?  @db.NVarChar(255)
-  filePath         String?  @db.NVarChar(255)
+  id               Int            @id @default(autoincrement())
+  jobTransactionId Int
+  fileName         String         @db.NVarChar(255)
+  fileType         String         @db.NVarChar(255)
+  fileSize         Int
   fromRecipient    Boolean
-  isActive         Boolean  @default(true) @db.Bit
+  isActive         Boolean        @default(true) @db.Bit
   createdBy        Int
-  createdOn        DateTime @default(now()) @db.DateTime
+  createdOn        DateTime       @default(now()) @db.DateTime
   modifiedBy       Int?
-  modifiedOn       DateTime @updatedAt @db.DateTime
-  creator          User     @relation("AttachmentCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
-  modifier         User?    @relation("AttachmentModifier", fields: [modifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  modifiedOn       DateTime       @updatedAt @db.DateTime
+  creator          User           @relation("AttachmentCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  modifier         User?          @relation("AttachmentModifier", fields: [modifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  jobTransaction   JobTransaction @relation(fields: [jobTransactionId], references: [id])
 }
 
 model Group {

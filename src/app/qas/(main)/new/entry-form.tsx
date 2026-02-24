@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { File, Group, LucideBadgeInfo, MegaphoneIcon, TextSelection } from "lucide-react";
@@ -12,6 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { FileUpload, FileWithPreview } from "@/components/FileUpload";
+import { Spinner } from "@/components/ui/spinner";
 
 import { ActiveCompanyPayload } from "@/prisma-actions/company";
 import { ActiveProjectPayload } from "@/prisma-actions/project";
@@ -23,7 +25,7 @@ import { UserBasicPayload } from "@/prisma-actions/user";
 import { ActiveAuditRatingPayload } from "@/prisma-actions/rating";
 import { ActiveAuditReportPayload } from "@/prisma-actions/audit-report";
 import { createTransaction } from "@/prisma-actions/transaction";
-import { Spinner } from "@/components/ui/spinner";
+import { deleteTempFolderBySessionId } from "@/prisma-actions/files";
 
 interface EntryFormProps {
   companies: ActiveCompanyPayload[] | null
@@ -41,12 +43,18 @@ interface EntryFormProps {
 
 export default function EntryForm({ options }: { options: EntryFormProps }) {
   const router = useRouter()
+  const [sessionId, setSessionId] = useState<string>("")
   const [isPending, setIsPending] = useState(false)
-  
+  const [attachments, setAttachments] = useState<FileWithPreview[]>([])
+
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>("")
   const [selectedProjectId, setSelectedProjectId] = useState<string>("")
   const [selectedRecipientId, setSelectedRecipientId] = useState<string>("")
   const [selectedEngagementId, setSelectedEngagementId] = useState<string>("")
+
+  useEffect(() => {
+    setSessionId(crypto.randomUUID())
+  }, [])
 
   const filtered = useMemo(() => {
     if (!selectedCompanyId) return { projects: [], engagements: [], officers: [], supervisors: [] }
@@ -87,7 +95,12 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
 
     const formData = new FormData(e.currentTarget)
 
-    // console.log(formData.get("project"))
+    formData.append("sessionId", sessionId)
+
+    attachments.forEach((fileItem) => {
+      formData.append("attachments", fileItem.file)
+    })
+
     const response = await createTransaction(formData)
 
     if (response.error) {
@@ -100,6 +113,14 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
 
     setIsPending(false)
   }
+
+  const handleCancel = async () => {
+    await deleteTempFolderBySessionId(sessionId)
+    router.push("/qas")
+    router.refresh()
+  }
+
+  if (!sessionId) return null
 
   return (
     <form className="flex flex-col gap-4 md:px-40" onSubmit={handleSubmit}>
@@ -150,7 +171,7 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
                   <Field>
                     <FieldLabel htmlFor="project">Project</FieldLabel>
                     <Select
-                    name="project"
+                      name="project"
                       required
                       value={selectedProjectId}
                       onValueChange={(value) => setSelectedProjectId(value)}
@@ -257,10 +278,10 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
                 <FieldGroup>
                   <Field>
                     <FieldLabel htmlFor="auditEngagement">Audit Engagement</FieldLabel>
-                    <Select 
-                    name="auditEngagement"
-                    required
-                    onValueChange={(value) => setSelectedEngagementId(value)}
+                    <Select
+                      name="auditEngagement"
+                      required
+                      onValueChange={(value) => setSelectedEngagementId(value)}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select engagement..." />
@@ -285,7 +306,7 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
                       <SelectContent>
                         {filteredReports?.map(r => (
                           <SelectItem key={r.id} value={r.id.toString()}>
-                            { r.name }
+                            {r.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -317,7 +338,7 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
                       <SelectContent>
                         {filtered.ratings?.map(r => (
                           <SelectItem key={r.id} value={r.id.toString()}>
-                            { r.name }
+                            {r.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -369,7 +390,7 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
                   <Field>
                     <FieldLabel htmlFor="recipient">Issued To</FieldLabel>
                     <Select
-                    name="recipient"
+                      name="recipient"
                       required
                       onValueChange={(value) => setSelectedRecipientId(value)}
                     >
@@ -516,7 +537,8 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
 
               <Field>
                 <FieldLabel htmlFor="attachments">Attachments</FieldLabel>
-                <Input name="attachments" />
+                {/* <Input name="attachments" /> */}
+                <FileUpload sessionId={sessionId} onFilesChange={setAttachments} />
               </Field>
 
             </FieldGroup>
@@ -528,7 +550,7 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
       <FieldGroup>
 
         <div className="flex item-center gap-4 justify-end py-2">
-          <Button variant="outline" disabled={isPending}>Cancel</Button>
+          <Button variant="outline" onClick={handleCancel} disabled={isPending}>Cancel</Button>
           <Button type="submit" disabled={isPending}>
             {isPending ? (
               <>

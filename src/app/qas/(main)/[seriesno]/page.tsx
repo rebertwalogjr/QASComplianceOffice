@@ -47,7 +47,6 @@ export default async function SeriesViewer({ params }: { params: Promise<{ serie
         </div>
       ) : (
         <>
-
           <div className="flex-2 min-w-0 min-h-0">
             <SeriesTitle seriesno={transId.toString()} />
             <div className="">
