@@ -20,54 +20,58 @@ interface FileUploadProps {
 
 export function FileUpload({ sessionId, onFilesChange }: FileUploadProps) {
   const [files, setFiles] = useState<FileWithPreview[]>([])
+
   useEffect(() => {
     onFilesChange(files)
   }, [files, onFilesChange])
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return
-    if (e.target.files) {
-      const selectedFiles = Array.from(e.target.files)
-      const newFilesToUpload = selectedFiles.filter(
-        (sf) => !files.some((f) => f.file.name === sf.name)
-      )
-      if (newFilesToUpload.length < selectedFiles.length) {
-        toast.warning("Duplicate files were ignored.")
-      }
-      if (newFilesToUpload.length === 0) return;
-      const uniqueInSelection = newFilesToUpload.filter(
-        (file, index, self) => index === self.findIndex((t) => t.name === file.name)
-      )
-      const formData = new FormData()
-      uniqueInSelection.forEach((file) => formData.append("attachments", file));
-      selectedFiles.forEach(file => formData.append("attachments", file))
-      const result = await uploadFilesAction(sessionId, formData)
-      if (result.success) {
-        const newFiles: FileWithPreview[] = selectedFiles.map(file => ({
-          file,
-          id: `${file.name}-${file.size}-${Date.now()}`,
-          preview: file.type.startsWith("image/") ? URL.createObjectURL(file) : ""
-        }))
-        setFiles(prev => {
-          const updated = [...prev, ...newFiles]
-          onFilesChange(updated)
-          return updated
-        })
-      }
+
+    const selectedFiles = Array.from(e.target.files)
+    const newFilesToUpload = selectedFiles.filter(
+      (sf) => !files.some((f) => f.file.name === sf.name)
+    )
+
+    if (newFilesToUpload.length < selectedFiles.length) {
+      toast.warning("Duplicate files were ignored.")
     }
+
+    if (newFilesToUpload.length === 0) {
+      e.target.value = ""
+      return
+    }
+
+    const uniqueInSelection = newFilesToUpload.filter(
+      (file, index, self) => index === self.findIndex((t) => t.name === file.name)
+    )
+
+    const formData = new FormData()
+    uniqueInSelection.forEach((file) => formData.append("attachments", file));
+    selectedFiles.forEach(file => formData.append("attachments", file))
+    const result = await uploadFilesAction(sessionId, formData)
+
+    if (result.success) {
+      const newFiles: FileWithPreview[] = selectedFiles.map(file => ({
+        file,
+        id: `${file.name}-${file.size}-${Date.now()}`,
+        preview: file.type.startsWith("image/") ? URL.createObjectURL(file) : ""
+      }))
+      setFiles(prev => [...prev, ...newFiles])
+    }
+    e.target.value = ""
   }
 
   const removeFile = async (id: string, fileName: string) => {
     const result = await deleteTempFileAction(sessionId, fileName)
     if (result.success) {
-      const filtered = files.filter(f => f.id !== id)
-      setFiles(filtered)
-      onFilesChange(filtered)
-
       const fileToRemove = files.find(f => f.id === id)
-      if (fileToRemove?.preview) {
+      
+      if(fileToRemove?.preview) {
         URL.revokeObjectURL(fileToRemove.preview)
       }
+
+      setFiles(prev => prev.filter(f => f.id !== id))
     } else {
       toast.error("Could not delete file from the server: " + result.error)
     }

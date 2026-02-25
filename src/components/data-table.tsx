@@ -158,14 +158,14 @@ export function DataTable<TData, TValue>({
 
       {/* PAGINATION */}
       <div className="flex items-center justify-between px-4 mb-6 pt-4">
-        <div className="text-muted-foreground flex-1 text-sm lg:flex">
+        <div className="text-muted-foreground text-sm whitespace-nowrap">
           Total of {totalCount.toLocaleString()} records
         </div>
-        <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
-          {/* {table.getFilteredSelectedRowModel().rows.length} of{" "}
-            {table.getFilteredRowModel().rows.length} row(s) selected. */}
-        </div>
-        <div className="flex w-full items-center gap-8 lg:w-fit">
+        {/* <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
+          {table.getFilteredSelectedRowModel().rows.length} of{" "}
+            {table.getFilteredRowModel().rows.length} row(s) selected.
+        </div> */}
+        <div className="flex items-center gap-8 lg:w-fit">
           <div className="hidden items-center gap-2 lg:flex">
             <Label htmlFor="rows-per-page" className="text-sm font-medium">
               Rows per page

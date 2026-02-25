@@ -1,6 +1,6 @@
 "use server"
 
-import { saveToTemp, TEMP_FOLDER } from "@/lib/file-server";
+import { saveToTemp, TEMP_FOLDER, FINAL_FOLDER } from "@/lib/file-server";
 import fs from 'fs-extra'
 import path from "path"
 
@@ -34,5 +34,26 @@ export async function deleteTempFolderBySessionId(sessionId: string) {
 
   if (await fs.pathExists(tempDir)) {
     await fs.remove(tempDir)
+  }
+}
+
+export async function downloadFileAction(jobTransactionId: number, filename: string) {
+  const filepath = path.join(FINAL_FOLDER, jobTransactionId.toString(), filename)
+
+  try {
+    if (!(await fs.pathExists(filepath))) {
+      throw new Error("File not found on server!")
+    }
+
+    const fileBuffer = await fs.readFile(filepath)
+    const base64 = fileBuffer.toString('base64')
+
+    return {
+      filename,
+      base64,
+      contentType: path.extname(filename)
+    }
+  } catch (error) {
+    throw new Error("Could not download file.")
   }
 }

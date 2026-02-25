@@ -52,3 +52,35 @@ export function groupAuditTrails(data: AuditTrailPayload[]) {
 
   return groups;
 }
+
+export const IconSwitcher = (extension: string): string => {
+  const ext = extension.toLowerCase().startsWith('.') 
+    ? extension.toLowerCase() 
+    : `.${extension.toLowerCase()}`;
+  const iconMap: Record<string, string> = {
+    // Images
+    ".png": "bi-filetype-png text-orange-500",
+    ".jpg": "bi-filetype-jpg text-orange-500",
+    ".jpeg": "bi-filetype-jpg text-orange-500",
+    ".gif": "bi-filetype-gif text-orange-500",
+    ".svg": "bi-filetype-svg text-orange-500",
+    // Documents
+    ".pdf": "bi-filetype-pdf text-red-600",
+    ".doc": "bi-filetype-doc text-blue-700",
+    ".docx": "bi-filetype-docx text-blue-700",
+    ".txt": "bi-filetype-txt text-gray-500",
+    // Spreadsheets (Excel)
+    ".xls": "bi-filetype-xls text-green-700",
+    ".xlsx": "bi-filetype-xlsx text-green-700",
+    ".xlsm": "bi-filetype-xlsx text-green-700",
+    ".csv": "bi-filetype-csv text-green-800",
+    // Presentations
+    ".ppt": "bi-filetype-ppt text-orange-700",
+    ".pptx": "bi-filetype-pptx text-orange-700",
+    // Archives
+    ".zip": "bi-file-zip text-yellow-600",
+    ".rar": "bi-file-zip text-yellow-600",
+    ".7z": "bi-file-zip text-yellow-600",
+  };
+  return iconMap[ext] || "bi-file-earmark text-gray-700";
+};

@@ -155,6 +155,7 @@ const transactionInfoInclude = {
   auditRating: { select: { id: true, name: true, isActive: true } },
   group: { select: { id: true, name: true, isActive: true } },
   recipient: recipientSelect,
+  attachments: true,
   verifier: userSelect,
   approver: userSelect,
   creator: userSelect,

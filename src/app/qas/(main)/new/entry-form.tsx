@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { FileUpload, FileWithPreview } from "@/components/FileUpload";
 import { Spinner } from "@/components/ui/spinner";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 import { ActiveCompanyPayload } from "@/prisma-actions/company";
 import { ActiveProjectPayload } from "@/prisma-actions/project";
@@ -115,9 +116,17 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
   }
 
   const handleCancel = async () => {
-    await deleteTempFolderBySessionId(sessionId)
-    router.push("/qas")
-    router.refresh()
+    try {
+      setIsPending(true)
+      await deleteTempFolderBySessionId(sessionId)
+      setTimeout(() => {
+        router.push("/qas");
+        router.refresh();
+      }, 100);
+    } catch (error) {
+      toast.error("Failed to clean up temporary files.")
+    }
+    setIsPending(false)
   }
 
   if (!sessionId) return null
@@ -549,8 +558,36 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
 
       <FieldGroup>
 
-        <div className="flex item-center gap-4 justify-end py-2">
-          <Button variant="outline" onClick={handleCancel} disabled={isPending}>Cancel</Button>
+        <div className="flex items-center gap-4 justify-end py-2">
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline">Cancel</Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent className="sm:max-w-sm">
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure you want to cancel?</AlertDialogTitle>
+              </AlertDialogHeader>
+              <AlertDialogDescription>
+                This will cancel the creation of this record and permanently delete all uploaded attachments from the temporary server.
+              </AlertDialogDescription>
+              <AlertDialogFooter>
+                <AlertDialogCancel asChild>
+                  <Button variant="outline">No</Button>
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleCancel}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  {isPending ? "Cleaning up..." : "Proceed"}
+                </AlertDialogAction>
+                {/* <Button
+                  variant="default"
+                  onClick={handleCancel}>
+                  Yes
+                </Button> */}
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
           <Button type="submit" disabled={isPending}>
             {isPending ? (
               <>

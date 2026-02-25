@@ -2,7 +2,7 @@ import { ChevronDown, Circle, Dot, File, FileText, Group, LucideBadgeInfo, Megap
 import { SeriesDescription, SeriesGroup, SeriesHeader, SeriesLabel, SeriesMedia, SeriesContainer, SeriesValue, SeriesItem } from "@/components/series-item";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import AttachmentViewer from "@/components/attachment-viewer";
+import AttachmentViewer from "@/components/attachments-viewer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { TransactionPayload } from "@/prisma-actions/transaction";
@@ -266,7 +266,10 @@ export default function FormView( { data } : { data: TransactionPayload | null})
         <CardContent className="">
           <div className="grid gap-2 items-start">
             <Label className="text-muted-foreground">Attachments</Label>
-            <AttachmentViewer />
+            <AttachmentViewer 
+              jobTransactionId={data?.id ?? 0}
+              attachments={data?.attachments ?? []}
+            />
           </div>
         </CardContent>
       </Card>
