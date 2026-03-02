@@ -5,6 +5,7 @@ generator client {
 
 datasource db {
   provider = "sqlserver"
+  url      = env("DATABASE_URL")
 }
 
 model AppSuiteEmployeeMaster {
@@ -222,6 +223,7 @@ model User {
   receiveNotifications      Boolean                @default(false) @db.Bit
   isEscalation              Boolean                @default(false) @db.Bit
   isActive                  Boolean                @default(true) @db.Bit
+  isActivated               Boolean                @default(false) @db.Bit
   createdBy                 Int?
   createdOn                 DateTime               @default(now()) @db.DateTime
   modifiedBy                Int?
