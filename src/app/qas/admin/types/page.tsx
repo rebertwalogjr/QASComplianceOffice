@@ -4,7 +4,7 @@ import { Label } from "@radix-ui/react-label";
 import CreateDrawer from "./create-drawer";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
-import { getFindingTypes } from "@/prisma-actions/finding-type";
+import { getFindingTypes } from "@/server-actions/finding-type";
 
 export default async function FindingTypePage() {
   const { data: findingType, error } = await getFindingTypes();

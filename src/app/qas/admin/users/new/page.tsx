@@ -1,8 +1,8 @@
-import { getActiveCompanies } from "@/prisma-actions/company"
+import { getActiveCompanies } from "@/server-actions/company"
 import UserForm from "./user-form"
-import { getActiveGroups } from "@/prisma-actions/group"
-import { getActiveProjects } from "@/prisma-actions/project"
-import { getActiveRoles } from "@/prisma-actions/role"
+import { getActiveGroups } from "@/server-actions/group"
+import { getActiveProjects } from "@/server-actions/project"
+import { getActiveRoles } from "@/server-actions/role"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
 

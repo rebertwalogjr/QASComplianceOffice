@@ -16,17 +16,17 @@ import { FileUpload, FileWithPreview } from "@/components/FileUpload";
 import { Spinner } from "@/components/ui/spinner";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
-import { ActiveCompanyPayload } from "@/prisma-actions/company";
-import { ActiveProjectPayload } from "@/prisma-actions/project";
-import { ActiveEngagementPayload } from "@/prisma-actions/engagement";
-import { ActiveFindingTypePayload } from "@/prisma-actions/finding-type";
-import { ActiveFindingCategoryPayload } from "@/prisma-actions/finding-category";
-import { ActiveGroupPayload } from "@/prisma-actions/group";
-import { UserBasicPayload } from "@/prisma-actions/user";
-import { ActiveAuditRatingPayload } from "@/prisma-actions/rating";
-import { ActiveAuditReportPayload } from "@/prisma-actions/audit-report";
-import { createTransaction } from "@/prisma-actions/transaction";
-import { deleteTempFolderBySessionId } from "@/prisma-actions/files";
+import { ActiveCompanyPayload } from "@/server-actions/company";
+import { ActiveProjectPayload } from "@/server-actions/project";
+import { ActiveEngagementPayload } from "@/server-actions/engagement";
+import { ActiveFindingTypePayload } from "@/server-actions/finding-type";
+import { ActiveFindingCategoryPayload } from "@/server-actions/finding-category";
+import { ActiveGroupPayload } from "@/server-actions/group";
+import { UserBasicPayload } from "@/server-actions/user";
+import { ActiveAuditRatingPayload } from "@/server-actions/rating";
+import { ActiveAuditReportPayload } from "@/server-actions/audit-report";
+import { createTransaction } from "@/server-actions/transaction";
+import { deleteTempFolderBySessionId } from "@/server-actions/files";
 
 interface EntryFormProps {
   companies: ActiveCompanyPayload[] | null

@@ -6,7 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "./ui/button";
 import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getEmployees } from "@/prisma-actions/appsuite";
+import { getEmployees } from "@/server-actions/appsuite";
 
 function useDebounce(value: string, delay: number) {
   const [debouncedValue, setDebouncedValue] = useState(value);

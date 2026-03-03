@@ -6,7 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "./ui/button";
 import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getEscalationUser } from "@/prisma-actions/user";
+import { getEscalationUser } from "@/server-actions/user";
 
 interface EscalationCommandProps {
   onSelect: (data: any) => void

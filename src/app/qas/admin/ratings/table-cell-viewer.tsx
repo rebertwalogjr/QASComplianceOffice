@@ -12,7 +12,7 @@ import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Status } from "@/lib/common-types";
 import { AuditRating } from "../../../../../generated/prisma/client";
 import { useLookups } from "@/context/lookups-context";
-import { updateAuditRating } from "@/prisma-actions/rating";
+import { updateAuditRating } from "@/server-actions/rating";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
 

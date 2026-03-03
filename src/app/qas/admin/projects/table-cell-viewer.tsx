@@ -15,7 +15,7 @@ import { useLookups } from "@/context/lookups-context";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
 import { Project } from "../../../../../generated/prisma/client";
-import { updateProject } from "@/prisma-actions/project";
+import { updateProject } from "@/server-actions/project";
 
 
 interface Props {
@@ -162,7 +162,7 @@ export default function TableCellViewer({ item, className }: Props) {
                       onValueChange={(v) => {
                         if (!isEditing) return
                         if (!isStatus(v)) return
-                        setForm((p) => ({ ...p, status: v }))
+                        setForm((p) => ({ ...p, isActive: v }))
                       }}>
                       <SelectTrigger id="status" disabled={!isEditing} className="disabled:opacity-70">
                         <SelectValue placeholder="Select status..." />

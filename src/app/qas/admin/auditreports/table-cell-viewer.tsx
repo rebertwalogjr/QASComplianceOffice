@@ -13,7 +13,7 @@ import { Status } from "@/lib/common-types";
 import { AuditReport } from "../../../../../generated/prisma/client";
 import { useLookups } from "@/context/lookups-context";
 import { toast } from "sonner";
-import { updateAuditReport } from "@/prisma-actions/audit-report";
+import { updateAuditReport } from "@/server-actions/audit-report";
 import { Spinner } from "@/components/ui/spinner";
 
 interface Props {

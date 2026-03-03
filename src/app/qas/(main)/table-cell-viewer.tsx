@@ -7,7 +7,7 @@ import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, Dr
 import { useIsMobile } from "@/hooks/use-mobile";
 import Link from "next/link";
 import { X } from "lucide-react";
-import { TransactionBasicPaylod } from "@/prisma-actions/transaction";
+import { TransactionBasicPaylod } from "@/server-actions/transaction";
 
 interface Props {
   item: TransactionBasicPaylod

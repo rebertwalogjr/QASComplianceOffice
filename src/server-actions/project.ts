@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { dbQuery } from "@/lib/prisma-db-utils";
 import { Prisma } from "../../generated/prisma/client";
+import { getUserId } from "./get-session";
 
 export async function getProjects() {
   return await dbQuery(
@@ -28,15 +29,20 @@ export async function createProject(formData: FormData) {
   const code = formData.get("code") as string;
   const companyId = Number(formData.get("companyId"));
   const remarks = formData.get("remarks") as string;
-  const currentUserId = 1002;
+  const currentUserId = await getUserId();
+
+  if (!currentUserId) {
+    throw new Error("You must be logged in.")
+  }
+
   const { data, error } = await dbQuery(
     prisma.project.create({
       data: {
         name,
         code,
-        companyId,
         remarks,
         createdBy: currentUserId,
+        companyId,
       },
     })
   )
@@ -51,7 +57,12 @@ export async function updateProject(formData: FormData, projectId: number) {
   const companyId = Number(formData.get("companyId"));
   const remarks = formData.get("remarks") as string;
   const isActive = formData.get("isActive") === "true";
-  const currentUserId = 1002;
+  const currentUserId = await getUserId();
+
+  if (!currentUserId) {
+    throw new Error("You must be logged in.")
+  }
+
   const { data, error } = await dbQuery(
     prisma.project.update({
       where: { id: projectId },

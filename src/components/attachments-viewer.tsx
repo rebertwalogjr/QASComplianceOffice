@@ -1,6 +1,6 @@
 "use client"
 
-import { downloadFileAction } from "@/prisma-actions/files"
+import { downloadFileAction } from "@/server-actions/files"
 import { toast } from "sonner"
 import { Card } from "./ui/card"
 import { Download, FileText } from "lucide-react"

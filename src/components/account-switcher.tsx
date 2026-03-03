@@ -1,40 +1,19 @@
 "use client"
 
 import * as React from "react"
-import { ChevronsUpDown, Plus } from "lucide-react"
+import { useSession } from "next-auth/react"
+import { signOut } from "next-auth/react"
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import {
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
-} from '@/components/ui/sidebar'
+import { ChevronsUpDown, LogOut, Plus, User } from "lucide-react"
+import { DropdownMenu, DropdownMenuContent,  DropdownMenuLabel, DropdownMenuSeparator,  DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import {  SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar, } from '@/components/ui/sidebar'
+import { Button } from "./ui/button"
 import { ThemeToggleGroup } from "./theme-toggle-group"
 
-export function AccountSwitcher({
-  accounts,
-}: {
-  accounts: {
-    name: string,
-    title: string
-    logo: React.ElementType
-  }[]
-}) {
+export function AccountSwitcher() {
   const { isMobile } = useSidebar()
-  const [activeTeam, setActiveTeam] = React.useState(accounts[0])
-
-  if (!activeTeam) {
-    return null
-  }
+  const { data: session } = useSession()
+  const displayName = session?.user.name || "Guest"
 
   return (
     <SidebarMenu>
@@ -46,11 +25,12 @@ export function AccountSwitcher({
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                <activeTeam.logo className="size-4" />
+                {/* <activeTeam.logo className="size-4" /> */}
+                <User className="size-4" />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{activeTeam.name}</span>
-                <span className="truncate text-xs">{activeTeam.title}</span>
+                <span className="truncate font-medium">{ displayName }</span>
+                {/* <span className="truncate text-xs">{activeTeam.title}</span> */}
               </div>
               <ChevronsUpDown className="ml-auto" />
             </SidebarMenuButton>
@@ -61,10 +41,11 @@ export function AccountSwitcher({
             side={isMobile ? "bottom" : "right"}
             sideOffset={4}
           >
-            <DropdownMenuLabel className="text-muted-foreground text-xs">
+
+            {/* <DropdownMenuLabel className="text-muted-foreground text-xs">
               Accounts
-            </DropdownMenuLabel>
-            {accounts.map((account, index) => (
+            </DropdownMenuLabel> */}
+            {/* {accounts.map((account, index) => (
               <DropdownMenuItem
                 key={account.title}
                 onClick={() => setActiveTeam(account)}
@@ -74,15 +55,27 @@ export function AccountSwitcher({
                   <account.logo className="size-3.5 shrink-0" />
                 </div>
                 {account.title}
-                {/* <DropdownMenuShortcut>{index + 1}</DropdownMenuShortcut> */}
               </DropdownMenuItem>
-            ))}
-            <DropdownMenuSeparator />
+            ))} */}
+
 
             {/* SETTINGS OPTIONS */}
             <div>
+              <DropdownMenuLabel className="text-muted-foreground text-xs">
+                Themes
+              </DropdownMenuLabel>
               <ThemeToggleGroup />
             </div>
+
+            <DropdownMenuSeparator />
+
+            <Button variant="ghost"
+              // className="w-full justify-start gap-2 px-2 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
+              onClick={() => signOut({ callbackUrl: "/signin" })}
+              >
+              <LogOut className="size-4" />
+              Logout
+            </Button>
 
           </DropdownMenuContent>
         </DropdownMenu>

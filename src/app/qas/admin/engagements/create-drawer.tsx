@@ -11,8 +11,8 @@ import { PlusCircle, X } from "lucide-react";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { createAuditEngagement } from "@/prisma-actions/engagement";
-import { ActiveCompanyPayload } from "@/prisma-actions/company";
+import { createAuditEngagement } from "@/server-actions/engagement";
+import { ActiveCompanyPayload } from "@/server-actions/company";
 
 interface CreateDrawerProps {
   companies: ActiveCompanyPayload[]

@@ -8,9 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { ActiveCompanyPayload } from "@/prisma-actions/company";
+import { ActiveCompanyPayload } from "@/server-actions/company";
 import { PlusCircle, X } from "lucide-react";
-import { createAuditRating } from "@/prisma-actions/rating";
+import { createAuditRating } from "@/server-actions/rating";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
 

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { dbQuery } from "@/lib/prisma-db-utils";
 import { Prisma } from "../../generated/prisma/client";
+import { getUserId } from "./get-session";
 
 export async function getAuditReports() {
   return await dbQuery(
@@ -22,7 +23,12 @@ export async function createAuditReport(formData: FormData) {
   const projectId = Number(formData.get("projectId"));
   const auditEngagementId = Number(formData.get("auditEngagementId"));
   const companyId = Number(formData.get("companyId"));
-  const currentUserId = 1002;
+  const currentUserId = await getUserId();
+
+  if (!currentUserId) {
+    throw new Error("You must be logged in.")
+  }
+  
   const { data, error } = await dbQuery(
     prisma.auditReport.create({
       data: {
@@ -45,7 +51,12 @@ export async function updateAuditReport(formData: FormData, auditReportId: numbe
   const companyId = Number(formData.get("companyId"));
   const auditEngagementId = Number(formData.get("auditEngagementId"));
   const isActive = formData.get("isActive") === "true";
-  const currentUserId = 1002;
+  const currentUserId = await getUserId();
+
+  if (!currentUserId) {
+    throw new Error("You must be logged in.")
+  }
+
   const { data, error } = await dbQuery(
     prisma.auditReport.update({
       where: { id: auditReportId },

@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import AttachmentViewer from "@/components/attachments-viewer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { TransactionPayload } from "@/prisma-actions/transaction";
+import { TransactionPayload } from "@/server-actions/transaction";
 import { UserHoverCard } from "@/components/user-hover-card";
 
 const BadgeYesNo = (str: string) => {

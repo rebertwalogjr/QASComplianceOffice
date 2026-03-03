@@ -4,7 +4,7 @@ import { Label } from "@radix-ui/react-label";
 import CreateDrawer from "./create-drawer";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { getCompanies } from "@/prisma-actions/company";
+import { getCompanies } from "@/server-actions/company";
 
 export default async function CompaniesPage() {
   const { data: companies, error } = await getCompanies()

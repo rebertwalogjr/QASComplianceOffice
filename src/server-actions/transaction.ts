@@ -8,11 +8,17 @@ import { userSelect, recipientSelect } from "./selectors";
 import { promoteToFinal } from "@/lib/file-server";
 import fs from 'fs-extra';
 import path from 'path';
+import { getUserId } from "./get-session";
 
 export async function createTransaction(formData: FormData) {
   const sessionId = formData.get("sessionId") as string
-  const creatorId = 1002
   const status = "OPEN"
+  const creatorId = await getUserId();
+
+  if (!creatorId) {
+    throw new Error("You must be logged in.")
+  }
+
   const rawData = {
     companyId: Number(formData.get("company")),
     projectId: Number(formData.get("project")),

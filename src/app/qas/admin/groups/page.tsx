@@ -5,8 +5,8 @@ import CreateDrawer from "./create-drawer";
 import { LookupsProvider } from "@/context/lookups-context";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
-import { getGroups } from "@/prisma-actions/group";
-import { getActiveProjects, getProjects } from "@/prisma-actions/project";
+import { getGroups } from "@/server-actions/group";
+import { getActiveProjects, getProjects } from "@/server-actions/project";
 
 export default async function GroupsPage() {
   const [groupsRes, projectsRes, activeProjectsRes] = await Promise.all([getGroups(), getProjects(), getActiveProjects()]);

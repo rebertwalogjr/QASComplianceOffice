@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import StatusBadge from "@/components/status-badge";
-import { AuditTrailPayload } from "@/prisma-actions/audit-trail";
+import { AuditTrailPayload } from "@/server-actions/audit-trail";
 import { format } from "date-fns";
 import { UserHoverCard } from "@/components/user-hover-card";
 import { groupAuditTrails } from "@/lib/utils";

@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { dbQuery } from "@/lib/prisma-db-utils";
 import { Prisma } from "../../generated/prisma/client";
+import bcrypt from "bcryptjs";
+import { getUserId, getSession } from "./get-session";
 
 export async function getUsers() {
   return await dbQuery(
@@ -55,6 +57,12 @@ export async function getEscalationUser(search: string = "", skip: number = 0) {
 }
 
 export async function createUser(formData: any) {
+  const currentUserId = await getUserId();
+
+  if (!currentUserId) {
+    throw new Error("You must be logged in.")
+  }
+
   const {
     employeeNumber,
     username,
@@ -65,8 +73,10 @@ export async function createUser(formData: any) {
     projectIds,
     escalations,
     isEscalation,
-    currentUser = 1002
+    currentUser = currentUserId
   } = formData
+
+  const hashedPassword = await bcrypt.hash("12345", 10)
 
   const { data, error } = await dbQuery(
     prisma.$transaction(async (tx) => {
@@ -75,7 +85,7 @@ export async function createUser(formData: any) {
         data: {
           employeeNumber,
           username,
-          password: "12345",
+          password: hashedPassword,
           emailAddress,
           companyId: companyId ? Number(companyId) : null,
           isEscalation,
@@ -131,6 +141,12 @@ export async function createUser(formData: any) {
 }
 
 export async function updateUser(userId: number, formData: any) {
+  const currentUserId = await getUserId();
+
+  if (!currentUserId) {
+    throw new Error("You must be logged in.")
+  }
+
   const {
     username,
     emailAddress,
@@ -141,7 +157,7 @@ export async function updateUser(userId: number, formData: any) {
     escalations,
     isEscalation,
     isActive,
-    currentUser = 1002
+    currentUser = currentUserId
   } = formData
 
   const { data, error } = await dbQuery(
@@ -268,6 +284,23 @@ export async function getActiveRecipients() : Promise<{data: UserBasicPayload[] 
         }
       },
       select: userBasicSelect
+    })
+  )
+}
+
+export async function activateAccount() {
+  const session = await getSession()
+  if (!session?.user?.id) {
+    return { data: null, error: "You must be logged in to activate your account." };
+  }
+  return await dbQuery(
+    prisma.user.update({
+      where: {
+        id: Number(session.user.id)
+      },
+      data: {
+        isActivated: true
+      }
     })
   )
 }

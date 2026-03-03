@@ -3,10 +3,10 @@ import { columns } from "./columns";
 import { Label } from "@radix-ui/react-label";
 import CreateDrawer from "./create-drawer";
 import { LookupsProvider } from "@/context/lookups-context";
-import { getAuditReports } from "@/prisma-actions/audit-report";
-import { getActiveCompanies } from "@/prisma-actions/company";
-import { getActiveProjects } from "@/prisma-actions/project";
-import { getActiveAuditEngagements } from "@/prisma-actions/engagement";
+import { getAuditReports } from "@/server-actions/audit-report";
+import { getActiveCompanies } from "@/server-actions/company";
+import { getActiveProjects } from "@/server-actions/project";
+import { getActiveAuditEngagements } from "@/server-actions/engagement";
 
 export default async function AuditReportsPage() {
   const [auditReportsRes, activeCompaniesRes, activeProjectsRes, activeAuditEngagementsRes] = await Promise.all([

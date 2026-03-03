@@ -10,10 +10,10 @@ import UpdateTrail from "../update-trail"
 import ReviewTrail from "../review-trail"
 import AuditTrail from "../audit-trail"
 
-import { getTransactionById } from "@/prisma-actions/transaction"
+import { getTransactionById } from "@/server-actions/transaction"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
-import { getAuditTrailByTransId } from "@/prisma-actions/audit-trail"
+import { getAuditTrailByTransId } from "@/server-actions/audit-trail"
 
 export default async function SeriesViewer({ params }: { params: Promise<{ seriesno: string }> }) {
   const resolvedParams = await params

@@ -9,12 +9,12 @@ import { Separator } from "@/components/ui/separator";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PlusCircle, X } from "lucide-react";
 import { toast } from "sonner";
-import { createAuditReport } from "@/prisma-actions/audit-report";
+import { createAuditReport } from "@/server-actions/audit-report";
 import { Spinner } from "@/components/ui/spinner";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ActiveCompanyPayload } from "@/prisma-actions/company";
-import { ActiveProjectPayload } from "@/prisma-actions/project";
-import { ActiveEngagementPayload } from "@/prisma-actions/engagement";
+import { ActiveCompanyPayload } from "@/server-actions/company";
+import { ActiveProjectPayload } from "@/server-actions/project";
+import { ActiveEngagementPayload } from "@/server-actions/engagement";
 
 interface CreateDrawerProps {
   companies: ActiveCompanyPayload[]

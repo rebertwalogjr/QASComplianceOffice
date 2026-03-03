@@ -8,7 +8,7 @@ import StatusBadge from "@/components/status-badge";
 import PopoverStatusFilter from "./popover-status-filter";
 import { JobTransaction } from "../../../../generated/prisma/client";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { TransactionBasicPaylod } from "@/prisma-actions/transaction";
+import { TransactionBasicPaylod } from "@/server-actions/transaction";
 
 export const columns: ColumnDef<TransactionBasicPaylod>[] = [
   {

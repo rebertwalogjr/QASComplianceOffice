@@ -12,8 +12,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { PlusCircle, X } from "lucide-react";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
-import { createGroup } from "@/prisma-actions/group";
-import { ActiveProjectPayload } from "@/prisma-actions/project";
+import { createGroup } from "@/server-actions/group";
+import { ActiveProjectPayload } from "@/server-actions/project";
 
 interface CreateDrawerProps {
   projects: ActiveProjectPayload[]

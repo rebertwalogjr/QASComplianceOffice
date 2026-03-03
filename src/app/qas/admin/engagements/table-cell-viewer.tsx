@@ -14,7 +14,7 @@ import { useLookups } from "@/context/lookups-context";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
 import { AuditEngagement } from "../../../../../generated/prisma/client";
-import { updateAuditEngagement } from "@/prisma-actions/engagement";
+import { updateAuditEngagement } from "@/server-actions/engagement";
 
 interface Props {
   item: AuditEngagement

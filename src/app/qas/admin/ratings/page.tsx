@@ -2,10 +2,10 @@ import { DataTable } from "@/components/ui/data-table";
 import { columns } from "./columns";
 import CreateDrawer from "./create-drawer";
 import { Label } from "@/components/ui/label";
-import { getAuditRatings } from "@/prisma-actions/rating";
+import { getAuditRatings } from "@/server-actions/rating";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
-import { getActiveCompanies } from "@/prisma-actions/company";
+import { getActiveCompanies } from "@/server-actions/company";
 import { LookupsProvider } from "@/context/lookups-context";
 
 export default async function RatingsPage() {

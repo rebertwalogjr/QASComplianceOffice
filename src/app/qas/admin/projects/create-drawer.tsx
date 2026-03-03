@@ -13,8 +13,8 @@ import { PlusCircle, X } from "lucide-react";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
 import { Company } from "../../../../../generated/prisma/client";
-import { createProject } from "@/prisma-actions/project";
-import { ActiveCompanyPayload } from "@/prisma-actions/company";
+import { createProject } from "@/server-actions/project";
+import { ActiveCompanyPayload } from "@/server-actions/company";
 
 interface CreateDrawerProps {
   companies: ActiveCompanyPayload[] | null

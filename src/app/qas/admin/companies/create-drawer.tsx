@@ -10,7 +10,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { PlusCircle, X } from "lucide-react";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
-import { createCompany } from "@/prisma-actions/company";
+import { createCompany } from "@/server-actions/company";
 
 export default function CreateDrawer() {
   const isMobile = useIsMobile();

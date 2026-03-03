@@ -1,4 +1,4 @@
-import { getTransactions } from "@/prisma-actions/transaction"
+import { getTransactions } from "@/server-actions/transaction"
 import { columns } from "./columns"
 import { DataTable } from "@/components/data-table"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"

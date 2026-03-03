@@ -20,11 +20,11 @@ import { EmployeeCommand } from "@/components/employeeMaster-command";
 import { MultiSelectCommand } from "@/components/multiselect-command";
 import { EscalationCommand } from "@/components/escalations-command";
 
-import { createUser } from "@/prisma-actions/user";
-import { ActiveCompanyPayload } from "@/prisma-actions/company";
-import { ActiveGroupPayload } from "@/prisma-actions/group";
-import { ActiveProjectPayload } from "@/prisma-actions/project";
-import { ActiveRolePayload } from "@/prisma-actions/role";
+import { createUser } from "@/server-actions/user";
+import { ActiveCompanyPayload } from "@/server-actions/company";
+import { ActiveGroupPayload } from "@/server-actions/group";
+import { ActiveProjectPayload } from "@/server-actions/project";
+import { ActiveRolePayload } from "@/server-actions/role";
 
 type SelectedEmployee = {
   employeeNumber: string;
@@ -49,7 +49,7 @@ export default function UserForm({ companies, groups, projects, roles }: UserFor
   const [selectedEmployee, setSelectedEmployee] = useState<SelectedEmployee>(null)
   const [formData, setFormData] = useState({
     username: "",
-    email: "",
+    emailAddress: "",
     companyId: "",
     isEscalation: false
   })
@@ -71,7 +71,7 @@ export default function UserForm({ companies, groups, projects, roles }: UserFor
       setFormData(prev => ({
         ...prev,
         username: generateUserName(emp.firstName, emp.lastName),
-        email: emp.emailAddress ?? "",
+        emailAddress: emp.emailAddress ?? "",
       }))
     } else {
       setFormData(prev => ({ ...prev, username: "", email: "" }))
@@ -174,8 +174,8 @@ export default function UserForm({ companies, groups, projects, roles }: UserFor
                     <Input
                       id="email"
                       name="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      value={formData.emailAddress}
+                      onChange={(e) => setFormData({ ...formData, emailAddress: e.target.value })}
                       placeholder="employee@company.com"
                     />
                   </Field>

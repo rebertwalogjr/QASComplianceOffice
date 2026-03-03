@@ -4,7 +4,7 @@ import { Label } from "@radix-ui/react-label";
 import CreateDrawer from "./create-drawer";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
-import { getFindingCategories } from "@/prisma-actions/finding-category";
+import { getFindingCategories } from "@/server-actions/finding-category";
 
 export default async function FindingCategoryage() {
   const { data: categories, error } = await getFindingCategories();

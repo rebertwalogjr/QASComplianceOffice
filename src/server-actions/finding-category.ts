@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { dbQuery } from "@/lib/prisma-db-utils";
 import { Prisma } from "../../generated/prisma/client";
+import { getUserId } from "./get-session";
 
 export async function getFindingCategories() {
   return await dbQuery(
@@ -13,7 +14,12 @@ export async function getFindingCategories() {
 
 export async function createFindingCategory(formData: FormData) {
   const name = formData.get("name") as string;
-  const currentUserId = 1002;
+  const currentUserId = await getUserId();
+
+  if (!currentUserId) {
+    throw new Error("You must be logged in.")
+  }
+
   const { data, error } = await dbQuery(
     prisma.findingCategory.create({
       data: {
@@ -30,7 +36,12 @@ export async function createFindingCategory(formData: FormData) {
 export async function updateFindingCategory(formData: FormData, categoryId: number) {
   const name = formData.get("name") as string;
   const isActive = formData.get("isActive") === "true";
-  const currentUserId = 1002;
+  const currentUserId = await getUserId();
+
+  if (!currentUserId) {
+    throw new Error("You must be logged in.")
+  }
+  
   const { data, error } = await dbQuery(
     prisma.findingCategory.update({
       where: { id: categoryId },

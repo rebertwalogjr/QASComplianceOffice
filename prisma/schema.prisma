@@ -1,11 +1,14 @@
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
+  moduleFormat = "esm"
+  generatedFileExtension = "ts"
+  importFileExtension = "ts"
 }
 
 datasource db {
   provider = "sqlserver"
-  url      = env("DATABASE_URL")
+  // url      = env("DATABASE_URL")
 }
 
 model AppSuiteEmployeeMaster {

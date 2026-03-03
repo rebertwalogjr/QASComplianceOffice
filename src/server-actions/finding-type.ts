@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { dbQuery } from "@/lib/prisma-db-utils";
 import { Prisma } from "../../generated/prisma/client";
+import { getUserId } from "./get-session";
 
 export async function getFindingTypes() {
   return await dbQuery(
@@ -21,7 +22,12 @@ export async function getActiveFindingTypes() : Promise<{ data: ActiveFindingTyp
 
 export async function createFindingType(formData: FormData) {
   const name = formData.get("name") as string;
-  const currentUserId = 1002;
+  const currentUserId = await getUserId();
+
+  if (!currentUserId) {
+    throw new Error("You must be logged in.")
+  }
+
   const { data, error } = await dbQuery(
     prisma.typeOfFinding.create({
       data: {
@@ -38,7 +44,12 @@ export async function createFindingType(formData: FormData) {
 export async function updateFindingType(formData: FormData, typeId: number) {
   const name = formData.get("name") as string;
   const isActive = formData.get("isActive") === "true";
-  const currentUserId = 1002;
+  const currentUserId = await getUserId();
+
+  if (!currentUserId) {
+    throw new Error("You must be logged in.")
+  }
+  
   const { data, error } = await dbQuery(
     prisma.typeOfFinding.update({
       where: { id: typeId },

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { dbQuery } from "@/lib/prisma-db-utils";
 import { Prisma } from "../../generated/prisma/client";
+import { getUserId } from "./get-session";
 
 export async function getGroups() {
   return await dbQuery(
@@ -32,7 +33,12 @@ export async function createGroup(formData: FormData) {
   const inCharge = formData.get("inCharge") as string;
   const emailAddress = formData.get("emailAddress") as string;
   const remarks = formData.get("remarks") as string;
-  const currentUserId = 1002;
+  const currentUserId = await getUserId();
+
+  if (!currentUserId) {
+    throw new Error("You must be logged in.")
+  }
+
   const { data, error } = await dbQuery(
     prisma.group.create({
       data: {
@@ -63,7 +69,12 @@ export async function updateGroup(formData: FormData, groupId: number) {
   const emailAddress = formData.get("emailAddress") as string;
   const remarks = formData.get("remarks") as string;
   const isActive = formData.get("isActive") === "true";
-  const currentUserId = 1002;
+  const currentUserId = await getUserId();
+
+  if (!currentUserId) {
+    throw new Error("You must be logged in.")
+  }
+  
   const { data, error } = await dbQuery(
     prisma.group.update({
       where: { id: groupId },

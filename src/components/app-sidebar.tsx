@@ -95,7 +95,7 @@ export function AppSidebar() {
 
       {/* SIDEBAR FOOTER */}
       <SidebarFooter>
-        <AccountSwitcher accounts={sidebarItems.accounts} />
+        <AccountSwitcher />
       </SidebarFooter>
 
     </Sidebar>

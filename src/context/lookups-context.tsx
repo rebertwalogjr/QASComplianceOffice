@@ -2,10 +2,10 @@
 
 import { createContext, useContext } from "react"
 import { AuditEngagement, AuditReport, Company, Group, Project } from "../../generated/prisma/client"
-import { ActiveCompanyPayload } from "@/prisma-actions/company"
-import { ActiveProjectPayload } from "@/prisma-actions/project"
-import { ActiveGroupPayload } from "@/prisma-actions/group"
-import { ActiveEngagementPayload } from "@/prisma-actions/engagement"
+import { ActiveCompanyPayload } from "@/server-actions/company"
+import { ActiveProjectPayload } from "@/server-actions/project"
+import { ActiveGroupPayload } from "@/server-actions/group"
+import { ActiveEngagementPayload } from "@/server-actions/engagement"
 
 interface LookupsContextProps {
   companies?: Company[]

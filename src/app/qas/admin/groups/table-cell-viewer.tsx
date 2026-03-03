@@ -17,7 +17,7 @@ import { useLookups } from "@/context/lookups-context";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
 import { Group } from "../../../../../generated/prisma/client";
-import { updateGroup } from "@/prisma-actions/group";
+import { updateGroup } from "@/server-actions/group";
 
 interface Props {
   item: Group

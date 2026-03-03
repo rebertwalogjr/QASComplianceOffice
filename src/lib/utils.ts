@@ -1,7 +1,7 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { isToday, isYesterday, isThisWeek, format, parseISO } from "date-fns";
-import { AuditTrailPayload } from "@/prisma-actions/audit-trail";
+import { AuditTrailPayload } from "@/server-actions/audit-trail";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -84,3 +84,13 @@ export const IconSwitcher = (extension: string): string => {
   };
   return iconMap[ext] || "bi-file-earmark text-gray-700";
 };
+
+export function toTitleCase(str: string | null | undefined) : string {
+  if (!str) return ""
+
+  return str
+    .toLowerCase()
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ")
+}

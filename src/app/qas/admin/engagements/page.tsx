@@ -5,8 +5,8 @@ import CreateDrawer from "./create-drawer";
 import { LookupsProvider } from "@/context/lookups-context";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
-import { getAuditEngagements } from "@/prisma-actions/engagement";
-import { getActiveCompanies, getCompanies } from "@/prisma-actions/company";
+import { getAuditEngagements } from "@/server-actions/engagement";
+import { getActiveCompanies, getCompanies } from "@/server-actions/company";
 
 export default async function AuditEngagementPage() {
 

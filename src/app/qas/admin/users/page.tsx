@@ -7,8 +7,8 @@ import AddUser from "./add-user";
 import Link from "next/link";
 import { get } from "http";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { getUsers } from "@/prisma-actions/user";
-import { getCompanies } from "@/prisma-actions/company";
+import { getUsers } from "@/server-actions/user";
+import { getCompanies } from "@/server-actions/company";
 
 
 export default async function UsersPage() {

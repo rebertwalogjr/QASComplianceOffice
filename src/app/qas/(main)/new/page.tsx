@@ -1,15 +1,15 @@
-import { getActiveComplianceOfficers, getActiveRecipients, getActiveSupervisors } from "@/prisma-actions/user";
+import { getActiveComplianceOfficers, getActiveRecipients, getActiveSupervisors } from "@/server-actions/user";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 
-import { getActiveProjects } from "@/prisma-actions/project";
-import { getActiveCompanies } from "@/prisma-actions/company";
-import { getActiveAuditEngagements } from "@/prisma-actions/engagement";
-import { getActiveFindingTypes } from "@/prisma-actions/finding-type";
-import { getActiveFindingCategories } from "@/prisma-actions/finding-category";
-import { getActiveGroups } from "@/prisma-actions/group";
-import { getActiveAuditRatings } from "@/prisma-actions/rating";
-import { getActiveAuditReport } from "@/prisma-actions/audit-report";
+import { getActiveProjects } from "@/server-actions/project";
+import { getActiveCompanies } from "@/server-actions/company";
+import { getActiveAuditEngagements } from "@/server-actions/engagement";
+import { getActiveFindingTypes } from "@/server-actions/finding-type";
+import { getActiveFindingCategories } from "@/server-actions/finding-category";
+import { getActiveGroups } from "@/server-actions/group";
+import { getActiveAuditRatings } from "@/server-actions/rating";
+import { getActiveAuditReport } from "@/server-actions/audit-report";
 
 import EntryForm from "./entry-form";
 

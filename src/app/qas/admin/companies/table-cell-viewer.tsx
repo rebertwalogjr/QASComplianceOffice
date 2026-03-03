@@ -13,7 +13,7 @@ import { Status } from "@/lib/common-types";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
 import { Company } from "../../../../../generated/prisma/client";
-import { updateCompany } from "@/prisma-actions/company";
+import { updateCompany } from "@/server-actions/company";
 
 interface Props {
   item: Company

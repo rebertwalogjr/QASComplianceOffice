@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react"
 import { FileText, Paperclip, X } from "lucide-react"
 import { Card } from "./ui/card"
 import { Button } from "./ui/button"
-import { deleteTempFileAction, uploadFilesAction } from "@/prisma-actions/files"
+import { deleteTempFileAction, uploadFilesAction } from "@/server-actions/files"
 import { toast } from "sonner"
 
 export interface FileWithPreview {

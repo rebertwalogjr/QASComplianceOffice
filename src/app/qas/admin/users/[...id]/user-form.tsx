@@ -18,11 +18,11 @@ import { Spinner } from "@/components/ui/spinner";
 import { MultiSelectCommand } from "@/components/multiselect-command";
 import { EscalationCommand } from "@/components/escalations-command";
 
-import { updateUser, UserInfoPayload } from "@/prisma-actions/user";
-import { ActiveCompanyPayload } from "@/prisma-actions/company";
-import { ActiveProjectPayload } from "@/prisma-actions/project";
-import { ActiveGroupPayload } from "@/prisma-actions/group";
-import { ActiveRolePayload } from "@/prisma-actions/role";
+import { updateUser, UserInfoPayload } from "@/server-actions/user";
+import { ActiveCompanyPayload } from "@/server-actions/company";
+import { ActiveProjectPayload } from "@/server-actions/project";
+import { ActiveGroupPayload } from "@/server-actions/group";
+import { ActiveRolePayload } from "@/server-actions/role";
 
 
 interface UserFormProps {
@@ -42,7 +42,7 @@ export default function UserForm({ initialData, companies, groups, projects, rol
 
   const [formData, setFormData] = useState({
     username: initialData.username || "",
-    email: initialData.emailAddress || "",
+    emailAddress: initialData.emailAddress || "",
     companyId: initialData.companyId?.toString() || "",
     isActive: initialData.isActive ?? true,
     isEscalation: initialData.isEscalation ?? false
@@ -164,8 +164,8 @@ export default function UserForm({ initialData, companies, groups, projects, rol
                     <FieldLabel htmlFor="email">Email Address</FieldLabel>
                     <Input
                       id="email"
-                      defaultValue={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value})}
+                      defaultValue={formData.emailAddress}
+                      onChange={(e) => setFormData({ ...formData, emailAddress: e.target.value})}
                     />
                   </Field>
 

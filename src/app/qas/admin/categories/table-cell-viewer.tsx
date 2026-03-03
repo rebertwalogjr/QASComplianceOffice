@@ -13,7 +13,7 @@ import { Status } from "@/lib/common-types";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
 import { FindingCategory } from "../../../../../generated/prisma/client";
-import { updateFindingCategory } from "@/prisma-actions/finding-category";
+import { updateFindingCategory } from "@/server-actions/finding-category";
 
 interface Props {
   item: FindingCategory
