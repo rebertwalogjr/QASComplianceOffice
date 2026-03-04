@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState }  from "react"
 import Image from "next/image"
 import { signIn } from "next-auth/react"
 import { useForm } from "react-hook-form"
@@ -15,7 +15,6 @@ import { Field, FieldError, FieldGroup, FieldLabel, FieldSet } from "@/component
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Loader2 } from "lucide-react"
-import { getSession } from "next-auth/react"
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -50,20 +49,18 @@ export default function SignInPage() {
     })
 
     if (result?.error) {
-     toast.error("Invalid username or password.")
-     setIsLoading(false)
-     return
-    } 
-    
-    const session = await getSession()
-
-    if (session?.user && !session.user.isActivated) {
-      toast.info("Please activate your account.")
-      router.push("/activate")
-    } else {
-      toast.success("Welcome back!")
-      router.push("/qas")
+      toast.error("Invalid username or password.")
+      setIsLoading(false)
+      return
     }
+
+    toast.success("Welcome back!")
+
+    router.prefetch("/qas")
+
+    React.startTransition(() => {
+      router.push("/qas")
+    })
 
     setIsLoading(false)
   }
@@ -73,7 +70,7 @@ export default function SignInPage() {
       <Card className="w-full max-w-[400px]">
         <CardHeader>
           <div className="flex gap-2 mb-4">
-            <Image src="/DMCILogo.png" width={128} height={32} alt="DMCI Logo" priority className="object-contain"/>
+            <Image src="/DMCILogo.png" width={128} height={32} alt="DMCI Logo" priority className="object-contain" />
           </div>
           <CardTitle>Login to your account</CardTitle>
           <CardDescription>Enter your username below to login to your account</CardDescription>
@@ -86,7 +83,7 @@ export default function SignInPage() {
 
                 <Field>
                   <FieldLabel htmlFor="username">Username</FieldLabel>
-                  <Input id="username" type="text" placeholder="email or username" {...register("username")} disabled={isLoading} />
+                  <Input id="username" type="text" placeholder="email or username" {...register("username")} disabled={isLoading} tabIndex={1} />
                   {errors.username && (
                     <FieldError>{errors.username.message}</FieldError>
                   )}
@@ -95,18 +92,18 @@ export default function SignInPage() {
                 <Field>
                   <div className="flex justify-between">
                     <FieldLabel htmlFor="password">Password</FieldLabel>
-                    <Button variant="link" className="font-normal h-auto p-0" >
+                    <Button variant="link" className="font-normal h-auto p-0" tabIndex={4} >
                       Forgot your password?
                     </Button>
                   </div>
-                  <Input id="password" type="password" placeholder="********" {...register("password")} disabled={isLoading} />
+                  <Input id="password" type="password" placeholder="********" {...register("password")} disabled={isLoading} tabIndex={2} />
                   {errors.password && (
                     <FieldError>{errors.password.message}</FieldError>
                   )}
                 </Field>
 
                 <Field>
-                  <Button type="submit" disabled={isLoading}>
+                  <Button type="submit" disabled={isLoading} tabIndex={3}>
                     {isLoading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -124,7 +121,7 @@ export default function SignInPage() {
 
           <div className="flex justify-center mt-4 gap-1">
             <Label className="font-normal text-muted-foreground">Don't have an account?</Label>
-            <Button variant="link" className="font-normal h-auto p-0">
+            <Button variant="link" className="font-normal h-auto p-0" tabIndex={5}>
               Sign up
             </Button>
           </div>

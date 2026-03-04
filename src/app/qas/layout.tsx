@@ -3,7 +3,9 @@ import { cookies } from "next/headers"
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import { SiteHeader } from "@/components/site-header"
-import React from "react"
+import React, { Suspense } from "react"
+import { SidebarWrapper } from "@/components/sidebar-wrapper"
+import Loading from "./(main)/loading"
 
 export default async function QasLayout({
   children,
@@ -14,14 +16,14 @@ export default async function QasLayout({
   const defaultOpen = cookieStore.get("sidebar_state")?.value === "true"
 
   return (
-    <SidebarProvider defaultOpen={defaultOpen}>
-      <AppSidebar/>
+    <SidebarWrapper initialOpen={defaultOpen}>
+      <AppSidebar />
       <SidebarInset>
         <SiteHeader />
         <div className="flex flex-1 flex-col">
           {children}
         </div>
       </SidebarInset>
-    </SidebarProvider>
+    </SidebarWrapper>
   )
 }

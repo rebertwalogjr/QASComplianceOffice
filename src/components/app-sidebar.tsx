@@ -23,7 +23,12 @@ export function AppSidebar() {
   const pathname = usePathname() || "/"
 
   const renderLink = (item: { title: string; url: string; icon: any}) => {
-    const isActive = pathname === item.url || pathname.startsWith(item.url === "/" ? "/" : `${item.url}/`)
+    const isExactMatch = pathname === item.url
+    const isSubPath = pathname.startsWith(`${item.url}`)
+    
+    const reservedSubPaths = ["/qas/admin", "/qas/new"]
+    const isReservedPath = item.url === "/qas" && reservedSubPaths.some(path => pathname.startsWith(path))
+    const isActive = (isExactMatch || isSubPath) && !isReservedPath
 
     const base = "flex items-center gap-3 px-3 py-2 rounded-md transition-colors"
     const active = "bg-background text-primary font-medium"

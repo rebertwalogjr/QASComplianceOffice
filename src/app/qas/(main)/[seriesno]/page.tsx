@@ -6,9 +6,9 @@ import { SeriesTabs, SeriesTabsContent, SeriesTabsList, SeriesTabsTrigger } from
 import FormView from "./form-view"
 import RightPanel from "./right-panel"
 import SeriesTitle from "./series-title"
-import UpdateTrail from "../update-trail"
-import ReviewTrail from "../review-trail"
-import AuditTrail from "../audit-trail"
+import UpdateTrail from "./update-trail"
+import ReviewTrail from "./review-trail"
+import AuditTrail from "./audit-trail"
 
 import { getTransactionById } from "@/server-actions/transaction"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"

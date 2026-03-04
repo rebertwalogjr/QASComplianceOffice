@@ -31,23 +31,11 @@ export default withAuth(
   }
 )
 
-// export function proxy(request: NextRequest) {
-//   const authToken = request.cookies.get("authToken")
-//   const url = request.nextUrl.clone()
-
-//   if(!authToken && url.pathname.includes('/qas')) {
-//     url.pathname = '/signin'
-//     return NextResponse.redirect(url)
-//   }
-
-//   return NextResponse.next()
-// }
-
 export const config = {
   matcher: [
     "/qas/:path",
     "/activate",
     "/",
-    "/((?!api/auth|_next/static|_next/image|favicon.ico|public|signin).*)",
+    "/((?!api/auth|_next/static|_next/image|favicon.ico|DMCILogo.png|signin).*)",
   ]
 }

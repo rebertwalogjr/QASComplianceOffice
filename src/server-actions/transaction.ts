@@ -42,8 +42,7 @@ export async function createTransaction(formData: FormData) {
     problemCriteria: formData.get("criteria") as string,
     problemFindings: formData.get("findings") as string,
     recommendations: formData.get("recommendations") as string,
-
-    complianceSecretariatId: Number(formData.get("complianceSecretariat")), // Hardcoded per your form's read-only value
+    complianceSecretariatId: creatorId,
     jobStatus: status,
     createdBy: creatorId,
   };

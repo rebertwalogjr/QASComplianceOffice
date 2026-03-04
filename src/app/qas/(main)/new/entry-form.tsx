@@ -150,10 +150,10 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
               <FieldSet>
                 <FieldGroup>
 
-                  <Field>
+                  {/* <Field>
                     <FieldLabel htmlFor="complianceSecretariatId">Compliance Secretariat</FieldLabel>
                     <Input name="complianceSecretariat" placeholder="Rebert L. Walog Jr (9112154)" value="1002" readOnly />
-                  </Field>
+                  </Field> */}
 
                   <Field>
                     <FieldLabel htmlFor="company">Company</FieldLabel>

@@ -12,8 +12,10 @@ import { ThemeToggleGroup } from "./theme-toggle-group"
 
 export function AccountSwitcher() {
   const { isMobile } = useSidebar()
-  const { data: session } = useSession()
-  const displayName = session?.user.name || "Guest"
+  const { data: session, status } = useSession()
+  const displayName = status === "loading" 
+  ? <div className="h-4 w-24 bg-muted animate-pulse rounded" /> 
+  : ( session?.user.name || "Guest")
 
   return (
     <SidebarMenu>
