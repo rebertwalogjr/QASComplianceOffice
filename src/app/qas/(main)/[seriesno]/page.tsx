@@ -1,7 +1,7 @@
-
 import { notFound } from "next/navigation"
 
-import { SeriesTabs, SeriesTabsContent, SeriesTabsList, SeriesTabsTrigger } from "@/components/series-tabs"
+import { getAuditTrailByTransId } from "@/server-actions/audit-trail"
+import { getTransactionById } from "@/server-actions/transaction"
 
 import FormView from "./form-view"
 import RightPanel from "./right-panel"
@@ -10,10 +10,9 @@ import UpdateTrail from "./update-trail"
 import ReviewTrail from "./review-trail"
 import AuditTrail from "./audit-trail"
 
-import { getTransactionById } from "@/server-actions/transaction"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
-import { getAuditTrailByTransId } from "@/server-actions/audit-trail"
+import { SeriesTabs, SeriesTabsContent, SeriesTabsList, SeriesTabsTrigger } from "@/components/series-tabs"
 
 export default async function SeriesViewer({ params }: { params: Promise<{ seriesno: string }> }) {
   const resolvedParams = await params
@@ -34,7 +33,7 @@ export default async function SeriesViewer({ params }: { params: Promise<{ serie
   const firstError = result.find(r => r.error)?.error
 
   return (
-    <div className="@container/ pt-2 flex">
+    <div className="@container flex">
       {firstError ? (
         <div className="mt-6 mx-4" >
           <Alert variant="destructive" className="bg-red-50 border-destructive">
@@ -48,7 +47,11 @@ export default async function SeriesViewer({ params }: { params: Promise<{ serie
       ) : (
         <>
           <div className="flex-2 min-w-0 min-h-0">
-            <SeriesTitle seriesno={transId.toString()} />
+            <SeriesTitle 
+              seriesno={transId.toString()} 
+              creator={jobTransaction.data.creator.appSuiteEmployeeMaster.fullName} 
+              createdOn={jobTransaction.data.createdOn.toDateString()} 
+            />
             <div className="">
               <SeriesTabs defaultValue="details">
                 <SeriesTabsList>
@@ -76,7 +79,9 @@ export default async function SeriesViewer({ params }: { params: Promise<{ serie
 
           {/* COLUMN 2 – no scroll */}
           <div className="hidden shrink lg:flex lg:flex-col lg:flex-1 min-h-0 sticky top-16 overflow-hidden z-20 h-[calc(100vh-64px)]">
-            <RightPanel />
+            <RightPanel 
+              jobTransaction={jobTransaction.data}
+            />
           </div>
         </>
       )}

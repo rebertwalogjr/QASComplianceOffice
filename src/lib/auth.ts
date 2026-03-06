@@ -45,16 +45,6 @@ export const authOptions: AuthOptions = {
         const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
         if (!isPasswordValid) return null
 
-        // EROR CHECK 3: Is the user account activated?
-        // if (!user.isActivated) {
-        //   throw new Error("ACCOUNT_NEEDS_ACTIVATION")
-        // }
-
-        // ERROR CHECK 4: Is the user account inactive?
-        // if (!user.isActive) {
-        //   throw new Error("ACCOUNT_INACTIVE")
-        // }
-
         const emp = user.appSuiteEmployeeMaster
         const firstName = toTitleCase(emp?.firstName)
         const lastName = toTitleCase(emp?.lastName)
@@ -64,7 +54,7 @@ export const authOptions: AuthOptions = {
           name: `${firstName} ${lastName}`.trim() || user.username,
           username: user.username,
           isActivated: user.isActivated,
-          roles: user.userRoles.map((ur: any) => ur.role.name)
+          userRoles: user.userRoles.map((ur: any) => ur.role.id)
         }
 
       }
@@ -74,7 +64,7 @@ export const authOptions: AuthOptions = {
     async jwt({ token, user, trigger, session }: any) {
       if (user) {
         token.id = user.id
-        token.roles = user.roles
+        token.userRoles = user.userRoles
         token.isActivated = user.isActivated
       }
       if (trigger === "update" && session?.user) {
@@ -91,8 +81,8 @@ export const authOptions: AuthOptions = {
     async session({ session, token }: any) {
       if (token) {
         session.user.id = token.id as string
-        session.user.roles = token.roles
-        session.user.isActivated = token.isActivated
+        session.user.userRoles = token.userRoles as any[]
+        session.user.isActivated = token.isActivated as boolean
       }
       return session
     }

@@ -11,13 +11,13 @@ import { UserHoverCard } from "@/components/user-hover-card";
 const BadgeYesNo = (str: string) => {
   const val = str.toLowerCase()
   return <>
-    <Badge className={`${val === "yes" ? "bg-primary text-white" : "bg-gray-500 text-white"} px-3`}>
+    <Badge className={`${val === "yes" ? "bg-primary/80 text-white" : "bg-gray-500/80 text-white"} px-3`}>
       {str}
     </Badge>
   </>
 }
 
-export default function FormView( { data } : { data: TransactionPayload | null}) {
+export default function FormView({ data }: { data: TransactionPayload | null }) {
   return (
     <div className="flex flex-col gap-4 md:px-12">
 
@@ -25,7 +25,7 @@ export default function FormView( { data } : { data: TransactionPayload | null})
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <div className="rounded-md border p-2 bg-primary/10 text-primary border-primary">
-              <File size={16}/>
+              <File size={16} />
             </div>
             Findings
           </CardTitle>
@@ -39,13 +39,13 @@ export default function FormView( { data } : { data: TransactionPayload | null})
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Company</Label>
-            <Label className="col-span-2">{ data?.company.name }</Label>
+            <Label className="col-span-2">{data?.company.name}</Label>
           </div>
         </CardContent>
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Project</Label>
-            <Label className="col-span-2">{ data?.project.name }</Label>
+            <Label className="col-span-2">{data?.project.name}</Label>
           </div>
         </CardContent>
         <CardContent className="">
@@ -57,41 +57,52 @@ export default function FormView( { data } : { data: TransactionPayload | null})
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Type of Findings</Label>
-            <Label className="col-span-2">{ data?.typeOfFinding.name }</Label>
+            <Label className="col-span-2">{data?.typeOfFinding.name}</Label>
           </div>
         </CardContent>
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Findings Category</Label>
-            <Label className="col-span-2">{ data?.findingCategory.name }</Label>
-          </div>
-        </CardContent>
-        <CardContent className="">
-          <div className="grid md:grid-cols-3 gap-2 items-start">
-            <Label className="text-muted-foreground">Compliance Officer</Label>
-            {/* <Label className="col-span-2">{ data?.complianceOfficer?.appSuiteEmployeeMaster.fullName }</Label> */}
-            <UserHoverCard data={data?.complianceOfficer?.appSuiteEmployeeMaster} />
+            <Label className="col-span-2">{data?.findingCategory.name}</Label>
           </div>
         </CardContent>
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Supervisor</Label>
-            {/* <Label className="col-span-2">{ data?.supervisor?.appSuiteEmployeeMaster.fullName }</Label> */}
-            <UserHoverCard data={ data?.supervisor?.appSuiteEmployeeMaster } />
+            <UserHoverCard data={data?.supervisor?.appSuiteEmployeeMaster} />
+          </div>
+        </CardContent>
+        <CardContent className="">
+          <div className="grid md:grid-cols-3 gap-2 items-start">
+            <Label className="text-muted-foreground">Compliance Officer</Label>
+            <UserHoverCard data={data?.complianceOfficer?.appSuiteEmployeeMaster} />
           </div>
         </CardContent>
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Verified By</Label>
-            {/* <Label className="col-span-2">{ data?.verifier?.appSuiteEmployeeMaster.fullName ?? "--" }</Label> */}
-            { data?.verifier ? <UserHoverCard data={data?.verifier?.appSuiteEmployeeMaster} /> : <Label>--</Label>}
+            {data?.verifier
+              ? (
+                <div className="flex gap-2">
+                  <UserHoverCard data={data?.verifier?.appSuiteEmployeeMaster} />
+                  <Label className="col-span-2 text-muted-foreground text-xs"> — {data?.verifiedOn?.toDateString()}</Label>
+                </div>
+              ) : <Label>--</Label>
+            }
           </div>
         </CardContent>
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Approved By</Label>
             {/* <Label className="col-span-2">{ data?.approver?.appSuiteEmployeeMaster.fullName ?? "--" }</Label> */}
-            { data?.approver ? <UserHoverCard data={data?.approver?.appSuiteEmployeeMaster} /> : <Label>--</Label>}
+            {data?.approver
+              ? (
+                <div className="flex gap-2">
+                  <UserHoverCard data={data?.approver?.appSuiteEmployeeMaster} />
+                  <Label className="col-span-2 text-muted-foreground text-xs"> — {data?.approvedOn?.toDateString()}</Label>
+                </div>
+              )
+              : <Label>--</Label>}
           </div>
         </CardContent>
       </Card>
@@ -100,7 +111,7 @@ export default function FormView( { data } : { data: TransactionPayload | null})
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <div className="rounded-md border p-2 bg-cyan-500/10 text-cyan-500 border-cyan-500">
-              <TextSelection size={16}/>
+              <TextSelection size={16} />
             </div>
             Audit Information
           </CardTitle>
@@ -108,37 +119,37 @@ export default function FormView( { data } : { data: TransactionPayload | null})
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Audit Engagement</Label>
-            <Label className="col-span-2">{ data?.auditEngagement.name }</Label>
+            <Label className="col-span-2">{data?.auditEngagement.name}</Label>
           </div>
         </CardContent>
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Audit Report No.</Label>
-            <Label className="col-span-2">{ data?.auditReport.name }</Label>
+            <Label className="col-span-2">{data?.auditReport.name}</Label>
           </div>
         </CardContent>
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Audit Finding No.</Label>
-            <Label className="col-span-2">{ data?.auditFindingNumber ?? "--" }</Label>
+            <Label className="col-span-2">{data?.auditFindingNumber ?? "--"}</Label>
           </div>
         </CardContent>
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Audit Rating</Label>
-            <Label className="col-span-2">{ data?.auditRating.name }</Label>
+            <Label className="col-span-2">{data?.auditRating.name}</Label>
           </div>
         </CardContent>
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Date & Time Issued</Label>
-            <Label className="col-span-2">{ data?.issuedOn?.toDateString() ?? "--" }</Label>
+            <Label className="col-span-2">{data?.issuedOn?.toDateString() ?? "--"}</Label>
           </div>
         </CardContent>
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Target Date</Label>
-            <Label className="col-span-2">{ data?.targetDate?.toDateString() ?? "--"}</Label>
+            <Label className="col-span-2">{data?.targetDate?.toDateString() ?? "--"}</Label>
           </div>
         </CardContent>
       </Card>
@@ -147,7 +158,7 @@ export default function FormView( { data } : { data: TransactionPayload | null})
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <div className="rounded-md border p-2 bg-orange-500/10 text-orange-500 border-orange-500">
-              <MegaphoneIcon size={16}/>
+              <MegaphoneIcon size={16} />
             </div>
             Recipient & Escalation
           </CardTitle>
@@ -155,14 +166,14 @@ export default function FormView( { data } : { data: TransactionPayload | null})
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Recipient Group</Label>
-            <Label className="col-span-2">{ data?.group?.name }</Label>
+            <Label className="col-span-2">{data?.group?.name}</Label>
           </div>
         </CardContent>
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Issued To</Label>
             {/* <Label className="col-span-2">{ data?.recipient?.appSuiteEmployeeMaster.fullName }</Label> */}
-            <UserHoverCard data={ data?.recipient?.appSuiteEmployeeMaster } />
+            <UserHoverCard data={data?.recipient?.appSuiteEmployeeMaster} />
           </div>
         </CardContent>
         <CardContent className="">
@@ -199,7 +210,7 @@ export default function FormView( { data } : { data: TransactionPayload | null})
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <div className="rounded-md border p-2 bg-yellow-500/10 text-yellow-500 border-yellow-500">
-              <Group size={16}/>
+              <Group size={16} />
             </div>
             Responsible Person
           </CardTitle>
@@ -207,19 +218,19 @@ export default function FormView( { data } : { data: TransactionPayload | null})
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Project Manager / Department Head</Label>
-            <Label className="col-span-2">{ data?.projectManagerDepartmentHead ?? "--" }</Label>
+            <Label className="col-span-2">{data?.projectManagerDepartmentHead ?? "--"}</Label>
           </div>
         </CardContent>
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Responsible Person</Label>
-            <Label className="col-span-2">{ data?.responsiblePerson ?? "--" }</Label>
+            <Label className="col-span-2">{data?.responsiblePerson ?? "--"}</Label>
           </div>
         </CardContent>
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Responsible Department</Label>
-            <Label className="col-span-2">{ data?.responsibleDepartment ?? "--" }</Label>
+            <Label className="col-span-2">{data?.responsibleDepartment ?? "--"}</Label>
           </div>
         </CardContent>
         <CardContent className="">
@@ -240,7 +251,7 @@ export default function FormView( { data } : { data: TransactionPayload | null})
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <div className="rounded-md border p-2 bg-green-500/10 text-green-500 border-green-500">
-              <LucideBadgeInfo size={16}/>
+              <LucideBadgeInfo size={16} />
             </div>
             Additional Details
           </CardTitle>
@@ -248,25 +259,25 @@ export default function FormView( { data } : { data: TransactionPayload | null})
         <CardContent className="">
           <div className="grid gap-2 items-start">
             <Label className="text-muted-foreground">Criteria</Label>
-            <Textarea className="bg-muted resize-none min-h-24" value={ data?.problemCriteria ?? ""}  readOnly />
+            <Textarea className="bg-muted resize-none min-h-24" value={data?.problemCriteria ?? ""} readOnly />
           </div>
         </CardContent>
         <CardContent className="">
           <div className="grid gap-2 items-start">
             <Label className="text-muted-foreground">Findings</Label>
-            <Textarea className="bg-muted resize-none min-h-24" value={ data?.problemFindings ?? ""} readOnly />
+            <Textarea className="bg-muted resize-none min-h-24" value={data?.problemFindings ?? ""} readOnly />
           </div>
         </CardContent>
         <CardContent className="">
           <div className="grid gap-2 items-start">
             <Label className="text-muted-foreground">Recommendations</Label>
-            <Textarea className="bg-muted resize-none min-h-24" value={ data?.recommendations ?? ""} readOnly />
+            <Textarea className="bg-muted resize-none min-h-24" value={data?.recommendations ?? ""} readOnly />
           </div>
         </CardContent>
         <CardContent className="">
           <div className="grid gap-2 items-start">
             <Label className="text-muted-foreground">Attachments</Label>
-            <AttachmentViewer 
+            <AttachmentViewer
               jobTransactionId={data?.id ?? 0}
               attachments={data?.attachments ?? []}
             />

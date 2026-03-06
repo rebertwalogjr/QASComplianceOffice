@@ -2,7 +2,7 @@ import { BadgeAlert, BadgeCheck, BadgeCheckIcon, BadgeMinusIcon, BadgeX, CircleC
 import { Badge } from "./ui/badge"
 
 function getStatusLabel(status: string) {
-  switch (status) {
+  switch (status.toLowerCase()) {
     case "closed":
       return <Badge className="bg-gradient-horizontal"><BadgeCheck />Closed</Badge>
     case "for closing":

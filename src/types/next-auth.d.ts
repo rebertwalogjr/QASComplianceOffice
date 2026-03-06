@@ -4,7 +4,7 @@ declare module "next-auth" {
   interface Session {
     user: {
       id: string
-      roles: string[]
+      userRoles: number[]
       name: string
       employeeNumber: string
       isActivated: boolean
@@ -12,7 +12,8 @@ declare module "next-auth" {
   }
 
   interface User {
-    roles: string[]
+    id: string
+    userRoles: number[]
     isActivated: boolean
   }
 }
@@ -20,7 +21,7 @@ declare module "next-auth" {
 declare module "next-auth/jwt" {
   interface JWT {
     id: string
-    roles: string[]
+    userRoles: number[]
     isActivated: boolean
   }
 }

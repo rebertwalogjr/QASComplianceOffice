@@ -6,11 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Check, FilterIcon, FilterX } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Column } from "@tanstack/react-table";
-// import { Transaction } from "@/lib/transaction";
-import { JobTransaction } from "../../../../generated/prisma/client";
+import { TransactionBasicPaylod } from "@/server-actions/transaction";
 
 type PopoverStatusFilterProps = {
-  column: Column<JobTransaction, unknown>
+  column: Column<TransactionBasicPaylod, unknown>
 }
 
 export default function PopoverStatusFilter({ column }: PopoverStatusFilterProps) {

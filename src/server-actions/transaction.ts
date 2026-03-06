@@ -12,8 +12,8 @@ import { getUserId } from "./get-session";
 
 export async function createTransaction(formData: FormData) {
   const sessionId = formData.get("sessionId") as string
-  const status = "OPEN"
-  const creatorId = await getUserId();
+  const status = "open"
+  const creatorId = await getUserId()
 
   if (!creatorId) {
     throw new Error("You must be logged in.")
@@ -112,7 +112,7 @@ export async function getTransactions(page: number = 1, pageSize: number = 10): 
   )
   const [transactions, totalCount] = data ?? [[], 0]
   return {
-    data: transactions as TransactionBasicPaylod[], 
+    data: transactions as TransactionBasicPaylod[],
     totalCount: totalCount as number,
     error
   }
@@ -123,6 +123,166 @@ export async function getTransactionById(id: number): Promise<{ data: Transactio
     prisma.jobTransaction.findUnique({
       where: { id },
       include: transactionInfoInclude
+    })
+  )
+}
+
+export async function verifyJobById(id: number, comment: string) {
+  const creatorId = await getUserId()
+
+  if (!creatorId) {
+    throw new Error("You must be logged in.")
+  }
+
+  const subCommentAction = comment ? " with comment" : ""
+
+  return await dbQuery(
+    prisma.$transaction(async (tx) => {
+      // verify the series
+      const newJob = await tx.jobTransaction.update({
+        where: { id },
+        data: { verifiedBy: creatorId, verifiedOn: new Date() }
+      })
+      // Create the audit trail
+      await tx.auditTrail.create({
+        data: {
+          jobTransactionId: newJob.id,
+          jobStatus: newJob.jobStatus ?? 'open',
+          actionTaken: "verified this series" + subCommentAction,
+          comment: comment ?? "",
+          createdBy: creatorId,
+          tag: "updated"
+        }
+      })
+    })
+  )
+}
+
+export async function approveJobById(id: number, comment: string) {
+  const creatorId = await getUserId()
+
+  if (!creatorId) {
+    throw new Error("You must be logged in.")
+  }
+
+  const subCommentAction = comment ? " with comment" : ""
+
+  return await dbQuery(
+    prisma.$transaction(async (tx) => {
+      // approve the series
+      const newJob = await tx.jobTransaction.update({
+        where: { id },
+        data: { approvedBy: creatorId, approvedOn: new Date() }
+      })
+      // Create the audit trail
+      await tx.auditTrail.create({
+        data: {
+          jobTransactionId: newJob.id,
+          jobStatus: newJob.jobStatus ?? 'open',
+          actionTaken: "approved this series" + subCommentAction,
+          comment: comment ?? "",
+          createdBy: creatorId,
+          tag: "updated"
+        }
+      })
+    })
+  )
+}
+
+export async function recipientJobUpdate(id: number, formData: FormData) {
+  const creatorId = await getUserId()
+
+  if (!creatorId) {
+    throw new Error("You must be logged in.")
+  }
+
+  const rawData = {
+    correctiveAction: formData.get("correctiveAction") as string ?? "",
+    // correctiveCommitmentDate: new Date(formData.get("corrCommitmentDate") as string) ?? null,
+    preventiveAction: formData.get("preventiveAction") as string ?? "",
+    // preventiveCommitmentDate: new Date(formData.get("prevCommitmentDate") as string) ?? null,
+  }
+
+  const comment = formData.get("comment") as string
+
+  const subCommentAction = comment ? " with comment" : ""
+
+  return await dbQuery(
+    prisma.$transaction(async (tx) => {
+      // approve the series
+      const newJob = await tx.jobTransaction.update({
+        where: { id },
+        data: { ...rawData, jobStatus: 'accepted' }
+      })
+      // Create the audit trail
+      await tx.auditTrail.create({
+        data: {
+          jobTransactionId: newJob.id,
+          jobStatus: newJob.jobStatus ?? 'accepted',
+          actionTaken: "accepted this series" + subCommentAction,
+          comment: comment ?? "",
+          createdBy: creatorId,
+          tag: "updated"
+        }
+      })
+    })
+  )
+}
+
+export async function jobTransactionClientUpdate(formData: FormData) {
+  const creatorId = await getUserId()
+  if (!creatorId) throw new Error("Unauthorized")
+
+  const id = Number(formData.get("seriesno"))
+  const type = formData.get("actionType")
+  const comment = formData.get("comment") as string
+  let rawData = {}
+  let actionTaken = ""
+
+  console.log("corrCommitmentDateValue: " + formData.get("corrCommitmentDate") as string)
+
+  switch (type) {
+    case "verify":
+      rawData = { verifiedBy: creatorId, verifiedOn: new Date() }
+      actionTaken = "verified this series"
+      break
+    case "approve":
+      rawData = { approvedBy: creatorId, approvedOn: new Date() }
+      actionTaken = "approved this series"
+      break
+    case "accept":
+      rawData = {
+        correctiveAction: formData.get("correctiveAction") as string ?? "",
+        correctiveCommitmentDate: new Date(formData.get("corrCommitmentDate") as string) ?? null,
+        preventiveAction: formData.get("preventiveAction") as string ?? "",
+        preventiveCommitmentDate: new Date(formData.get("prevCommitmentDate") as string) ?? null,
+        jobStatus: 'accepted'
+      }
+      actionTaken = "accepted this series"
+      break
+    default:
+      actionTaken = "added a comment"
+  }
+
+  const subCommentAction = comment ? " with comment" : ""
+
+  return await dbQuery(
+    prisma.$transaction(async (tx) => {
+      const newJob = await tx.jobTransaction.update({
+        where: { id },
+        data: { ...rawData }
+      })
+      
+      await tx.auditTrail.create({
+        data: {
+          jobTransactionId: newJob.id,
+          jobStatus: newJob.jobStatus ?? '',
+          actionTaken: actionTaken + subCommentAction,
+          comment: comment ?? "",
+          createdBy: creatorId,
+          tag: "updated"
+        }
+      })
     })
   )
 }

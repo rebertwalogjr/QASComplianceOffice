@@ -1,6 +1,5 @@
 import { Suspense } from "react"
 
-import Loading from "./loading"
 import TransactionList from "./transaction-list"
 import { TableSkeleton } from "@/components/table-skeleton";
 
