@@ -18,10 +18,11 @@ type DatePickerProps = {
   disabled?: boolean,
   defaultDate?: Date,
   className?: string,
+  readonly?: boolean,
   onChange?: (date: Date | undefined) => void,
 }
 
-export function DatePicker({ name, placeholder, defaultDate, disabled, className, onChange }: DatePickerProps) {
+export function DatePicker({ name, placeholder, defaultDate, disabled, className, readonly, onChange }: DatePickerProps) {
   const [open, setOpen] = useState(false)
   const [date, setDate] = useState<Date | undefined>(() => isValidDate(defaultDate) ? defaultDate : undefined)
   const [month, setMonth] = useState<Date | undefined>(() => isValidDate(defaultDate) ? defaultDate : undefined)
@@ -38,6 +39,7 @@ export function DatePicker({ name, placeholder, defaultDate, disabled, className
 
 
   const handleSelect = (next?: Date) => {
+    if (readonly) return
     setDate(next)
     setOpen(false)
     onChange?.(next)
@@ -45,7 +47,7 @@ export function DatePicker({ name, placeholder, defaultDate, disabled, className
 
   return (
     <div className="flex flex-col gap-3">
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover open={readonly ? false: open} onOpenChange={readonly ? () => {} : setOpen}>
 
         <PopoverTrigger asChild>
           <Button
@@ -55,6 +57,7 @@ export function DatePicker({ name, placeholder, defaultDate, disabled, className
             className={cn(
               "w-full justify-between text-left font-normal px-3 bg-background border-input hover:bg-background h-10 relative",
               !date && "text-muted-foreground",
+              readonly ? "cursor-default opacity-100 hover:bg-background border-dashed shadow-none" : "hover:bg-accent",
               className
             )}
           >

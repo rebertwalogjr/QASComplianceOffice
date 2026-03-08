@@ -127,108 +127,6 @@ export async function getTransactionById(id: number): Promise<{ data: Transactio
   )
 }
 
-export async function verifyJobById(id: number, comment: string) {
-  const creatorId = await getUserId()
-
-  if (!creatorId) {
-    throw new Error("You must be logged in.")
-  }
-
-  const subCommentAction = comment ? " with comment" : ""
-
-  return await dbQuery(
-    prisma.$transaction(async (tx) => {
-      // verify the series
-      const newJob = await tx.jobTransaction.update({
-        where: { id },
-        data: { verifiedBy: creatorId, verifiedOn: new Date() }
-      })
-      // Create the audit trail
-      await tx.auditTrail.create({
-        data: {
-          jobTransactionId: newJob.id,
-          jobStatus: newJob.jobStatus ?? 'open',
-          actionTaken: "verified this series" + subCommentAction,
-          comment: comment ?? "",
-          createdBy: creatorId,
-          tag: "updated"
-        }
-      })
-    })
-  )
-}
-
-export async function approveJobById(id: number, comment: string) {
-  const creatorId = await getUserId()
-
-  if (!creatorId) {
-    throw new Error("You must be logged in.")
-  }
-
-  const subCommentAction = comment ? " with comment" : ""
-
-  return await dbQuery(
-    prisma.$transaction(async (tx) => {
-      // approve the series
-      const newJob = await tx.jobTransaction.update({
-        where: { id },
-        data: { approvedBy: creatorId, approvedOn: new Date() }
-      })
-      // Create the audit trail
-      await tx.auditTrail.create({
-        data: {
-          jobTransactionId: newJob.id,
-          jobStatus: newJob.jobStatus ?? 'open',
-          actionTaken: "approved this series" + subCommentAction,
-          comment: comment ?? "",
-          createdBy: creatorId,
-          tag: "updated"
-        }
-      })
-    })
-  )
-}
-
-export async function recipientJobUpdate(id: number, formData: FormData) {
-  const creatorId = await getUserId()
-
-  if (!creatorId) {
-    throw new Error("You must be logged in.")
-  }
-
-  const rawData = {
-    correctiveAction: formData.get("correctiveAction") as string ?? "",
-    // correctiveCommitmentDate: new Date(formData.get("corrCommitmentDate") as string) ?? null,
-    preventiveAction: formData.get("preventiveAction") as string ?? "",
-    // preventiveCommitmentDate: new Date(formData.get("prevCommitmentDate") as string) ?? null,
-  }
-
-  const comment = formData.get("comment") as string
-
-  const subCommentAction = comment ? " with comment" : ""
-
-  return await dbQuery(
-    prisma.$transaction(async (tx) => {
-      // approve the series
-      const newJob = await tx.jobTransaction.update({
-        where: { id },
-        data: { ...rawData, jobStatus: 'accepted' }
-      })
-      // Create the audit trail
-      await tx.auditTrail.create({
-        data: {
-          jobTransactionId: newJob.id,
-          jobStatus: newJob.jobStatus ?? 'accepted',
-          actionTaken: "accepted this series" + subCommentAction,
-          comment: comment ?? "",
-          createdBy: creatorId,
-          tag: "updated"
-        }
-      })
-    })
-  )
-}
-
 export async function jobTransactionClientUpdate(formData: FormData) {
   const creatorId = await getUserId()
   if (!creatorId) throw new Error("Unauthorized")
@@ -259,6 +157,14 @@ export async function jobTransactionClientUpdate(formData: FormData) {
         jobStatus: 'accepted'
       }
       actionTaken = "accepted this series"
+      break
+    case "for closing":
+      rawData = { jobStatus: "for closing" }
+      actionTaken = "requesting to close the series"
+      break
+    case "close":
+      rawData = { jobStatus: "closed", closedOn: new Date()}
+      actionTaken = "closed the series"
       break
     default:
       actionTaken = "added a comment"

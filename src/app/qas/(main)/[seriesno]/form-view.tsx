@@ -1,5 +1,4 @@
-import { ChevronDown, Circle, Dot, File, FileText, Group, LucideBadgeInfo, MegaphoneIcon, TextSelection } from "lucide-react";
-import { SeriesDescription, SeriesGroup, SeriesHeader, SeriesLabel, SeriesMedia, SeriesContainer, SeriesValue, SeriesItem } from "@/components/series-item";
+import { File, Group, LucideBadgeInfo, MegaphoneIcon, TextSelection } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import AttachmentViewer from "@/components/attachments-viewer";
@@ -85,7 +84,7 @@ export default function FormView({ data }: { data: TransactionPayload | null }) 
               ? (
                 <div className="flex gap-2">
                   <UserHoverCard data={data?.verifier?.appSuiteEmployeeMaster} />
-                  <Label className="col-span-2 text-muted-foreground text-xs"> — {data?.verifiedOn?.toDateString()}</Label>
+                  <Label className="text-muted-foreground text-xs whitespace-nowrap"> — {data?.verifiedOn?.toDateString()}</Label>
                 </div>
               ) : <Label>--</Label>
             }
@@ -94,12 +93,11 @@ export default function FormView({ data }: { data: TransactionPayload | null }) 
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Approved By</Label>
-            {/* <Label className="col-span-2">{ data?.approver?.appSuiteEmployeeMaster.fullName ?? "--" }</Label> */}
             {data?.approver
               ? (
                 <div className="flex gap-2">
                   <UserHoverCard data={data?.approver?.appSuiteEmployeeMaster} />
-                  <Label className="col-span-2 text-muted-foreground text-xs"> — {data?.approvedOn?.toDateString()}</Label>
+                  <Label className="text-muted-foreground text-xs whitespace-nowrap"> — {data?.approvedOn?.toDateString()}</Label>
                 </div>
               )
               : <Label>--</Label>}

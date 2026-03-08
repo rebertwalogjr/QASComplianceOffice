@@ -561,7 +561,7 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
         <div className="flex items-center gap-4 justify-end py-2">
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="outline">Cancel</Button>
+              <Button variant="outline" disabled={isPending}>Cancel</Button>
             </AlertDialogTrigger>
             <AlertDialogContent className="sm:max-w-sm">
               <AlertDialogHeader>
@@ -580,11 +580,6 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
                 >
                   {isPending ? "Cleaning up..." : "Proceed"}
                 </AlertDialogAction>
-                {/* <Button
-                  variant="default"
-                  onClick={handleCancel}>
-                  Yes
-                </Button> */}
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
