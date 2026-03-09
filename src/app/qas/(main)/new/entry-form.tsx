@@ -107,8 +107,8 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
     if (response.error) {
       toast.error("Error: " + response.error)
     } else {
-      toast.success("Transaction created successfully!");
-      router.push("/qas")
+      toast.success("Transaction created successfully!", { position: "top-center" });
+      router.push(`/qas/${response.data.id}`)
       router.refresh()
     }
 

@@ -49,12 +49,12 @@ export default function SignInPage() {
     })
 
     if (result?.error) {
-      toast.error("Invalid username or password.")
+      toast.error("Invalid username or password.", { position: "top-center" })
       setIsLoading(false)
       return
     }
 
-    toast.success("Welcome back!")
+    toast.success("Welcome back!", { position: "top-center" })
 
     router.prefetch("/qas")
 

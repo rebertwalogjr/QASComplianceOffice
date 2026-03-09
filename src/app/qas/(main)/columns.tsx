@@ -45,7 +45,7 @@ export const columns: ColumnDef<TransactionBasicPaylod>[] = [
       if (row.jobStatus?.toLowerCase() === "open") {
         // if (row.secondaryStatus === "New") return "New"
         // if (row.secondaryStatus === "On-Hold") return "On-Hold"
-        return "Open"
+        return "open"
       }
       return row.jobStatus
     },

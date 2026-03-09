@@ -14,10 +14,15 @@ export async function createTransaction(formData: FormData) {
   const sessionId = formData.get("sessionId") as string
   const status = "open"
   const creatorId = await getUserId()
-
+  
   if (!creatorId) {
     throw new Error("You must be logged in.")
   }
+  
+  const escalations = await prisma.user.findFirst({
+    where: { id: Number(formData.get("recipient")) },
+    select: { escalation1User: userSelect , escalation2User: userSelect, escalation3User: userSelect, escalation4User: userSelect}
+  })
 
   const rawData = {
     companyId: Number(formData.get("company")),
@@ -45,7 +50,12 @@ export async function createTransaction(formData: FormData) {
     complianceSecretariatId: creatorId,
     jobStatus: status,
     createdBy: creatorId,
-  };
+    jobEscalation1: escalations?.escalation1User?.id,
+    jobEscalation2: escalations?.escalation2User?.id,
+    jobEscalation3: escalations?.escalation3User?.id,
+    jobEscalation4: escalations?.escalation4User?.id,
+  }
+
 
   const tempDirPath = path.join(process.env.FILE_SERVER_PATH!, 'Temporary', sessionId)
   let fileNames: string[] = []
@@ -135,17 +145,18 @@ export async function jobTransactionClientUpdate(formData: FormData) {
   const type = formData.get("actionType")
   const comment = formData.get("comment") as string
   let rawData = {}
+  let holdRawData = {}
   let actionTaken = ""
 
   console.log("corrCommitmentDateValue: " + formData.get("corrCommitmentDate") as string)
 
   switch (type) {
     case "verify":
-      rawData = { verifiedBy: creatorId, verifiedOn: new Date() }
+      rawData = { verifiedBy: creatorId, verifiedOn: new Date(), jobStatus: "open", onHold: false }
       actionTaken = "verified this series"
       break
     case "approve":
-      rawData = { approvedBy: creatorId, approvedOn: new Date() }
+      rawData = { approvedBy: creatorId, approvedOn: new Date(), jobStatus: "open", onHold: false }
       actionTaken = "approved this series"
       break
     case "accept":
@@ -154,17 +165,21 @@ export async function jobTransactionClientUpdate(formData: FormData) {
         correctiveCommitmentDate: new Date(formData.get("corrCommitmentDate") as string) ?? null,
         preventiveAction: formData.get("preventiveAction") as string ?? "",
         preventiveCommitmentDate: new Date(formData.get("prevCommitmentDate") as string) ?? null,
-        jobStatus: 'accepted'
+        jobStatus: 'accepted', onHold: false
       }
       actionTaken = "accepted this series"
       break
     case "for closing":
-      rawData = { jobStatus: "for closing" }
+      rawData = { jobStatus: "for closing", onHold: false }
       actionTaken = "requesting to close the series"
       break
     case "close":
-      rawData = { jobStatus: "closed", closedOn: new Date()}
+      rawData = { jobStatus: "closed", closedOn: new Date(), onHold: false}
       actionTaken = "closed the series"
+      break
+    case "hold":
+      rawData = { jobStatus: "on-hold", onHold: true}
+      actionTaken = "hold the series"
       break
     default:
       actionTaken = "added a comment"
@@ -174,21 +189,32 @@ export async function jobTransactionClientUpdate(formData: FormData) {
 
   return await dbQuery(
     prisma.$transaction(async (tx) => {
-      const newJob = await tx.jobTransaction.update({
+      const job = await tx.jobTransaction.update({
         where: { id },
         data: { ...rawData }
       })
       
       await tx.auditTrail.create({
         data: {
-          jobTransactionId: newJob.id,
-          jobStatus: newJob.jobStatus ?? '',
+          jobTransactionId: job.id,
+          jobStatus: job.jobStatus ?? '',
           actionTaken: actionTaken + subCommentAction,
           comment: comment ?? "",
           createdBy: creatorId,
           tag: "updated"
         }
       })
+
+      if (type === "hold") {
+        await tx.holdingHistory.create({
+          data: {
+            jobTransactionId: job.id,
+            holdFrom: new Date(formData.get("holdFrom") as string) ?? null,
+            holdUntil: new Date(formData.get("holdUntil") as string) ?? null,
+            createdBy: creatorId,
+          }
+        })
+      }
     })
   )
 }
@@ -226,6 +252,10 @@ const transactionInfoInclude = {
   auditRating: { select: { id: true, name: true, isActive: true } },
   group: { select: { id: true, name: true, isActive: true } },
   recipient: recipientSelect,
+  jobEscalation1User: userSelect,
+  jobEscalation2User: userSelect,
+  jobEscalation3User: userSelect,
+  jobEscalation4User: userSelect,
   attachments: true,
   verifier: userSelect,
   approver: userSelect,

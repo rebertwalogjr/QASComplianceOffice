@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { activateAccount } from "@/server-actions/user";
 import { Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { toast } from "sonner";
 
 export default function ActivatePage() {
   const { data: session, update } = useSession()
@@ -27,6 +28,8 @@ export default function ActivatePage() {
         }
       })
     }
+
+    toast.success("Account acticated successfully", { position: "top-center" })
 
     router.push("/qas")
 

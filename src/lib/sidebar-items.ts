@@ -3,9 +3,9 @@ import { Calendar, Grid2X2, Grid2X2Check, Grid2x2X, FileSearch, FolderSearch, Fo
 export const sidebarItems = {
   mainMenu: [
     { title: "QAS Master List", url: "/qas", icon: Grid2X2 },
-    { title: "Outstanding NCR", url: "#", icon: Grid2X2Check },
-    { title: "Cancelled NCR", url: "#", icon: Grid2x2X },
-    { title: "Closed NCR", url: "#", icon: Grid2X2 },
+    // { title: "Outstanding NCR", url: "#", icon: Grid2X2Check },
+    // { title: "Cancelled NCR", url: "#", icon: Grid2x2X },
+    // { title: "Closed NCR", url: "#", icon: Grid2X2 },
     { title: "QA Entry", url: "/qas/new", icon: FilePenLine },
   ],
 
@@ -22,13 +22,5 @@ export const sidebarItems = {
     { title: "Audit Rating", url: "/qas/admin/ratings", icon: Star },
     { title: "Audit Reports", url: "/qas/admin/auditreports", icon: Hash },
     { title: "Manage Status", url: "/qas/admin/managestatus", icon: ChartBarBig },
-  ],
-
-  accounts: [
-    { name: "Rebert Walog Jr.", title: "Admin", logo: UserCog },
-    { name: "Rebert Walog Jr.", title: "Auditor", logo: UserPen },
-    { name: "Rebert Walog Jr.", title: "Recipient", logo: UserRoundCheck },
-    { name: "Rebert Walog Jr.", title: "Team Leader", logo: CircleUser },
-    { name: "Rebert Walog Jr.", title: "Manager", logo: SquareUserRound },
   ],
 }

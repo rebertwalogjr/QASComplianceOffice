@@ -7,6 +7,7 @@ import { Check, FilterIcon, FilterX } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Column } from "@tanstack/react-table";
 import { TransactionBasicPaylod } from "@/server-actions/transaction";
+import { toTitleCase } from "@/lib/utils";
 
 type PopoverStatusFilterProps = {
   column: Column<TransactionBasicPaylod, unknown>
@@ -23,7 +24,7 @@ export default function PopoverStatusFilter({ column }: PopoverStatusFilterProps
     }
   }, [open])
 
-  const statuses = ["New", "Open", "On-Hold", "Accepted", "For Closing", "Closed", "Cancelled"]
+  const statuses = ["open", "on-hold", "accepted", "for closing", "closed", "cancelled"]
 
   const toggleStatus = (value: string) => {
     setTemp(prev => 
@@ -65,7 +66,7 @@ export default function PopoverStatusFilter({ column }: PopoverStatusFilterProps
               onClick={() => toggleStatus(status)}
             >
             <div className="w-full flex items-center gap-3 justify-between">
-               { status }
+               { toTitleCase(status) }
                { temp.includes(status) && <Check /> }
             </div>
           </Button>

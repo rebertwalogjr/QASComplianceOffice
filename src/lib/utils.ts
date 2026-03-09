@@ -24,8 +24,14 @@ export function formatLongDate( input: Date | string | undefined ) {
   return new Intl.DateTimeFormat("en-US", {
     month: "long",
     day: "numeric",
-    year: "numeric"
+    year: "numeric",
+    timeZone: "UTC"
   }).format(d)
+}
+
+export function toUTCMidnight(date: Date | undefined | null): Date | undefined {
+  if (!date || isNaN(date.getTime())) return undefined
+  return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
 }
 
 export function groupAuditTrails(data: AuditTrailPayload[]) {

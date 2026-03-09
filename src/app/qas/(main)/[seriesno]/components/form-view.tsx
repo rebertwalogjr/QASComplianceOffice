@@ -20,7 +20,7 @@ export default function FormView({ data }: { data: TransactionPayload | null }) 
   return (
     <div className="flex flex-col gap-4 md:px-12">
 
-      <Card className="shadow-none">
+      <Card className="shadow-none animate-in fade-in slide-in-from-top-2 duration-500 hover:border-dashed hover:border-2">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <div className="rounded-md border p-2 bg-primary/10 text-primary border-primary">
@@ -77,35 +77,55 @@ export default function FormView({ data }: { data: TransactionPayload | null }) 
             <UserHoverCard data={data?.complianceOfficer?.appSuiteEmployeeMaster} />
           </div>
         </CardContent>
-        <CardContent className="">
-          <div className="grid md:grid-cols-3 gap-2 items-start">
-            <Label className="text-muted-foreground">Verified By</Label>
-            {data?.verifier
-              ? (
-                <div className="flex gap-2">
-                  <UserHoverCard data={data?.verifier?.appSuiteEmployeeMaster} />
-                  <Label className="text-muted-foreground text-xs whitespace-nowrap"> — {data?.verifiedOn?.toDateString()}</Label>
-                </div>
-              ) : <Label>--</Label>
-            }
-          </div>
-        </CardContent>
-        <CardContent className="">
-          <div className="grid md:grid-cols-3 gap-2 items-start">
-            <Label className="text-muted-foreground">Approved By</Label>
-            {data?.approver
-              ? (
-                <div className="flex gap-2">
-                  <UserHoverCard data={data?.approver?.appSuiteEmployeeMaster} />
-                  <Label className="text-muted-foreground text-xs whitespace-nowrap"> — {data?.approvedOn?.toDateString()}</Label>
-                </div>
-              )
-              : <Label>--</Label>}
-          </div>
-        </CardContent>
+        {data?.verifiedOn && (
+          <CardContent className="">
+            <div className="grid md:grid-cols-3 gap-2 items-start">
+              <Label className="text-muted-foreground">Verified By</Label>
+              {data?.verifier
+                ? (
+                  <div className="flex gap-2">
+                    <UserHoverCard data={data?.verifier?.appSuiteEmployeeMaster} />
+                    <Label className="text-muted-foreground text-xs whitespace-nowrap"> — {data?.verifiedOn?.toDateString()}</Label>
+                  </div>
+                ) : <Label>--</Label>
+              }
+            </div>
+          </CardContent>
+        )}
+        {data?.approvedOn && (
+          <CardContent className="">
+            <div className="grid md:grid-cols-3 gap-2 items-start">
+              <Label className="text-muted-foreground">Approved By</Label>
+              {data?.approver
+                ? (
+                  <div className="flex gap-2">
+                    <UserHoverCard data={data?.approver?.appSuiteEmployeeMaster} />
+                    <Label className="text-muted-foreground text-xs whitespace-nowrap"> — {data?.approvedOn?.toDateString()}</Label>
+                  </div>
+                )
+                : <Label>--</Label>}
+            </div>
+          </CardContent>
+        )}
+        {data?.closedOn && (
+          <CardContent className="">
+            <div className="grid md:grid-cols-3 gap-2 items-start">
+              <Label className="text-muted-foreground">Closed By</Label>
+              {data?.approver
+                ? (
+                  <div className="flex gap-2">
+                    <UserHoverCard data={data?.supervisor?.appSuiteEmployeeMaster} />
+                    <Label className="text-muted-foreground text-xs whitespace-nowrap"> — {data?.closedOn?.toDateString()}</Label>
+                  </div>
+                )
+                : <Label>--</Label>}
+            </div>
+          </CardContent>
+        )}
+
       </Card>
 
-      <Card className="shadow-none">
+      <Card className="shadow-none animate-in fade-in slide-in-from-top-2 duration-500 hover:border-dashed hover:border-2">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <div className="rounded-md border p-2 bg-cyan-500/10 text-cyan-500 border-cyan-500">
@@ -152,7 +172,7 @@ export default function FormView({ data }: { data: TransactionPayload | null }) 
         </CardContent>
       </Card>
 
-      <Card className="shadow-none">
+      <Card className="shadow-none animate-in fade-in slide-in-from-top-2 duration-500 hover:border-dashed hover:border-2">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <div className="rounded-md border p-2 bg-orange-500/10 text-orange-500 border-orange-500">
@@ -170,41 +190,36 @@ export default function FormView({ data }: { data: TransactionPayload | null }) 
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Issued To</Label>
-            {/* <Label className="col-span-2">{ data?.recipient?.appSuiteEmployeeMaster.fullName }</Label> */}
             <UserHoverCard data={data?.recipient?.appSuiteEmployeeMaster} />
           </div>
         </CardContent>
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">First Escalation</Label>
-            {/* <Label className="col-span-2">{ data?.recipient?.escalation1User?.appSuiteEmployeeMaster.fullName }</Label> */}
-            {data?.recipient?.escalation1User ? <UserHoverCard data={data?.recipient?.escalation1User?.appSuiteEmployeeMaster} /> : <Label>--</Label>}
+            {data?.recipient?.escalation1User ? <UserHoverCard data={data?.jobEscalation1User?.appSuiteEmployeeMaster} /> : <Label>--</Label>}
           </div>
         </CardContent>
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Second Escalation</Label>
-            {/* <Label className="col-span-2">{ data?.recipient?.escalation2User?.appSuiteEmployeeMaster.fullName }</Label> */}
-            {data?.recipient?.escalation2User ? <UserHoverCard data={data?.recipient?.escalation2User?.appSuiteEmployeeMaster} /> : <Label>--</Label>}
+            {data?.recipient?.escalation2User ? <UserHoverCard data={data?.jobEscalation2User?.appSuiteEmployeeMaster} /> : <Label>--</Label>}
           </div>
         </CardContent>
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Third Escalation</Label>
-            {/* <Label className="col-span-2">{ data?.recipient?.escalation3User?.appSuiteEmployeeMaster.fullName }</Label> */}
-            {data?.recipient?.escalation3User ? <UserHoverCard data={data?.recipient?.escalation3User?.appSuiteEmployeeMaster} /> : <Label>--</Label>}
+            {data?.recipient?.escalation3User ? <UserHoverCard data={data?.jobEscalation3User?.appSuiteEmployeeMaster} /> : <Label>--</Label>}
           </div>
         </CardContent>
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Fouth Escalation</Label>
-            {/* <Label className="col-span-2">{ data?.recipient?.escalation4User?.appSuiteEmployeeMaster.fullName }</Label> */}
-            {data?.recipient?.escalation4User ? <UserHoverCard data={data?.recipient?.escalation4User?.appSuiteEmployeeMaster} /> : <Label>--</Label>}
+            {data?.recipient?.escalation4User ? <UserHoverCard data={data?.jobEscalation4User?.appSuiteEmployeeMaster} /> : <Label>--</Label>}
           </div>
         </CardContent>
       </Card>
 
-      <Card className="shadow-none">
+      <Card className="shadow-none animate-in fade-in slide-in-from-top-2 duration-500 hover:border-dashed hover:border-2">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <div className="rounded-md border p-2 bg-yellow-500/10 text-yellow-500 border-yellow-500">
@@ -245,7 +260,7 @@ export default function FormView({ data }: { data: TransactionPayload | null }) 
         </CardContent>
       </Card>
 
-      <Card className="shadow-none">
+      <Card className="shadow-none animate-in fade-in slide-in-from-top-2 duration-500 hover:border-dashed hover:border-2">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <div className="rounded-md border p-2 bg-green-500/10 text-green-500 border-green-500">

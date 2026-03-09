@@ -3,16 +3,18 @@ import { notFound } from "next/navigation"
 import { getAuditTrailByTransId } from "@/server-actions/audit-trail"
 import { getTransactionById } from "@/server-actions/transaction"
 
-import FormView from "./form-view"
-import RightPanel from "./right-panel"
-import SeriesTitle from "./series-title"
-import UpdateTrail from "./update-trail"
-import ReviewTrail from "./review-trail"
-import AuditTrail from "./audit-trail"
+import FormView from "./components/form-view"
+import RightPanel from "./components/right-panel"
+import SeriesTitle from "./components/series-title"
+import UpdateTrail from "./components/update-trail"
+import ReviewTrail from "./components/review-trail"
+import AuditTrail from "./components/audit-trail"
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
 import { SeriesTabs, SeriesTabsContent, SeriesTabsList, SeriesTabsTrigger } from "@/components/series-tabs"
+import CardHoldAction from "./components/card-hold-action"
+import { getActiveHolding } from "@/server-actions/hold-history"
 
 export default async function SeriesViewer({ params }: { params: Promise<{ seriesno: string }> }) {
   const resolvedParams = await params
@@ -23,7 +25,7 @@ export default async function SeriesViewer({ params }: { params: Promise<{ serie
     notFound()
   }
 
-  const [jobTransaction, auditTrails] = await Promise.all([getTransactionById(transId), getAuditTrailByTransId(transId)])
+  const [jobTransaction, auditTrails, activeHolding] = await Promise.all([getTransactionById(transId), getAuditTrailByTransId(transId), getActiveHolding(transId)])
 
   if (!jobTransaction.data) {
     notFound()
@@ -47,10 +49,10 @@ export default async function SeriesViewer({ params }: { params: Promise<{ serie
       ) : (
         <>
           <div className="flex-2 min-w-0 min-h-0">
-            <SeriesTitle 
-              seriesno={transId.toString()} 
-              creator={jobTransaction.data.creator.appSuiteEmployeeMaster.fullName} 
-              createdOn={jobTransaction.data.createdOn.toDateString()} 
+            <SeriesTitle
+              seriesno={transId.toString()}
+              creator={jobTransaction.data.creator.appSuiteEmployeeMaster.fullName}
+              createdOn={jobTransaction.data.createdOn.toDateString()}
             />
             <div className="">
               <SeriesTabs defaultValue="details">
@@ -60,11 +62,14 @@ export default async function SeriesViewer({ params }: { params: Promise<{ serie
                   <SeriesTabsTrigger value="update">Update Trail</SeriesTabsTrigger>
                   <SeriesTabsTrigger value="review">Review Trail</SeriesTabsTrigger>
                 </SeriesTabsList>
+                {jobTransaction.data.onHold && activeHolding.data && (
+                  <CardHoldAction activeHolding={activeHolding.data} />
+                )}
                 <SeriesTabsContent value="details">
                   <FormView data={jobTransaction.data} />
                 </SeriesTabsContent>
                 <SeriesTabsContent value="audit">
-                  <AuditTrail data={auditTrails.data} />
+                  <AuditTrail data={auditTrails.data} jobTransaction={jobTransaction.data} />
                 </SeriesTabsContent>
                 <SeriesTabsContent value="update">
                   <UpdateTrail />
@@ -79,8 +84,10 @@ export default async function SeriesViewer({ params }: { params: Promise<{ serie
 
           {/* COLUMN 2 – no scroll */}
           <div className="hidden shrink lg:flex lg:flex-col lg:flex-1 min-h-0 sticky top-16 overflow-hidden z-20 h-[calc(100vh-64px)]">
-            <RightPanel 
+            <RightPanel
+              key={activeHolding?.data?.id ?? 'no-hold'}
               jobTransaction={jobTransaction.data}
+              activeHolding={activeHolding.data}
             />
           </div>
         </>

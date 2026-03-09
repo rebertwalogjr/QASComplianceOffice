@@ -1,9 +1,9 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
-  moduleFormat = "esm"
+  provider               = "prisma-client"
+  output                 = "../generated/prisma"
+  moduleFormat           = "esm"
   generatedFileExtension = "ts"
-  importFileExtension = "ts"
+  importFileExtension    = "ts"
 }
 
 datasource db {
@@ -75,8 +75,8 @@ model FindingCategory {
 }
 
 model JobTransaction {
-  id                           Int             @id @default(autoincrement())
-  jobStatus                    String?         @db.NVarChar(50)
+  id                           Int              @id @default(autoincrement())
+  jobStatus                    String?          @db.NVarChar(50)
   companyId                    Int
   projectId                    Int
   auditEngagementId            Int
@@ -86,59 +86,68 @@ model JobTransaction {
   complianceOfficerId          Int?
   supervisorId                 Int
   auditReportId                Int
-  auditFindingNumber           String          @db.NVarChar(100)
-  issuedOn                     DateTime?       @db.DateTime
-  targetDate                   DateTime?       @db.DateTime
+  auditFindingNumber           String           @db.NVarChar(100)
+  issuedOn                     DateTime?        @db.DateTime
+  targetDate                   DateTime?        @db.DateTime
   auditRatingId                Int
-  projectManagerDepartmentHead String?         @db.NVarChar(100)
-  responsibleDepartment        String?         @db.NVarChar(255)
-  responsiblePerson            String?         @db.NVarChar(255)
-  recurringPerProcess          Boolean         @default(false) @db.Bit
-  recurringPerPerson           Boolean         @default(false) @db.Bit
+  projectManagerDepartmentHead String?          @db.NVarChar(100)
+  responsibleDepartment        String?          @db.NVarChar(255)
+  responsiblePerson            String?          @db.NVarChar(255)
+  recurringPerProcess          Boolean          @default(false) @db.Bit
+  recurringPerPerson           Boolean          @default(false) @db.Bit
   recipientGroupId             Int?
   recipientId                  Int?
-  problemCriteria              String?         @db.NVarChar(Max)
-  problemFindings              String?         @db.NVarChar(Max)
-  recommendations              String?         @db.NVarChar(Max)
+  problemCriteria              String?          @db.NVarChar(Max)
+  problemFindings              String?          @db.NVarChar(Max)
+  recommendations              String?          @db.NVarChar(Max)
   verifiedBy                   Int?
-  verifiedOn                   DateTime?       @db.DateTime
+  verifiedOn                   DateTime?        @db.DateTime
   approvedBy                   Int?
-  approvedOn                   DateTime?       @db.DateTime
-  correctiveAction             String?         @db.NVarChar(Max)
-  correctiveCommitmentDate     DateTime?       @db.DateTime
-  preventiveAction             String?         @db.NVarChar(Max)
-  preventiveCommitmentDate     DateTime?       @db.DateTime
-  deemedAccepted               Boolean         @default(false) @db.Bit
-  approvedForClosing           Boolean         @default(false) @db.Bit
-  endorsedForApproval          Boolean         @default(false) @db.Bit
-  onHold                       Boolean         @default(false) @db.Bit
-  isActive                     Boolean         @default(true) @db.Bit
-  cancelledOn                  DateTime?       @db.DateTime
-  closedOn                     DateTime?       @db.DateTime
-  hasBeenReadByAssignee        Boolean         @default(false) @db.Bit
-  readByAssigneeOn             DateTime?       @db.DateTime
+  approvedOn                   DateTime?        @db.DateTime
+  correctiveAction             String?          @db.NVarChar(Max)
+  correctiveCommitmentDate     DateTime?        @db.DateTime
+  preventiveAction             String?          @db.NVarChar(Max)
+  preventiveCommitmentDate     DateTime?        @db.DateTime
+  deemedAccepted               Boolean          @default(false) @db.Bit
+  approvedForClosing           Boolean          @default(false) @db.Bit
+  endorsedForApproval          Boolean          @default(false) @db.Bit
+  onHold                       Boolean          @default(false) @db.Bit
+  isActive                     Boolean          @default(true) @db.Bit
+  cancelledOn                  DateTime?        @db.DateTime
+  closedOn                     DateTime?        @db.DateTime
+  hasBeenReadByAssignee        Boolean          @default(false) @db.Bit
+  readByAssigneeOn             DateTime?        @db.DateTime
+  jobEscalation1               Int?
+  jobEscalation2               Int?
+  jobEscalation3               Int?
+  jobEscalation4               Int?
   createdBy                    Int
-  createdOn                    DateTime        @default(now()) @db.DateTime
+  createdOn                    DateTime         @default(now()) @db.DateTime
   modifiedBy                   Int?
-  modifiedOn                   DateTime        @updatedAt @db.DateTime
-  company                      Company         @relation(fields: [companyId], references: [id], onUpdate: NoAction)
-  project                      Project         @relation(fields: [projectId], references: [id], onUpdate: NoAction)
-  auditEngagement              AuditEngagement @relation(fields: [auditEngagementId], references: [id], onUpdate: NoAction)
-  typeOfFinding                TypeOfFinding   @relation(fields: [typeOfFindingId], references: [id], onUpdate: NoAction)
-  findingCategory              FindingCategory @relation(fields: [findingCategoryId], references: [id], onUpdate: NoAction)
-  group                        Group?          @relation(fields: [recipientGroupId], references: [id], onUpdate: NoAction)
-  auditReport                  AuditReport     @relation(fields: [auditReportId], references: [id], onUpdate: NoAction)
-  auditRating                  AuditRating     @relation(fields: [auditRatingId], references: [id], onUpdate: NoAction)
-  recipient                    User?           @relation("JobTransactionRecipient", fields: [recipientId], references: [id], onUpdate: NoAction, onDelete: NoAction)
-  complianceSecretariat        User            @relation("ComplianceSecretariat", fields: [complianceSecretariatId], references: [id], onUpdate: NoAction)
-  complianceOfficer            User?           @relation("ComplianceOfficer", fields: [complianceOfficerId], references: [id], onUpdate: NoAction)
-  supervisor                   User            @relation("Supervisor", fields: [supervisorId], references: [id], onUpdate: NoAction)
-  verifier                     User?           @relation("JobTransactionVerifier", fields: [verifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
-  approver                     User?           @relation("JobTransactionApprover", fields: [approvedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
-  creator                      User            @relation("JobTransactionCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
-  modifier                     User?           @relation("JobTransactionModifier", fields: [modifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  modifiedOn                   DateTime         @updatedAt @db.DateTime
+  company                      Company          @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+  project                      Project          @relation(fields: [projectId], references: [id], onUpdate: NoAction)
+  auditEngagement              AuditEngagement  @relation(fields: [auditEngagementId], references: [id], onUpdate: NoAction)
+  typeOfFinding                TypeOfFinding    @relation(fields: [typeOfFindingId], references: [id], onUpdate: NoAction)
+  findingCategory              FindingCategory  @relation(fields: [findingCategoryId], references: [id], onUpdate: NoAction)
+  group                        Group?           @relation(fields: [recipientGroupId], references: [id], onUpdate: NoAction)
+  auditReport                  AuditReport      @relation(fields: [auditReportId], references: [id], onUpdate: NoAction)
+  auditRating                  AuditRating      @relation(fields: [auditRatingId], references: [id], onUpdate: NoAction)
+  recipient                    User?            @relation("JobTransactionRecipient", fields: [recipientId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  complianceSecretariat        User             @relation("ComplianceSecretariat", fields: [complianceSecretariatId], references: [id], onUpdate: NoAction)
+  complianceOfficer            User?            @relation("ComplianceOfficer", fields: [complianceOfficerId], references: [id], onUpdate: NoAction)
+  supervisor                   User             @relation("Supervisor", fields: [supervisorId], references: [id], onUpdate: NoAction)
+  verifier                     User?            @relation("JobTransactionVerifier", fields: [verifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  approver                     User?            @relation("JobTransactionApprover", fields: [approvedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  creator                      User             @relation("JobTransactionCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  modifier                     User?            @relation("JobTransactionModifier", fields: [modifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
   auditTrails                  AuditTrail[]
   attachments                  Attachment[]
+  jobEscalation1User           User?            @relation("jobEscalation1User", fields: [jobEscalation1], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  jobEscalation2User           User?            @relation("jobEscalation2User", fields: [jobEscalation2], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  jobEscalation3User           User?            @relation("jobEscalation3User", fields: [jobEscalation3], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  jobEscalation4User           User?            @relation("jobEscalation4User", fields: [jobEscalation4], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  holdingHistories             HoldingHistory[]
 }
 
 model Project {
@@ -285,6 +294,12 @@ model User {
   userProjectModifier       UserProject[]          @relation("UserProjectModifier")
   userProjects              UserProject[]
   auditTrails               AuditTrail[]           @relation("AuditTrailCreator")
+  jobEscalation1User        JobTransaction[]       @relation("jobEscalation1User")
+  jobEscalation2User        JobTransaction[]       @relation("jobEscalation2User")
+  jobEscalation3User        JobTransaction[]       @relation("jobEscalation3User")
+  jobEscalation4User        JobTransaction[]       @relation("jobEscalation4User")
+  holdingHistoryCreator     HoldingHistory[]       @relation("HoldingCreator")
+  holdingHistoryEnder       HoldingHistory[]       @relation("HoldingEnder")
 }
 
 model AuditReport {
@@ -408,4 +423,19 @@ model AuditTrail {
   createdOn        DateTime       @default(now()) @db.DateTime
   jobTransaction   JobTransaction @relation(fields: [jobTransactionId], references: [id], onUpdate: NoAction, onDelete: NoAction)
   creator          User           @relation("AuditTrailCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+}
+
+model HoldingHistory {
+  id               Int            @id @default(autoincrement())
+  jobTransactionId Int
+  holdFrom         DateTime       @db.DateTime
+  holdUntil        DateTime       @db.DateTime
+  isActive         Boolean        @default(true) @db.Bit
+  endedOn          DateTime?      @db.DateTime
+  endedBy          Int?
+  createdBy        Int
+  createOn         DateTime       @default(now()) @db.DateTime
+  jobTransaction   JobTransaction @relation(fields: [jobTransactionId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  creator          User           @relation("HoldingCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  ender            User?          @relation("HoldingEnder", fields: [endedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
 }

@@ -17,7 +17,8 @@ export async function getAuditTrailByTransId(id: number) : Promise<{ data: Audit
 }
 
 const auditTrailInclude = {
-  creator: userSelect
+  creator: userSelect,
+  jobTransaction: { select: { jobStatus: true, verifiedOn: true, approvedOn: true, onHold: true } }
 } satisfies Prisma.AuditTrailInclude
 
 export type AuditTrailPayload = Prisma.AuditTrailGetPayload<{
