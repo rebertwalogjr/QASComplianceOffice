@@ -67,7 +67,7 @@ export default function CardHoldAction({ activeHolding }: { activeHolding: Holdi
                     <AlertDialogTitle>Are you sure you want to lift hold status?</AlertDialogTitle>
                   </AlertDialogHeader>
                   <AlertDialogDescription>
-                    This will resume the transaction process for <strong>Series #{activeHolding?.id}</strong>.
+                    This will resume the transaction process for <strong>Series #{activeHolding?.jobTransactionId}</strong>.
                     The "On-Hold" status will be cleared, allowing the next workflow actions to proceed.
                   </AlertDialogDescription>
                   <AlertDialogFooter>

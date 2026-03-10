@@ -16,7 +16,7 @@ export default function AuditTrail({ data, jobTransaction }: { data: AuditTrailP
 
   const groupedData = groupAuditTrails(data)
 
-  const isInactive = jobTransaction.jobStatus === "closed" || jobTransaction.jobStatus === "on-hold"
+  const isInactive = jobTransaction.jobStatus === "closed" || jobTransaction.jobStatus === "on-hold" || jobTransaction.jobStatus === "cancelled"
 
   const getPendingMessage = () => {
     const { verifiedOn, approvedOn, jobStatus: status } = jobTransaction;

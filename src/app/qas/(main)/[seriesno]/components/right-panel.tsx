@@ -32,6 +32,8 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
   const isAccepted = jobTransaction.jobStatus === "accepted"
   const isForClosing = jobTransaction.jobStatus === "for closing"
   const isClosed = jobTransaction.jobStatus === "closed"
+  const isCancelled = jobTransaction.jobStatus === "cancelled"
+  const isHeld = jobTransaction.jobStatus === "on-hold"
 
   // reset permissions if any of the following changes: [jobTransaction, userId, userRoles]
   const permissions = useMemo(() => {
@@ -45,6 +47,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
       canApprove: userRoles?.includes(1003) && !!jobTransaction.verifiedBy && !jobTransaction.approvedBy && isOfficer,
       canAccept: userRoles?.includes(1004) && !!jobTransaction.verifiedBy && !!jobTransaction.approvedBy && !isAccepted && !isForClosing && !isClosed && isRecipient,
       canAskForClosing: userRoles?.includes(1001) && isAccepted && isAuditor,
+      canCancel: userRoles?.includes(1001) && isAuditor,
       canClose: userRoles?.includes(1002) && isForClosing && isSupervisor,
     }
   }, [jobTransaction, userId, userRoles])
@@ -57,6 +60,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
       isForClosing: z.boolean(),
       isToClose: z.boolean(),
       isHold: z.boolean(),
+      isCancel: z.boolean(),
 
       // Update Area
       correctiveAction: z.string().optional(),
@@ -73,7 +77,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
       // Global
       comment: z.string().optional(),
     }).superRefine((data, ctx) => {
-      if (!data.isHold) {
+      if (!data.isHold && !data.isCancel) {
         if (!!jobTransaction.approvedBy || permissions.canAccept) {
           if (!data.correctiveAction || data.correctiveAction.trim() === "") {
             ctx.addIssue({
@@ -138,6 +142,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
       isForClosing: jobTransaction.jobStatus === "for closing",
       isToClose: !!jobTransaction.closedOn,
       isHold: !!jobTransaction.onHold,
+      isCancel: !!jobTransaction.cancelledOn,
       correctiveAction: jobTransaction.correctiveAction ?? "",
       preventiveAction: jobTransaction.preventiveAction ?? "",
       corrCommitmentDate: jobTransaction.correctiveCommitmentDate ? new Date(jobTransaction.correctiveCommitmentDate) : null,
@@ -151,17 +156,24 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
   })
 
   const isHoldChecked = watch("isHold")
+  const isCancelChecked = watch("isCancel")
   const hasAnyPermission = Object.values(permissions).some(p => p === true)
-  const showUpdateArea = (permissions.canAccept || isAccepted || isForClosing || isClosed) && !!jobTransaction.approvedBy
+  const showUpdateArea = !isHoldChecked && !isCancelChecked && (permissions.canAccept || isAccepted || isForClosing || isClosed) && !!jobTransaction.approvedBy
 
   useEffect(() => {
-    if (isHoldChecked) {
-      // Clear validation errors for Update Area when moving to hold
+    // Clear validation errors for Update Area when moving to hold
+    if (isHoldChecked || isCancelChecked) {
       clearErrors(["correctiveAction", "preventiveAction", "corrCommitmentDate", "prevCommitmentDate"])
       resetField("isVerified")
       resetField("isApproved")
     }
-  }, [isHoldChecked, clearErrors])
+    if (isHoldChecked) {
+      resetField("isCancel")
+    }
+    if (isCancelChecked) {
+      resetField("isHold")
+    }
+  }, [isHoldChecked, isCancelChecked, clearErrors])
 
   useEffect(() => {
     if (!jobTransaction.onHold) {
@@ -181,6 +193,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
 
     let actionType = ""
     if (data.isHold) actionType = "hold"
+    else if (data.isCancel) actionType = "cancel"
     else if (permissions.canClose && data.isToClose) actionType = "close"
     else if (permissions.canAskForClosing && data.isForClosing) actionType = "for closing"
     else if (permissions.canAccept) actionType = "accept"
@@ -188,8 +201,6 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
     else if (permissions.canVerify && data.isVerified) actionType = "verify"
 
     if (!actionType && data.comment) actionType = "comment_only"
-
-    console.log(actionType)
 
     const formData = new FormData();
     formData.append("seriesno", String(jobTransaction.id))
@@ -233,6 +244,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
           <Label className="text-muted-foreground text-xs uppercase font-bold">Entry Actions</Label>
 
           <FieldGroup className="gap-3">
+            {/* For Verification */}
             <Field>
               <div className="flex items-center gap-3">
                 <Controller
@@ -251,6 +263,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
               </div>
             </Field>
 
+            {/* For Approval */}
             <Field>
               <div className="flex items-center gap-3">
                 <Controller
@@ -270,6 +283,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
               </div>
             </Field>
 
+            {/* For Closing */}
             {isAccepted && (
               <Field>
                 <div className="flex items-center gap-3">
@@ -291,6 +305,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
               </Field>
             )}
 
+            {/* Closing */}
             {((isForClosing && permissions.canClose) || isClosed) && (
               <Field>
                 <div className="flex items-center gap-3">
@@ -312,9 +327,32 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
               </Field>
             )}
 
+            {/* Cancellation */}
+            {(permissions.canCancel || isCancelled) && (
+              <Field>
+                <div className="flex items-center gap-3">
+                  <Controller
+                    control={control}
+                    name="isCancel"
+                    render={({ field }) => (
+                      <Checkbox
+                        id="isCancel"
+                        {...register("isCancel")}
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        disabled={isHoldChecked || !permissions.canCancel || isCancelled}
+                      />
+                    )}
+                  />
+                  <FieldLabel htmlFor="isCancel">{isCancelled ? "Cancelled" : "Cancel"}</FieldLabel>
+                </div>
+              </Field>
+            )}
+
           </FieldGroup>
 
-          {(permissions.canVerify || permissions.canApprove || permissions.canAccept) &&
+          {/* Holding Request */}
+          {(permissions.canVerify || permissions.canApprove || permissions.canAccept) && !isCancelled &&
             <FieldGroup className="gap-3">
               <Field>
                 <div className="flex items-center gap-3">
@@ -327,7 +365,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
                         {...register("isHold")}
                         checked={field.value}
                         onCheckedChange={field.onChange}
-                        disabled={jobTransaction.onHold}
+                        disabled={jobTransaction.onHold || isCancelChecked}
                       />
                     )}
                   />
@@ -336,7 +374,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
               </Field>
 
               {isHoldChecked &&
-                <FieldGroup className="flex gap-3 px-4 py-2">
+                <FieldGroup className="flex gap-3 px-4 py-2 animate-in fade-in slide-in-from-top-2 duration-500">
                   <Field>
                     <Controller
                       control={control}
@@ -358,7 +396,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
           }
 
           {showUpdateArea &&
-            <FieldGroup className="gap-3">
+            <FieldGroup className="gap-3 animate-in fade-in slide-in-from-top-2 duration-500">
               <Separator />
 
               <Label className="text-muted-foreground text-xs uppercase font-bold">Update Area</Label>
@@ -372,7 +410,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
                   placeholder="Type here..."
                   className="resize-none"
                   readOnly={!permissions.canAccept}
-                  disabled={permissions.canAccept && isHoldChecked}
+                  disabled={permissions.canAccept && isHoldChecked && isCancelChecked}
                 />
                 {errors.correctiveAction && <FieldError>{errors.correctiveAction.message}</FieldError>}
               </Field>
@@ -387,7 +425,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
                       defaultDate={field.value ?? undefined}
                       onChange={field.onChange}
                       readonly={!permissions.canAccept}
-                      disabled={permissions.canAccept && isHoldChecked}
+                      disabled={permissions.canAccept && isHoldChecked && isCancelChecked}
                     />
                   )}
                 />
@@ -402,7 +440,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
                   placeholder="Type here..."
                   className="resize-none"
                   readOnly={!permissions.canAccept}
-                  disabled={permissions.canAccept && isHoldChecked}
+                  disabled={permissions.canAccept && isHoldChecked && isCancelChecked}
                 />
                 {errors.preventiveAction && <FieldError>{errors.preventiveAction.message}</FieldError>}
               </Field>
@@ -417,7 +455,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
                       defaultDate={field.value ?? undefined}
                       onChange={field.onChange}
                       readonly={!permissions.canAccept}
-                      disabled={permissions.canAccept && isHoldChecked}
+                      disabled={permissions.canAccept && isHoldChecked && isCancelChecked}
                     />
                   )}
                 />
@@ -426,29 +464,35 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
             </FieldGroup>
           }
 
-          <Separator />
+          {!(isClosed || isCancelled || isHeld) &&
+            <>
+              <Separator />
+              <div className="flex flex-col gap-3">
+                <Label htmlFor="comment" className="text-muted-foreground">{isHoldChecked ? "Holding Reason" : isCancelChecked ? "Cancel Reason" : "Comments / Remarks"}</Label>
+                <Textarea id="comment"
+                  {...register("comment")}
+                  placeholder="Type here..."
+                  className="resize-none"
+                  disabled={!hasAnyPermission || jobTransaction.onHold}
+                />
+              </div>
+            </>
+          }
 
-          <div className="flex flex-col gap-3">
-            <Label htmlFor="comment" className="text-muted-foreground">Comments / Remarks</Label>
-            <Textarea id="comment"
-              {...register("comment")}
-              placeholder="Type here..."
-              className="resize-none"
-              disabled={!hasAnyPermission || isClosed || jobTransaction.onHold}
-            />
+        </div>
+
+        {!(isClosed || isCancelled || isHeld) &&
+          <div className="w-full border-t px-4 py-4">
+            <Button type="submit" size="lg" className="w-full" disabled={isPending || !hasAnyPermission || isClosed || isCancelled || isHeld || jobTransaction.onHold}>
+              {isPending ? (<Loader2 className="mr-2 h-4 w-4 animate-spin" />) :
+                isHoldChecked ? "Hold" :
+                  isCancelChecked ? "Cancel" :
+                    showUpdateArea ? "Accept and save" :
+                      "Save Changes"
+              }
+            </Button>
           </div>
-
-        </div>
-
-        <div className="w-full border-t px-4 py-4">
-          <Button type="submit" size="lg" className="w-full" disabled={isPending || !hasAnyPermission || isClosed || jobTransaction.onHold}>
-            {isPending ? (<Loader2 className="mr-2 h-4 w-4 animate-spin" />) :
-              isHoldChecked ? "Hold" :
-                showUpdateArea ? "Accept and save" :
-                  "Save Changes"
-            }
-          </Button>
-        </div>
+        }
 
       </form>
     </div>

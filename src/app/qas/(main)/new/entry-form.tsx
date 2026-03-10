@@ -334,7 +334,7 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
                   </Field>
 
                   <Field>
-                    <FieldLabel htmlFor="datetimeTarget">Date and time issued</FieldLabel>
+                    <FieldLabel htmlFor="datetimeTarget">Target Date</FieldLabel>
                     <Input name="datetimeTarget" placeholder="11/19/25 14:50" readOnly />
                   </Field>
 

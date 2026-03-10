@@ -181,6 +181,9 @@ export async function jobTransactionClientUpdate(formData: FormData) {
       rawData = { jobStatus: "on-hold", onHold: true}
       actionTaken = "hold the series"
       break
+    case "cancel":
+      rawData = { jobStatus: "cancelled", cancelledOn: new Date()}
+      actionTaken = "cancelled the series"
     default:
       actionTaken = "added a comment"
   }

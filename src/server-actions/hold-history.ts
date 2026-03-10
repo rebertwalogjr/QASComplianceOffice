@@ -25,7 +25,7 @@ export async function liftHoldStatusById(jobTransactionId: number, holdingId: nu
     prisma.$transaction(async (tx) => {
       const job = await prisma.jobTransaction.update({
         where: { id: jobTransactionId },
-        data: { onHold: false }
+        data: { onHold: false, jobStatus: "open" }
       })
       await prisma.holdingHistory.update({
         where: { id: holdingId },
@@ -34,7 +34,7 @@ export async function liftHoldStatusById(jobTransactionId: number, holdingId: nu
       await tx.auditTrail.create({
         data: {
           jobTransactionId: job.id,
-          jobStatus: 'open',
+          jobStatus: "open",
           actionTaken: "lifted the hold status of this series",
           createdBy: creatorId,
           tag: "updated"
