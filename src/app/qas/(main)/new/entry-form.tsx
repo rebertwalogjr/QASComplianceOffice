@@ -27,6 +27,7 @@ import { ActiveAuditRatingPayload } from "@/server-actions/rating";
 import { ActiveAuditReportPayload } from "@/server-actions/audit-report";
 import { createTransaction } from "@/server-actions/transaction";
 import { deleteTempFolderBySessionId } from "@/server-actions/files";
+import { toUTCMidnight } from "@/lib/utils";
 
 interface EntryFormProps {
   companies: ActiveCompanyPayload[] | null
@@ -53,8 +54,19 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
   const [selectedRecipientId, setSelectedRecipientId] = useState<string>("")
   const [selectedEngagementId, setSelectedEngagementId] = useState<string>("")
 
+  const datetimeIssued = toUTCMidnight(new Date())
+  const tempTargetDate = new Date(datetimeIssued?.getTime() || Date.now())
+  tempTargetDate.setDate(tempTargetDate.getDate() + 2)
+  const targetDate = toUTCMidnight(tempTargetDate)
+
   useEffect(() => {
-    setSessionId(crypto.randomUUID())
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+      setSessionId(crypto.randomUUID());
+    } else {
+      // Basic fallback for non-secure contexts
+      const fallbackId = (Math.random().toString(36).substring(2) + Date.now().toString(36));
+      setSessionId(fallbackId);
+    }
   }, [])
 
   const filtered = useMemo(() => {
@@ -330,12 +342,12 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
 
                   <Field>
                     <FieldLabel htmlFor="datetimeIssued">Date and time issued</FieldLabel>
-                    <Input name="datetimeIssued" placeholder="11/19/25 14:50" readOnly />
+                    <Input name="datetimeIssued" placeholder={datetimeIssued?.toDateString()} readOnly />
                   </Field>
 
                   <Field>
                     <FieldLabel htmlFor="datetimeTarget">Target Date</FieldLabel>
-                    <Input name="datetimeTarget" placeholder="11/19/25 14:50" readOnly />
+                    <Input name="datetimeTarget" placeholder={targetDate?.toDateString()} readOnly />
                   </Field>
 
                   <Field>

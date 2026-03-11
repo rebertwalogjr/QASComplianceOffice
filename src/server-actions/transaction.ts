@@ -14,14 +14,14 @@ export async function createTransaction(formData: FormData) {
   const sessionId = formData.get("sessionId") as string
   const status = "open"
   const creatorId = await getUserId()
-  
+
   if (!creatorId) {
     throw new Error("You must be logged in.")
   }
-  
+
   const escalations = await prisma.user.findFirst({
     where: { id: Number(formData.get("recipient")) },
-    select: { escalation1User: userSelect , escalation2User: userSelect, escalation3User: userSelect, escalation4User: userSelect}
+    select: { escalation1User: userSelect, escalation2User: userSelect, escalation3User: userSelect, escalation4User: userSelect }
   })
 
   const rawData = {
@@ -97,9 +97,6 @@ export async function createTransaction(formData: FormData) {
   if (newJob) {
     await promoteToFinal(sessionId, newJob.id)
   }
-
-  if (error) { return { data: newJob, error } }
-  revalidatePath("/qas");
   return { data: newJob, error }
 }
 
@@ -141,12 +138,19 @@ export async function jobTransactionClientUpdate(formData: FormData) {
   const creatorId = await getUserId()
   if (!creatorId) throw new Error("Unauthorized")
 
+  const sessionId = formData.get("sessionId") as string
   const id = Number(formData.get("seriesno"))
   const type = formData.get("actionType")
   const comment = formData.get("comment") as string
   let rawData = {}
   let holdRawData = {}
   let actionTaken = ""
+
+  const tempDirPath = path.join(process.env.FILE_SERVER_PATH!, 'Temporary', sessionId)
+  let fileNames: string[] = []
+  if (fs.existsSync(tempDirPath)) {
+    fileNames = fs.readdirSync(tempDirPath)
+  }
 
   console.log("corrCommitmentDateValue: " + formData.get("corrCommitmentDate") as string)
 
@@ -174,15 +178,15 @@ export async function jobTransactionClientUpdate(formData: FormData) {
       actionTaken = "requesting to close the series"
       break
     case "close":
-      rawData = { jobStatus: "closed", closedOn: new Date(), onHold: false}
+      rawData = { jobStatus: "closed", closedOn: new Date(), onHold: false }
       actionTaken = "closed the series"
       break
     case "hold":
-      rawData = { jobStatus: "on-hold", onHold: true}
+      rawData = { jobStatus: "on-hold", onHold: true }
       actionTaken = "hold the series"
       break
     case "cancel":
-      rawData = { jobStatus: "cancelled", cancelledOn: new Date()}
+      rawData = { jobStatus: "cancelled", cancelledOn: new Date() }
       actionTaken = "cancelled the series"
     default:
       actionTaken = "added a comment"
@@ -190,13 +194,24 @@ export async function jobTransactionClientUpdate(formData: FormData) {
 
   const subCommentAction = comment ? " with comment" : ""
 
-  return await dbQuery(
+  const { data: newJob, error } = await dbQuery(
     prisma.$transaction(async (tx) => {
       const job = await tx.jobTransaction.update({
         where: { id },
-        data: { ...rawData }
+        data: {
+          ...rawData,
+          attachments: {
+            create: fileNames.map(name => ({
+              fileName: name,
+              fileType: path.extname(name),
+              fileSize: 0,
+              fromRecipient: true, // Recipients attachments
+              creator: { connect: { id: creatorId } }
+            }))
+          }
+        }
       })
-      
+
       await tx.auditTrail.create({
         data: {
           jobTransactionId: job.id,
@@ -218,8 +233,16 @@ export async function jobTransactionClientUpdate(formData: FormData) {
           }
         })
       }
+
+      return job
     })
   )
+
+  if (newJob) {
+    await promoteToFinal(sessionId, newJob.id)
+  }
+
+   return { data: newJob, error }
 }
 
 const transactionBasicSelect = {

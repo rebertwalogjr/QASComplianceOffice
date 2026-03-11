@@ -19,10 +19,13 @@ import { Loader2 } from "lucide-react"
 import StatusBadge from "@/components/status-badge"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { HoldingPayload } from "@/server-actions/hold-history"
+import { FileUpload, FileWithPreview } from "@/components/FileUpload"
+import AttachmentViewer from "@/components/attachments-viewer"
 
 export default function RightPanel({ jobTransaction, activeHolding }: { jobTransaction: TransactionPayload, activeHolding: HoldingPayload | null }) {
   const router = useRouter()
-
+  const [sessionId, setSessionId] = useState<string>("")
+  const [attachments, setAttachments] = useState<FileWithPreview[]>([])
   const [isPending, setIsPending] = useState(false)
 
   const { data: session } = useSession()
@@ -34,6 +37,17 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
   const isClosed = jobTransaction.jobStatus === "closed"
   const isCancelled = jobTransaction.jobStatus === "cancelled"
   const isHeld = jobTransaction.jobStatus === "on-hold"
+
+  // Generate sessionId for attachment upload
+  useEffect(() => {
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    setSessionId(crypto.randomUUID());
+  } else {
+    // Basic fallback for non-secure contexts
+    const fallbackId = (Math.random().toString(36).substring(2) + Date.now().toString(36));
+    setSessionId(fallbackId);
+  }
+  }, [])
 
   // reset permissions if any of the following changes: [jobTransaction, userId, userRoles]
   const permissions = useMemo(() => {
@@ -202,7 +216,8 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
 
     if (!actionType && data.comment) actionType = "comment_only"
 
-    const formData = new FormData();
+    const formData = new FormData()
+    formData.append("sessionId", sessionId)
     formData.append("seriesno", String(jobTransaction.id))
     formData.append("actionType", actionType)
     formData.append("correctiveAction", data.correctiveAction || "")
@@ -460,6 +475,25 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
                   )}
                 />
               </Field>
+
+              {/* Recipient's Attachement Upload */}
+              {!(isAccepted || isClosed || isForClosing) &&
+                <Field>
+                  <FieldLabel className="text-muted-foreground" htmlFor="attachments">Attachments</FieldLabel>
+                  {/* <Input name="attachments" /> */}
+                  <FileUpload sessionId={sessionId} onFilesChange={setAttachments} />
+                </Field>
+              }
+
+              {(isAccepted || isClosed || isForClosing) &&
+                <Field>
+                  <FieldLabel className="text-muted-foreground" htmlFor="attachments">Attachments</FieldLabel>
+                  <AttachmentViewer
+                    jobTransactionId={jobTransaction?.id ?? 0}
+                    attachments={jobTransaction?.attachments ? jobTransaction.attachments.filter(e => e.fromRecipient) : []}
+                  />
+                </Field>
+              }
 
             </FieldGroup>
           }

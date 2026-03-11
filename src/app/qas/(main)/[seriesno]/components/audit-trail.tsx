@@ -86,7 +86,7 @@ export default function AuditTrail({ data, jobTransaction }: { data: AuditTrailP
                           {/* <span className="font-bold text-foreground">{t.creator.appSuiteEmployeeMaster.firstName}</span> */}
                           <UserHoverCard data={t.creator.appSuiteEmployeeMaster} />
                           {" "}
-                          <span className="font-normal">{t.actionTaken.toLowerCase()}</span>
+                          <span className="font-normal tracking-wide">{t.actionTaken.toLowerCase()}</span>
                         </ItemTitle>
                         <div className="text-[10px] md:text-xs text-muted-foreground whitespace-nowrap ml-4 text-right">
                           {showFullDate ? (

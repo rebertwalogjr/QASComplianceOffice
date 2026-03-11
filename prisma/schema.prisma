@@ -148,6 +148,8 @@ model JobTransaction {
   jobEscalation3User           User?            @relation("jobEscalation3User", fields: [jobEscalation3], references: [id], onUpdate: NoAction, onDelete: NoAction)
   jobEscalation4User           User?            @relation("jobEscalation4User", fields: [jobEscalation4], references: [id], onUpdate: NoAction, onDelete: NoAction)
   holdingHistories             HoldingHistory[]
+  updateTrails                 UpdateTrail[]
+  reviewTrails                 ReviewTrail[]
 }
 
 model Project {
@@ -300,6 +302,8 @@ model User {
   jobEscalation4User        JobTransaction[]       @relation("jobEscalation4User")
   holdingHistoryCreator     HoldingHistory[]       @relation("HoldingCreator")
   holdingHistoryEnder       HoldingHistory[]       @relation("HoldingEnder")
+  updateTrails              UpdateTrail[]          @relation("UpdateTrailCreator")
+  reviewTrails              ReviewTrail[]          @relation("ReviewTrailCreator")
 }
 
 model AuditReport {
@@ -438,4 +442,24 @@ model HoldingHistory {
   jobTransaction   JobTransaction @relation(fields: [jobTransactionId], references: [id], onUpdate: NoAction, onDelete: NoAction)
   creator          User           @relation("HoldingCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
   ender            User?          @relation("HoldingEnder", fields: [endedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+}
+
+model UpdateTrail {
+  id               Int            @id @default(autoincrement())
+  jobTransactionId Int
+  message          String         @db.NVarChar(Max)
+  createdBy        Int
+  createOn         DateTime       @default(now()) @db.DateTime
+  jobTransaction   JobTransaction @relation(fields: [jobTransactionId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  creator          User           @relation("UpdateTrailCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+}
+
+model ReviewTrail {
+  id               Int            @id @default(autoincrement())
+  jobTransactionId Int
+  message          String         @db.NVarChar(Max)
+  createdBy        Int
+  createOn         DateTime       @default(now()) @db.DateTime
+  jobTransaction   JobTransaction @relation(fields: [jobTransactionId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  creator          User           @relation("ReviewTrailCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
 }

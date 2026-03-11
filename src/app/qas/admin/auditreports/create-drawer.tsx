@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
@@ -24,19 +24,29 @@ interface CreateDrawerProps {
 
 export default function CreateDrawer({ companies, projects, auditEngagements }: CreateDrawerProps) {
   const isMobile = useIsMobile();
-  const [isOpen, setIsOpen] = React.useState(false);
-  const [isPending, setIsPending] = React.useState(false);
-  const [formData, setFormData] = React.useState({ name: "", companyId: "", projectDepartmentId: "", auditEngagementId: "" })
+  const [isOpen, setIsOpen] = useState(false);
+  const [isPending, setIsPending] = useState(false);
+  const [formData, setFormData] = useState({ name: "", companyId: "", projectDepartmentId: "", auditEngagementId: "" })
 
-  const filteredProjects = React.useMemo(() => {
+  const filteredProjects = useMemo(() => {
     if (!formData.companyId) return [];
     return projects.filter(p => p.companyId.toString() === formData.companyId);
   }, [formData.companyId, projects]);
 
-  const filteredEngagements = React.useMemo(() => {
+  const filteredEngagements = useMemo(() => {
     if (!formData.companyId) return [];
     return auditEngagements.filter(e => e.companyId.toString() === formData.companyId);
   }, [formData.companyId, auditEngagements]);
+
+  useMemo(() => {
+    formData.name = ""
+    if (formData.projectDepartmentId) {
+      const year = new Date().getFullYear().toString()
+      const company = companies.find(e => e.id.toString() === formData.companyId)
+      const project = projects.find(p => p.id.toString() === formData.projectDepartmentId)
+      formData.name = `${company?.code}-${project?.code}-${year}`
+    }
+  }, [formData.projectDepartmentId, formData.companyId])
 
   const handleSubmit = async () => {
     setIsPending(true)
@@ -99,9 +109,9 @@ export default function CreateDrawer({ companies, projects, auditEngagements }: 
               <FieldSet>
                 <FieldGroup>
 
-                  <Field>
+                   <Field>
                     <FieldLabel htmlFor="name">Audit Number</FieldLabel>
-                    <Input id="name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
+                    <Input id="name" value={formData.name} className="disabled:opacity-70" disabled />
                   </Field>
 
                   <Field>

@@ -46,7 +46,7 @@ export default function AttachmentViewer({ jobTransactionId, attachments } : Att
   if (attachments.length === 0) return <p className="text-sm text-muted-foreground">No attachments found</p>
 
   return (
-    <div className="grid grid-col-1 lg:grid-cols-3 lg:gap-2 space-y-2 w-full">
+    <div className="grid grid-cols-1 space-y-2 w-full">
       {attachments.map((file) => (
         <Card key={file.id} className="h-14 p-3 flex flex-row items-center justify-between group hover:border-primary/50 transition-colors shadow-none">
           <div className="flex items-center overflow-hidden">

@@ -132,7 +132,7 @@ export default function TableCellViewer({ item, className }: Props) {
 
                   <Field>
                     <FieldLabel htmlFor="auditNumber">Audit Number</FieldLabel>
-                    <Input id="auditNumber" value={form.name} onChange={onInput("name")} disabled={!isEditing} className="disabled:opacity-70" />
+                    <Input id="auditNumber" value={form.name} className="disabled:opacity-70" disabled />
                   </Field>
 
                   <Field>
