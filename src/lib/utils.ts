@@ -2,6 +2,7 @@ import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { isToday, isYesterday, isThisWeek, format, parseISO } from "date-fns";
 import { AuditTrailPayload } from "@/server-actions/audit-trail";
+import { UpdateTrailPayload } from "@/server-actions/update-trail";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -54,6 +55,30 @@ export function groupAuditTrails(data: AuditTrailPayload[]) {
     } else {
       groups["Earlier"].push(trail);
     }
+  });
+
+  return groups;
+}
+
+export function groupUpdateTrails(data: UpdateTrailPayload[]) {
+  const groups: Record<string, UpdateTrailPayload[]> = {};
+
+  data.forEach((trail) => {
+    const date = new Date(trail.createOn);
+    let label = "";
+
+    if (isToday(date)) {
+      label = "Today";
+    } else if (isYesterday(date)) {
+      label = "Yesterday";
+    } else {
+      label = format(date, "MMMM d, yyyy");
+    }
+
+    if (!groups[label]) {
+      groups[label] = [];
+    }
+    groups[label].push(trail);
   });
 
   return groups;

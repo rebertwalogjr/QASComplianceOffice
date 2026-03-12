@@ -72,7 +72,7 @@ export default async function SeriesViewer({ params }: { params: Promise<{ serie
                   <AuditTrail data={auditTrails.data} jobTransaction={jobTransaction.data} />
                 </SeriesTabsContent>
                 <SeriesTabsContent value="update">
-                  <UpdateTrail />
+                  <UpdateTrail jobTransactionId={jobTransaction.data.id} />
                 </SeriesTabsContent>
                 <SeriesTabsContent value="review">
                   <ReviewTrail />
