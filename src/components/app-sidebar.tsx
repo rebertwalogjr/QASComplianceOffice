@@ -1,31 +1,26 @@
 "use client"
 
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from "@/components/ui/sidebar"
-import { AccountSwitcher } from "./account-switcher"
-import { sidebarItems } from "@/lib/sidebar-items"
 import React from "react"
 import Link from "next/link"
-import { Star } from "lucide-react"
 import { usePathname } from "next/navigation"
+import { useSession } from "next-auth/react"
+
+import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, } from "@/components/ui/sidebar"
+import { sidebarItems } from "@/lib/sidebar-items"
+import { AccountSwitcher } from "./account-switcher"
+import { Star } from "lucide-react"
 
 export function AppSidebar() {
   const pathname = usePathname() || "/"
+  const { data: session } = useSession()
 
-  const renderLink = (item: { title: string; url: string; icon: any}) => {
+  const isAdmin = session?.user.userRoles.includes(1005)
+  const isAuditor = session?.user.userRoles.includes(1001)
+
+  const renderLink = (item: { title: string; url: string; icon: any }) => {
     const isExactMatch = pathname === item.url
     const isSubPath = pathname.startsWith(`${item.url}`)
-    
+
     const reservedSubPaths = ["/qas/admin", "/qas/new"]
     const isReservedPath = item.url === "/qas" && reservedSubPaths.some(path => pathname.startsWith(path))
     const isActive = (isExactMatch || isSubPath) && !isReservedPath
@@ -38,8 +33,8 @@ export function AppSidebar() {
       <Link
         href={item.url}
         aria-current={isActive ? "page" : undefined}
-        className={`${base} ${isActive ? active : inactive }`}    
-    >
+        className={`${base} ${isActive ? active : inactive}`}
+      >
         <item.icon className="size-4" />
         <span>{item.title}</span>
       </Link>
@@ -72,7 +67,12 @@ export function AppSidebar() {
           <SidebarGroupLabel className="text-muted">Menu</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {sidebarItems.mainMenu.map((item) => (
+              {sidebarItems.mainMenu
+              .filter((item) => {
+                if (item.title === "QA Entry") return isAuditor
+                return true
+              })
+              .map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     {renderLink(item)}
@@ -82,20 +82,24 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-muted">Admin Menu</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {sidebarItems.adminMenu.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    {renderLink(item)}
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+
+        {isAdmin && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-muted">Admin Menu</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {sidebarItems.adminMenu.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      {renderLink(item)}
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
       </SidebarContent>
 
       {/* SIDEBAR FOOTER */}

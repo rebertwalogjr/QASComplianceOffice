@@ -75,7 +75,7 @@ export default async function SeriesViewer({ params }: { params: Promise<{ serie
                   <UpdateTrail jobTransactionId={jobTransaction.data.id} />
                 </SeriesTabsContent>
                 <SeriesTabsContent value="review">
-                  <ReviewTrail />
+                  <ReviewTrail jobTransactionId={jobTransaction.data.id} />
                 </SeriesTabsContent>
               </SeriesTabs>
             </div>

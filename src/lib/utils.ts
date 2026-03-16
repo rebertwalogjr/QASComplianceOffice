@@ -60,7 +60,7 @@ export function groupAuditTrails(data: AuditTrailPayload[]) {
   return groups;
 }
 
-export function groupUpdateTrails(data: UpdateTrailPayload[]) {
+export function groupTrails(data: UpdateTrailPayload[]) {
   const groups: Record<string, UpdateTrailPayload[]> = {};
 
   data.forEach((trail) => {

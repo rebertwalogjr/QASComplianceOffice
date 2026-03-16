@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState }  from "react"
+import React, { useState } from "react"
 import Image from "next/image"
 import { signIn } from "next-auth/react"
 import { useForm } from "react-hook-form"
@@ -49,7 +49,12 @@ export default function SignInPage() {
     })
 
     if (result?.error) {
-      toast.error("Invalid username or password.", { position: "top-center" })
+      // Invalid credential
+      if (result.error === "CredentialsSignin") {
+        toast.error("Invalid username or password.", { position: "top-center" })
+      } else { // Unexpected Error
+        toast.error(result?.error, { position: "top-center" })
+      }
       setIsLoading(false)
       return
     }

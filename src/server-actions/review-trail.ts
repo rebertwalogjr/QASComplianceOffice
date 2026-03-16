@@ -8,7 +8,7 @@ import { userSelect } from "./selectors";
 import { Prisma } from "../../generated/prisma/client";
 import { triggerWebhook } from "@/lib/webhook";
 
-export async function createUpdateTrail(formData: FormData) {
+export async function createReviewTrail(formData: FormData) {
   const creatorId = await getUserId()
 
   if (!creatorId) {
@@ -22,7 +22,7 @@ export async function createUpdateTrail(formData: FormData) {
   }
 
   const {data, error} = await dbQuery(
-    prisma.updateTrail.create({
+    prisma.reviewTrail.create({
       data: { ...rawData }
     })
   )
@@ -34,19 +34,19 @@ export async function createUpdateTrail(formData: FormData) {
   return {data, error}
 }
 
-export async function getUpdateTrailByTransactionId(jobTransactionId: number) : Promise<{data: UpdateTrailPayload[] | null, error: any}> {
+export async function getReviewTrailByTransactionId(jobTransactionId: number) : Promise<{data: ReviewTrailPayload[] | null, error: any}> {
   return await dbQuery(
-    prisma.updateTrail.findMany({
+    prisma.reviewTrail.findMany({
       where:{ jobTransactionId },
       include: { creator: userSelect }
     })
   )
 }
 
-const UpdateTrailInclude = {
+const ReviewTrailInclude = {
   creator: userSelect,
-} satisfies Prisma.UpdateTrailInclude
+} satisfies Prisma.ReviewTrailInclude
 
-export type UpdateTrailPayload = Prisma.UpdateTrailGetPayload<{
-  include: typeof UpdateTrailInclude
+export type ReviewTrailPayload = Prisma.ReviewTrailGetPayload<{
+  include: typeof ReviewTrailInclude
 }>
