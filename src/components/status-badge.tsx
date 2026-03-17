@@ -1,4 +1,4 @@
-import { BadgeAlert, BadgeCheck, BadgeCheckIcon, BadgeMinusIcon, BadgeX, CircleCheck, CircleX, Hand, Loader, ThumbsUp } from "lucide-react";
+import { BadgeAlert, BadgeCheck, BadgeCheckIcon, BadgeMinusIcon, BadgeX, CircleCheck, CircleX, Hand, Loader, LucideAlarmClockOff, ThumbsUp } from "lucide-react";
 import { Badge } from "./ui/badge"
 
 function getStatusLabel(status: string) {
@@ -12,11 +12,11 @@ function getStatusLabel(status: string) {
     case "new":
       return <Badge className="bg-cyan-50 border-cyan-500 text-cyan-500"><BadgeCheck />New</Badge>
     case "on-hold":
-      return <Badge className="bg-orange-50 border-orange-500 text-orange-500"><BadgeAlert />On-Hold</Badge>
+      return <Badge className="bg-orange-50 border-orange-500 text-orange-500"><LucideAlarmClockOff />On-Hold</Badge>
     case "cancelled":
-      return <Badge className="bg-red-50 border-red-500 text-red-500"><BadgeX />Cancelled</Badge>
-    case "declined":
-      return <Badge className="bg-red-50 border-red-500 text-red-500"><BadgeMinusIcon />Declined</Badge>
+      return <Badge className="bg-muted border-muted text-muted-foreground"><BadgeX />Cancelled</Badge>
+    // case "declined":
+    //   return <Badge className="bg-red-50 border-red-500 text-red-500"><BadgeMinusIcon />Declined</Badge>
     case "open":
       return <Badge className="bg-yellow-50 border-yellow-500 text-yellow-500"><BadgeMinusIcon />Open</Badge>
     default:

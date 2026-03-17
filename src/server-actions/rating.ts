@@ -39,19 +39,21 @@ export async function createAuditRating(formData: FormData) {
   return { data, error }
 }
 
-export async function updateAuditRating(formData: FormData, projectId: number) {
-  const name = formData.get("name") as string;
-  const companyId = Number(formData.get("companyId"));
-  const isActive = formData.get("isActive") === "true";
+export async function updateAuditRating(formData: FormData) {
   const currentUserId = await getUserId();
-
+  
   if (!currentUserId) {
     throw new Error("You must be logged in.")
   }
+
+  const id = Number(formData.get("id"))
+  const name = formData.get("name") as string;
+  const companyId = Number(formData.get("companyId"));
+  const isActive = formData.get("isActive") === "true";
   
   const { data, error } = await dbQuery(
     prisma.auditRating.update({
-      where: { id: projectId },
+      where: { id },
       data: {
         name,
         isActive,

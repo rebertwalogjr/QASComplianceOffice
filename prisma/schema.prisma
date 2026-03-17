@@ -76,7 +76,7 @@ model FindingCategory {
 
 model JobTransaction {
   id                           Int              @id @default(autoincrement())
-  jobStatus                    String?          @db.NVarChar(50)
+  jobStatus                    String           @db.NVarChar(50)
   companyId                    Int
   projectId                    Int
   auditEngagementId            Int

@@ -1,19 +1,30 @@
 "use client"
 
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { X } from "lucide-react";
-import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
-import { Status } from "@/lib/common-types";
-import { toast } from "sonner";
-import { Spinner } from "@/components/ui/spinner";
-import { FindingCategory } from "../../../../../generated/prisma/client";
-import { updateFindingCategory } from "@/server-actions/finding-category";
+import { useState } from "react"
+import { useIsMobile } from "@/hooks/use-mobile"
+import { useForm, Controller } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import z from "zod"
+import { toast } from "sonner"
+
+import { Button } from "@/components/ui/button"
+import { Separator } from "@/components/ui/separator"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer"
+import { Loader2, X } from "lucide-react"
+import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field"
+import { Status } from "@/lib/common-types"
+import { Spinner } from "@/components/ui/spinner"
+import { FindingCategory } from "../../../../../generated/prisma/client"
+import { updateFindingCategory } from "@/server-actions/finding-category"
+
+const findingCategoryUpdateSchema = z.object({
+  name: z.string().min(1, "Finding Category name is required"),
+  isActive: z.string(),
+})
+
+type FindingCategoryUpdateValues = z.infer<typeof findingCategoryUpdateSchema>
 
 interface Props {
   item: FindingCategory
@@ -21,65 +32,51 @@ interface Props {
 }
 
 export default function TableCellViewer({ item, className }: Props) {
-  const isMobile = useIsMobile();
-  const [isOpen, setIsOpen] = React.useState(false);
-  const [isPending, setIsPending] = React.useState(false);
-  const [isEditing, setIsEditing] = React.useState(false)
-  const [form, setForm] = React.useState({
-    id: item.id,
-    name: item.name,
-    isActive: item.isActive ? "Active" : "Inactive",
+  const isMobile = useIsMobile()
+  const [isOpen, setIsOpen] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+
+  const { register, handleSubmit, control, reset, formState: { errors, isSubmitting, isDirty }, } = useForm<FindingCategoryUpdateValues>({
+    resolver: zodResolver(findingCategoryUpdateSchema),
+    values: {
+      name: item.name,
+      isActive: item.isActive ? "Active" : "Inactive"
+    }
   })
 
-  const handleUpdate = () => {
-    setIsEditing(true)
-  }
+  const onSubmit = async (values: FindingCategoryUpdateValues) => {
+    const formData = new FormData()
+    formData.append("id", item.id.toString())
+    formData.append("name", values.name)
+    formData.append("isActive", (values.isActive === "Active").toString())
 
-  const handleSave = async () => {
-    setIsPending(true)
-
-    const data = new FormData()
-
-    data.append("name", form.name)
-    data.append("isActive", form.isActive === "Active" ? "true" : "false")
-
-    if (!form.name.trim()) {
-      toast.error("Please fill in the name field.");
-      setIsPending(false);
-      return;
-    }
-
-    const response = await updateFindingCategory(data, item.id);
+    const response = await updateFindingCategory(formData)
 
     if (response.error) {
       toast.error(response.error)
     } else {
       toast.success("Finding category updated successfully!", { position: "top-center" })
+      reset()
       setIsEditing(false)
-      setIsOpen(false);
+      setIsOpen(false)
     }
-    setIsPending(false)
-
   }
 
-  const handleCancel = () => {
-    setForm({
-      id: item.id,
-      name: item.name,
-      isActive: item.isActive ? "Active" : "Inactive",
-    })
+  const onCancel = () => {
+    reset()
     setIsEditing(false)
   }
 
-  const onInput = (key: keyof typeof form) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      setForm((prev) => ({ ...prev, [key]: e.target.value }))
-    }
-
-  const isStatus = (v: string): v is Status => v === "Active" || v === "Inactive"
-
   return (
-    <Drawer direction={isMobile ? "bottom" : "right"} open={isOpen} onOpenChange={setIsOpen} onClose={handleCancel}>
+    <Drawer
+      direction={isMobile ? "bottom" : "right"}
+      open={isOpen}
+      onOpenChange={(open) => {
+        setIsOpen(open)
+        setIsEditing(false)
+        if (!open) reset()
+      }}
+    >
       <DrawerTrigger asChild>
         <Button variant="link" className={`text-foreground w-fit px-0 ml-1 text-left ${className}`}>
           {item.name}
@@ -87,80 +84,81 @@ export default function TableCellViewer({ item, className }: Props) {
       </DrawerTrigger>
 
       <DrawerContent>
-        <DrawerHeader className="gap-1 flex flex-row items-center h-12 justify-between">
-          <DrawerTitle>Quick View &amp; Action</DrawerTitle>
-          <DrawerClose asChild>
-            <Button variant="ghost" size="icon-sm">
-              <X />
-            </Button>
-          </DrawerClose>
-        </DrawerHeader>
-
-        <Separator />
-
-        <div className="flex flex-col gap-4 overflow-y-auto px-4 py-4 text-sm">
-          <FieldGroup>
-            <FieldSet>
-              <FieldGroup>
-
-                {/* <Field>
-                    <FieldLabel htmlFor="id">Group Id</FieldLabel>
-                    <Input id="id" value={form.id} disabled className="disabled:opacity-70" />
-                  </Field> */}
-
-                <Field>
-                  <FieldLabel htmlFor="name">Group Code</FieldLabel>
-                  <Input id="name" value={form.name} onChange={onInput("name")} disabled={!isEditing} className="disabled:opacity-70" />
-                </Field>
-
-                <Field>
-                  <FieldLabel htmlFor="status">Status</FieldLabel>
-                  <Select
-                    value={form.isActive}
-                    onValueChange={(v) => {
-                      if (!isEditing) return
-                      if (!isStatus(v)) return
-                      setForm((p) => ({ ...p, isActive: v }))
-                    }}>
-                    <SelectTrigger id="status" disabled={!isEditing} className="disabled:opacity-70">
-                      <SelectValue placeholder="Select status..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Active">Active</SelectItem>
-                      <SelectItem value="Inactive">Inactive</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </Field>
-
-              </FieldGroup>
-            </FieldSet>
-          </FieldGroup>
-        </div>
-
-        <DrawerFooter>
-          {!isEditing ? (
-            <>
-              <Button onClick={handleUpdate}>Update</Button>
-              <DrawerClose asChild>
-                <Button variant="outline">Close</Button>
-              </DrawerClose>
-            </>
-          ) : (
-            <>
-              <Button onClick={handleSave} disabled={isPending}>
-                {isPending ? (
-                  <>
-                    Saving
-                    <Spinner className="mr-2" />
-                  </>
-                ) : (
-                  "Save"
-                )}
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col h-full">
+          <DrawerHeader className="gap-1 flex flex-row items-center h-12 justify-between">
+            <DrawerTitle>{isEditing ? "Edit Finding Category" : "Finding Category Details"}</DrawerTitle>
+            <DrawerClose asChild>
+              <Button variant="ghost" size="icon-sm">
+                <X className="size-4" />
               </Button>
-              <Button onClick={handleCancel} variant="outline" disabled={isPending}>Cancel</Button>
-            </>
-          )}
-        </DrawerFooter>
+            </DrawerClose>
+          </DrawerHeader>
+
+          <Separator />
+
+          <div className="flex flex-col gap-4 overflow-y-auto px-4 py-4 text-sm">
+            <FieldGroup>
+              <FieldSet>
+                <FieldGroup>
+
+                  <Field>
+                    <FieldLabel>Name</FieldLabel>
+                    <Input
+                      {...register("name")}
+                      readOnly={!isEditing}
+                      className={!isEditing ? "bg-muted/30 border-transparent shadow-none" : ""}
+                    />
+                    {errors.name && <p className="text-xs text-destructive mt-1">{errors.name.message}</p>}
+                  </Field>
+
+                  {/* Status Field */}
+                <Field>
+                  <FieldLabel>Status</FieldLabel>
+                  <Controller
+                    name="isActive"
+                    control={control}
+                    render={({ field }) => (
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <SelectTrigger className={!isEditing ? "bg-muted/30 border-transparent shadow-none pointer-events-none cursor-default" : ""}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Active">Active</SelectItem>
+                          <SelectItem value="Inactive">Inactive</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                </Field>
+
+                </FieldGroup>
+              </FieldSet>
+            </FieldGroup>
+          </div>
+
+          <DrawerFooter className="border-t gap-2">
+            {!isEditing ? (
+              <>
+                <Button type="button" onClick={() => setIsEditing(true)}>
+                  Edit Details
+                </Button>
+                <DrawerClose asChild>
+                  <Button variant="outline">Close</Button>
+                </DrawerClose>
+              </>
+            ) : (
+              <>
+                <Button type="submit" disabled={isSubmitting || !isDirty}>
+                  {isSubmitting && <Loader2 className="mr-2 size-4 animate-spin" />}
+                  Save Changes
+                </Button>
+                <Button type="button" disabled={isSubmitting} variant="outline" onClick={onCancel}>
+                  Cancel
+                </Button>
+              </>
+            )}
+          </DrawerFooter>
+        </form>
       </DrawerContent>
     </Drawer>
   )

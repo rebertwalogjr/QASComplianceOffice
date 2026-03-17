@@ -1,20 +1,34 @@
 "use client"
 
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { X } from "lucide-react";
-import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
-import { Status } from "@/lib/common-types";
-import { AuditReport } from "../../../../../generated/prisma/client";
-import { useLookups } from "@/context/lookups-context";
-import { toast } from "sonner";
-import { updateAuditReport } from "@/server-actions/audit-report";
-import { Spinner } from "@/components/ui/spinner";
+import { useState, useMemo, useEffect } from "react"
+import { useIsMobile } from "@/hooks/use-mobile"
+import { useForm, Controller } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import z from "zod"
+import { toast } from "sonner"
+
+import { Button } from "@/components/ui/button"
+import { Separator } from "@/components/ui/separator"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer"
+import { Loader2, X } from "lucide-react"
+import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field"
+import { Status } from "@/lib/common-types"
+import { AuditReport } from "../../../../../generated/prisma/client"
+import { useLookups } from "@/context/lookups-context"
+import { updateAuditReport } from "@/server-actions/audit-report"
+import { Spinner } from "@/components/ui/spinner"
+
+const auditNumberUpdateSchema = z.object({
+  name: z.string().min(1),
+  companyId: z.string().min(1, "Please select a company"),
+  projectId: z.string().min(1, "Please select a project"),
+  engagementId: z.string().min(1, "Please select an engagement"),
+  isActive: z.string(),
+})
+
+type AuditNumberUpdateValues = z.infer<typeof auditNumberUpdateSchema>
 
 interface Props {
   item: AuditReport
@@ -22,84 +36,97 @@ interface Props {
 }
 
 export default function TableCellViewer({ item, className }: Props) {
-  const isMobile = useIsMobile();
-  const { activeProjects, activeCompanies, activeAuditEngagements } = useLookups();
-  const [isEditing, setIsEditing] = React.useState(false)
-  const [isPending, setIsPending] = React.useState(false)
-  const [isOpen, setIsOpen] = React.useState(false)
-  const [form, setForm] = React.useState({
-    id: item.id,
-    name: item.name,
-    companyId: item.companyId,
-    projectId: item.projectId,
-    auditEngagementId: item.auditEngagementId,
-    isActive: item.isActive ? "Active" : "Inactive",
+  const isMobile = useIsMobile()
+  const { activeProjects, activeCompanies, activeAuditEngagements } = useLookups()
+  const [isEditing, setIsEditing] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
+
+  const { register, handleSubmit, control, reset, watch, setValue, formState: { errors, isSubmitting, isDirty }, } = useForm<AuditNumberUpdateValues>({
+    resolver: zodResolver(auditNumberUpdateSchema),
+    values: {
+      name: item.name,
+      companyId: item.companyId.toString(),
+      projectId: item.projectId.toString(),
+      engagementId: item.auditEngagementId.toString(),
+      isActive: item.isActive ? "Active" : "Inactive",
+    }
   })
 
-  const filteredProjects = React.useMemo(() => {
-      if (!form.companyId) return [];
-      return activeProjects?.filter(p => p.companyId === form.companyId);
-    }, [form.companyId, activeProjects]);
-  
-    const filteredEngagements = React.useMemo(() => {
-      if (!form.companyId) return [];
-      return activeAuditEngagements?.filter(e => e.companyId === form.companyId);
-    }, [form.companyId, activeAuditEngagements]);
-  
+  const selectedCompanyId = watch("companyId")
+  const selectedProjectId = watch("projectId")
+
+  useEffect(() => {
+    if (selectedProjectId) {
+      const year = new Date().getFullYear().toString()
+      const company = activeCompanies?.find(c => c.id.toString() === selectedCompanyId)
+      const project = activeProjects?.find(p => p.id.toString() === selectedProjectId)
+
+      if (company && project) {
+        const generatedName = `${company.code}-${project.code}-${year}`
+        setValue("name", generatedName, { shouldValidate: true })
+      }
+    } else {
+      setValue("name", "")
+    }
+  }, [selectedProjectId, setValue])
+
+  useEffect(() => {
+    setValue("projectId", "");
+    setValue("engagementId", "");
+    setValue("name", "");
+  }, [selectedCompanyId, setValue])
+
+  const filteredProjects = useMemo(() => {
+    if (!selectedCompanyId) return [];
+    return activeProjects?.filter(p => p.companyId.toString() === selectedCompanyId);
+  }, [selectedCompanyId, activeProjects]);
+
+  const filteredEngagements = useMemo(() => {
+    if (!selectedCompanyId) return [];
+    return activeAuditEngagements?.filter(e => e.companyId.toString() === selectedCompanyId);
+  }, [selectedCompanyId, activeAuditEngagements]);
+
 
   const handleUpdate = () => {
     setIsEditing(true)
   }
 
-  const handleSubmitUpdate = async () => {
-    setIsPending(true)
+  const onSubmit = async (values: AuditNumberUpdateValues) => {
+    const formData = new FormData()
+    formData.append("id", item.id.toString())
+    formData.append("name", values.name)
+    formData.append("companyId", values.companyId.toString())
+    formData.append("projectId", values.projectId.toString())
+    formData.append("auditEngagementId", values.engagementId.toString())
+    formData.append("isActive", (values.isActive === "Active").toString())
 
-    if (!form.companyId || !form.projectId || !form.auditEngagementId) {
-      toast.error("Please fill in all required fields.")
-      setIsPending(false)
-      return
-    }
-
-    const data = new FormData()
-    data.append("name", form.name)
-    data.append("companyId", form.companyId.toString())
-    data.append("projectId", form.projectId.toString())
-    data.append("auditEngagementId", form.auditEngagementId.toString())
-    data.append("isActive", form.isActive === "Active" ? "true" : "false")
-
-    const response = await updateAuditReport(data, item.id)
+    const response = await updateAuditReport(formData)
 
     if (response.error) {
       toast.error(`Failed to update audit report: ${response.error}`)
     } else {
       toast.success("Audit Report updated successfully!", { position: "top-center" })
+      reset()
       setIsEditing(false)
       setIsOpen(false)
     }
-    setIsPending(false)
   }
 
-  const handleCancel = () => {
-    setForm({
-      id: item.id,
-      name: item.name,
-      companyId: item.companyId,
-      projectId: item.projectId,
-      auditEngagementId: item.auditEngagementId,
-      isActive: item.isActive ? "Active" : "Inactive",
-    })
+  const onCancel = () => {
+    reset()
     setIsEditing(false)
   }
 
-  const onInput = (key: keyof typeof form) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      setForm((prev) => ({ ...prev, [key]: e.target.value }))
-    }
-
-  const isStatus = (v: string): v is Status => v === "Active" || v === "Inactive"
-
   return (
-    <Drawer direction={isMobile ? "bottom" : "right"} open={isOpen} onOpenChange={setIsOpen} onClose={handleCancel}>
+    <Drawer
+      direction={isMobile ? "bottom" : "right"}
+      open={isOpen}
+      onOpenChange={(open) => {
+        setIsOpen(open)
+        setIsEditing(false)
+        if (!open) reset()
+      }}
+    >
       <DrawerTrigger asChild>
         <Button variant="link" className={`text-foreground w-fit px-0 ml-1 text-left ${className}`}>
           {item.name}
@@ -107,152 +134,155 @@ export default function TableCellViewer({ item, className }: Props) {
       </DrawerTrigger>
 
       <DrawerContent>
-        <DrawerHeader className="gap-1 flex flex-row items-center h-12 justify-between">
-          <DrawerTitle>Quick View &amp; Action</DrawerTitle>
-          <DrawerClose asChild>
-            <Button variant="ghost" size="icon-sm">
-              <X />
-            </Button>
-          </DrawerClose>
-        </DrawerHeader>
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col h-full">
+          <DrawerHeader className="gap-1 flex flex-row items-center h-12 justify-between">
+            <DrawerTitle>{isEditing ? "Edit Audit Report" : "Audit Report Details"}</DrawerTitle>
+            <DrawerClose asChild>
+              <Button variant="ghost" size="icon-sm">
+                <X className="size-4" />
+              </Button>
+            </DrawerClose>
+          </DrawerHeader>
 
-        <Separator />
+          <Separator />
 
-        <div className="flex flex-col gap-4 overflow-y-auto px-4 py-4 text-sm">
-          <form className="flex flex-col gap-4" onSubmit={(e) => e.preventDefault()}>
+          <div className="flex flex-col gap-4 overflow-y-auto px-4 py-4 text-sm">
 
             <FieldGroup>
               <FieldSet>
                 <FieldGroup>
 
-                  {/* <Field>
-                    <FieldLabel htmlFor="id">Id</FieldLabel>
-                    <Input id="id" value={form.id} disabled className="disabled:opacity-70" />
-                  </Field> */}
-
+                  {/* Name Field */}
                   <Field>
-                    <FieldLabel htmlFor="auditNumber">Audit Number</FieldLabel>
-                    <Input id="auditNumber" value={form.name} className="disabled:opacity-70" disabled />
+                    <FieldLabel htmlFor="name">Audit Number</FieldLabel>
+                    <Input
+                      {...register("name")}
+                      readOnly
+                      className={!isEditing ? "bg-muted/30 border-transparent shadow-none" : ""}
+                    />
+                    {errors.name && <p className="text-xs text-destructive mt-1">{errors.name.message}</p>}
                   </Field>
 
+                  {/* Company Field */}
                   <Field>
                     <FieldLabel htmlFor="company">Company</FieldLabel>
-                    {/* <Input id="company" value={form.companyId} onChange={onInput("companyId")} disabled={!isEditing} className="disabled:opacity-70" /> */}
-                    <Select
-                      disabled={!isEditing}
-                      value={form.companyId.toString()}
-                      onValueChange={(value) => setForm({ ...form, companyId: parseInt(value) })}
-                    >
-                      <SelectTrigger id="company">
-                        <SelectValue placeholder="Select a company" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          {activeCompanies?.map((company) => (
-                            <SelectItem key={company.id} value={company.id.toString()}>
-                              {company.name}
-                            </SelectItem>
-                          ))}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
+                    <Controller
+                      name="companyId"
+                      control={control}
+                      render={({ field }) => (
+                        <Select value={field.value} onValueChange={field.onChange} >
+                          <SelectTrigger id="companyId" className={!isEditing ? "bg-muted/30 border-transparent shadow-none pointer-events-none cursor-default" : ""}>
+                            <SelectValue placeholder="Select company..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {activeCompanies?.map((company) => (
+                              <SelectItem key={company.id} value={company.id.toString()}>{company.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    {errors.companyId && <p className="text-xs text-destructive mt-1">{errors.companyId.message}</p>}
                   </Field>
 
+                  {/* Project Field */}
                   <Field>
-                    <FieldLabel htmlFor="project">Project</FieldLabel>
-                    {/* <Input id="project" value={form.projectDepartmentId} onChange={onInput("projectDepartmentId")} disabled={!isEditing} className="disabled:opacity-70" /> */}
-                    <Select
-                      disabled={!isEditing}
-                      value={form.projectId.toString()}
-                      onValueChange={(value) => setForm({ ...form, projectId: parseInt(value) })}
-                    >
-                      <SelectTrigger id="project">
-                        <SelectValue placeholder="Select a project" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          {filteredProjects?.map((projects) => (
-                            <SelectItem key={projects.id} value={projects.id.toString()}>
-                              {projects.name}
-                            </SelectItem>
-                          ))}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
+                    <FieldLabel htmlFor="project">Project / Department</FieldLabel>
+                    <Controller
+                      name="projectId"
+                      control={control}
+                      render={({ field }) => (
+                        <Select value={field.value} onValueChange={field.onChange} >
+                          <SelectTrigger id="project" className={!isEditing ? "bg-muted/30 border-transparent shadow-none pointer-events-none cursor-default" : ""}>
+                            <SelectValue placeholder={selectedCompanyId ? "Select a project" : "Select a company first."} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {filteredProjects?.map((project) => (
+                              <SelectItem key={project.id} value={project.id.toString()}>{project.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    {errors.projectId && <p className="text-xs text-destructive mt-1">{errors.projectId.message}</p>}
                   </Field>
 
+                  {/* Engagement Field */}
                   <Field>
-                    <FieldLabel htmlFor="auditEngagement">Audit Engagement</FieldLabel>
-                    {/* <Input id="auditEngagement" value={form.auditEngagementId} onChange={onInput("auditEngagementId")} disabled={!isEditing} className="disabled:opacity-70" /> */}
-                    <Select
-                      disabled={!isEditing}
-                      value={form.auditEngagementId.toString()}
-                      onValueChange={(value) => setForm({ ...form, auditEngagementId: parseInt(value) })}
-                    >
-                      <SelectTrigger id="auditEngagement">
-                        <SelectValue placeholder="Select a audit engagement" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          {filteredEngagements?.map((engagements) => (
-                            <SelectItem key={engagements.id} value={engagements.id.toString()}>
-                              {engagements.name}
-                            </SelectItem>
-                          ))}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
+                    <FieldLabel htmlFor="engagement">Engagement</FieldLabel>
+                    <Controller
+                      name="engagementId"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger id="engagement" className={!isEditing ? "bg-muted/30 border-transparent shadow-none pointer-events-none cursor-default" : ""}>
+                            <SelectValue placeholder={selectedCompanyId ? "Select a engagement" : "Select a company first."} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectGroup>
+                              {filteredEngagements?.map((auditEngagement) => (
+                                <SelectItem key={auditEngagement.id} value={auditEngagement.id.toString()}>
+                                  {auditEngagement.name}
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
                   </Field>
 
+                  {/* Status Field */}
                   <Field>
-                    <FieldLabel htmlFor="status">Status</FieldLabel>
-                    <Select
-                      value={form.isActive}
-                      onValueChange={(v) => {
-                        if (!isEditing) return
-                        if (!isStatus(v)) return
-                        setForm((p) => ({ ...p, isActive: v }))
-                      }}>
-                      <SelectTrigger id="status" disabled={!isEditing} className="disabled:opacity-70">
-                        <SelectValue placeholder="Select status..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Active">Active</SelectItem>
-                        <SelectItem value="Inactive">Inactive</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <FieldLabel>Status</FieldLabel>
+                    <Controller
+                      name="isActive"
+                      control={control}
+                      render={({ field }) => (
+                        <Select onValueChange={field.onChange} value={field.value} >
+                          <SelectTrigger className={!isEditing ? "bg-muted/30 border-transparent shadow-none pointer-events-none cursor-default" : ""}>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Active">Active</SelectItem>
+                            <SelectItem value="Inactive">Inactive</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
                   </Field>
 
                 </FieldGroup>
               </FieldSet>
             </FieldGroup>
-          </form>
-        </div>
+          </div>
 
-        <DrawerFooter>
-          {!isEditing ? (
-            <>
-              <Button onClick={handleUpdate}>Update</Button>
-              <DrawerClose asChild>
-                <Button variant="outline">Close</Button>
-              </DrawerClose>
-            </>
-          ) : (
-            <>
-              <Button onClick={handleSubmitUpdate} disabled={isPending}>
-                {isPending ? (
-                  <>
-                    Saving
-                    <Spinner className="mr-2" />
-                  </>
-                ) : (
-                  "Save"
-                )}
-              </Button>
-              <Button onClick={handleCancel} variant="outline" disabled={isPending}>Cancel</Button>
-            </>
-          )}
-        </DrawerFooter>
+          <DrawerFooter className="border-t gap-2">
+            {!isEditing ? (
+              <>
+                <Button type="button" onClick={() => setIsEditing(true)}>
+                  Edit Details
+                </Button>
+                <DrawerClose asChild>
+                  <Button variant="outline">Close</Button>
+                </DrawerClose>
+              </>
+            ) : (
+              <>
+                <Button type="submit" disabled={isSubmitting || !isDirty}>
+                  {isSubmitting && <Loader2 className="mr-2 size-4 animate-spin" />}
+                  Save Changes
+                </Button>
+                <Button type="button" disabled={isSubmitting} variant="outline" onClick={onCancel}>
+                  Cancel
+                </Button>
+              </>
+            )}
+          </DrawerFooter>
+        </form>
       </DrawerContent>
     </Drawer>
   )

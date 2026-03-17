@@ -35,7 +35,8 @@ export async function createCompany(formData: FormData) {
   return { data, error }
 }
 
-export async function updateCompany(formData: FormData, companyId: number) {
+export async function updateCompany(formData: FormData) {
+  const id = Number(formData.get("id"))
   const name = formData.get("name") as string;
   const code = formData.get("code") as string;
   const isActive = formData.get("isActive") === "true";
@@ -47,7 +48,7 @@ export async function updateCompany(formData: FormData, companyId: number) {
   
   const { data, error } = await dbQuery(
     prisma.company.update({
-      where: { id: companyId },
+      where: { id },
       data: {
         name,
         code,

@@ -1,18 +1,33 @@
 "use client"
 
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { X } from "lucide-react";
-import { Textarea } from "@/components/ui/textarea";
-import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
-import { HolidayType, Status } from "@/lib/common-types";
-import Holiday from "@/lib/holiday";
-import { DatePicker } from "@/components/datepicker";
+import { useState } from "react"
+import { Holiday } from "../../../../../generated/prisma/client"
+import { useForm, Controller } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useIsMobile } from "@/hooks/use-mobile"
+import { updateHoliday } from "@/server-actions/holiday"
+import z from "zod"
+import { toast } from "sonner"
+
+import { Button } from "@/components/ui/button"
+import { Separator } from "@/components/ui/separator"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer"
+import { Loader2, X } from "lucide-react"
+import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field"
+import { DatePicker } from "@/components/datepicker"
+
+const holidayUpdateSchema = z.object({
+  name: z.string().min(1, "Holiday name is required"),
+  type: z.string().min(1, "Please select a holiday type"),
+  date: z.date({
+    error: "Please select a date",
+  }),
+  isActive: z.string(),
+})
+
+type HolidayUpdateValues = z.infer<typeof holidayUpdateSchema>
 
 interface Props {
   item: Holiday
@@ -20,48 +35,55 @@ interface Props {
 }
 
 export default function TableCellViewer({ item, className }: Props) {
-  const isMobile = useIsMobile();
+  const isMobile = useIsMobile()
+  const [isOpen, setIsOpen] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
 
-  const [isEditing, setIsEditing] = React.useState(false)
-
-  const [form, setForm] = React.useState({
-    id: item.id,
-    name: item.name,
-    holidayType: item.holidayType,
-    date: item.date,
-    status: item.status,
+  const { register, handleSubmit, control, reset, formState: { errors, isSubmitting, isDirty }, } = useForm<HolidayUpdateValues>({
+    resolver: zodResolver(holidayUpdateSchema),
+    values: {
+      name: item.name,
+      type: item.type,
+      date: new Date(item.date),
+      isActive: item.isActive ? "Active" : "Inactive"
+    }
   })
 
-  const handleUpdate = () => {
-    setIsEditing(true)
-  }
-
-  const handleSave = () => {
+  const onCancel = () => {
+    reset()
     setIsEditing(false)
   }
 
-  const handleCancel = () => {
-    setForm({
-      id: item.id,
-      name: item.name,
-      holidayType: item.holidayType,
-      date: item.date,
-      status: item.status,
-    })
-    setIsEditing(false)
-  }
+  const onSubmit = async (values: HolidayUpdateValues) => {
+    const formData = new FormData()
+    formData.append("id", item.id.toString())
+    formData.append("name", values.name)
+    formData.append("type", values.type)
+    formData.append("date", values.date.toISOString())
+    formData.append("isActive", (values.isActive === "Active").toString())
 
-  const onInput = (key: keyof typeof form) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      setForm((prev) => ({ ...prev, [key]: e.target.value }))
+    const response = await updateHoliday(formData)
+
+    if (response.error) {
+      toast.error(response.error)
+    } else {
+      toast.success("Finding type created successfully!", { position: "top-center" })
+      reset()
+      setIsEditing(false)
+      setIsOpen(false)
     }
-
-  const isStatus = (v: string): v is Status => v === "Active" || v === "Inactive"
-
-  const isType = (v: string): v is HolidayType => v === "Regular" || v === "Special"
+  }
 
   return (
-    <Drawer direction={isMobile ? "bottom" : "right"}>
+    <Drawer
+      direction={isMobile ? "bottom" : "right"}
+      open={isOpen}
+      onOpenChange={(open) => {
+        setIsOpen(open)
+        setIsEditing(false)
+        if (!open) reset()
+      }}
+    >
       <DrawerTrigger asChild>
         <Button variant="link" className={`text-foreground w-fit px-0 ml-1 text-left ${className}`}>
           {item.name}
@@ -69,98 +91,117 @@ export default function TableCellViewer({ item, className }: Props) {
       </DrawerTrigger>
 
       <DrawerContent>
-        <DrawerHeader className="gap-1 flex flex-row items-center h-12 justify-between">
-          <DrawerTitle>Quick View &amp; Action</DrawerTitle>
-          <DrawerClose asChild>
-            <Button variant="ghost" size="icon-sm">
-              <X />
-            </Button>
-          </DrawerClose>
-        </DrawerHeader>
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col h-full">
+          <DrawerHeader className="gap-1 flex flex-row items-center h-12 justify-between">
+            <DrawerTitle>{isEditing ? "Edit Holiday" : "Holiday Details"}</DrawerTitle>
+            <DrawerClose asChild>
+              <Button variant="ghost" size="icon-sm">
+                <X className="size-4" />
+              </Button>
+            </DrawerClose>
+          </DrawerHeader>
 
-        <Separator />
+          <Separator />
 
-        <div className="flex flex-col gap-4 overflow-y-auto px-4 py-4 text-sm">
-          <form className="flex flex-col gap-4" onSubmit={(e) => e.preventDefault()}>
+          <div className="flex-1 overflow-y-auto px-4 py-4">
+            <FieldSet>
+              <FieldGroup className="flex flex-col gap-5">
 
-            <FieldGroup>
-              <FieldSet>
-                <FieldGroup>
+                {/* Name Field */}
+                <Field>
+                  <FieldLabel>Name</FieldLabel>
+                  <Input 
+                    {...register("name")} 
+                    readOnly={!isEditing} 
+                    className={!isEditing ? "bg-muted/30 border-transparent shadow-none" : ""} 
+                  />
+                  {errors.name && <p className="text-[10px] text-destructive mt-1">{errors.name.message}</p>}
+                </Field>
 
-                  <Field>
-                    <FieldLabel htmlFor="id">Id</FieldLabel>
-                    <Input id="id" value={form.id} disabled className="disabled:opacity-70" />
-                  </Field>
+                {/* Type Field */}
+                <Field>
+                  <FieldLabel>Type</FieldLabel>
+                  <Controller
+                    name="type"
+                    control={control}
+                    render={({ field }) => (
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <SelectTrigger className={!isEditing ? "pointer-events-none bg-muted/30 border-transparent shadow-none cursor-default" : ""}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="regular">Regular</SelectItem>
+                          <SelectItem value="special">Special</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                </Field>
 
-                  <Field>
-                    <FieldLabel htmlFor="name">Name</FieldLabel>
-                    <Input id="name" value={form.name} onChange={onInput("name")} disabled={!isEditing} className="disabled:opacity-70" />
-                  </Field>
+                {/* Date Field */}
+                <Field>
+                  <FieldLabel>Date</FieldLabel>
+                  <Controller
+                    name="date"
+                    control={control}
+                    render={({ field }) => (
+                      <DatePicker 
+                        defaultDate={field.value} 
+                        onChange={field.onChange} 
+                        readonly={!isEditing}
+                        className={!isEditing ? "bg-muted/30 border-transparent shadow-none" : ""}
+                      />
+                    )}
+                  />
+                </Field>
 
-                  <Field>
-                    <FieldLabel htmlFor="status">Type</FieldLabel>
-                    <Select
-                      value={form.holidayType}
-                      onValueChange={(v) => {
-                        if (!isEditing) return
-                        if (!isType(v)) return
-                        setForm((p) => ({ ...p, holidayType: v }))
-                      }}>
-                      <SelectTrigger id="holidayType" disabled={!isEditing} className="disabled:opacity-70">
-                        <SelectValue placeholder="Select status..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Regular">Regular</SelectItem>
-                        <SelectItem value="Special">Special</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </Field>
+                {/* Status Field */}
+                <Field>
+                  <FieldLabel>Status</FieldLabel>
+                  <Controller
+                    name="isActive"
+                    control={control}
+                    render={({ field }) => (
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <SelectTrigger className={!isEditing ? "pointer-events-none bg-muted/30 border-transparent shadow-none cursor-default" : ""}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Active">Active</SelectItem>
+                          <SelectItem value="Inactive">Inactive</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                </Field>
 
-                  <Field>
-                    <FieldLabel htmlFor="date">Date</FieldLabel>
-                    <DatePicker defaultDate={item.date} disabled={!isEditing} className="disabled:opacity-70" />
-                  </Field>
+              </FieldGroup>
+            </FieldSet>
+          </div>
 
-                  <Field>
-                    <FieldLabel htmlFor="status">Status</FieldLabel>
-                    <Select
-                      value={form.status}
-                      onValueChange={(v) => {
-                        if (!isEditing) return
-                        if (!isStatus(v)) return
-                        setForm((p) => ({ ...p, status: v }))
-                      }}>
-                      <SelectTrigger id="status" disabled={!isEditing} className="disabled:opacity-70">
-                        <SelectValue placeholder="Select status..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Active">Active</SelectItem>
-                        <SelectItem value="Inactive">Inactive</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </Field>
-
-                </FieldGroup>
-              </FieldSet>
-            </FieldGroup>
-          </form>
-        </div>
-
-        <DrawerFooter>
-          {!isEditing ? (
-            <>
-              <Button onClick={handleUpdate}>Update</Button>
-              <DrawerClose asChild>
-                <Button variant="outline">Close</Button>
-              </DrawerClose>
-            </>
-          ) : (
-            <>
-              <Button onClick={handleSave}>Save</Button>
-              <Button onClick={handleCancel} variant="outline">Cancel</Button>
-            </>
-          )}
-        </DrawerFooter>
+          <DrawerFooter className="border-t gap-2">
+            {!isEditing ? (
+              <>
+                <Button type="button" onClick={() => setIsEditing(true)}>
+                  Edit Details
+                </Button>
+                <DrawerClose asChild>
+                  <Button variant="outline">Close</Button>
+                </DrawerClose>
+              </>
+            ) : (
+              <>
+                <Button type="submit" disabled={isSubmitting || !isDirty}>
+                  {isSubmitting && <Loader2 className="mr-2 size-4 animate-spin" />}
+                  Save Changes
+                </Button>
+                <Button type="button" disabled={isSubmitting} variant="outline" onClick={onCancel}>
+                  Cancel
+                </Button>
+              </>
+            )}
+          </DrawerFooter>
+        </form>
       </DrawerContent>
     </Drawer>
   )

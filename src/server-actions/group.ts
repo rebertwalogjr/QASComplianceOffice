@@ -27,17 +27,18 @@ export async function getActiveGroups() : Promise<{ data: ActiveGroupPayload[] |
 }
 
 export async function createGroup(formData: FormData) {
+  const currentUserId = await getUserId();
+  
+  if (!currentUserId) {
+    throw new Error("You must be logged in.")
+  }
+
   const name = formData.get("name") as string;
   const code = formData.get("code") as string;
   const projectId = Number(formData.get("projectId"));
   const inCharge = formData.get("inCharge") as string;
   const emailAddress = formData.get("emailAddress") as string;
   const remarks = formData.get("remarks") as string;
-  const currentUserId = await getUserId();
-
-  if (!currentUserId) {
-    throw new Error("You must be logged in.")
-  }
 
   const { data, error } = await dbQuery(
     prisma.group.create({
@@ -61,7 +62,8 @@ export async function createGroup(formData: FormData) {
   return { data, error }
 }
 
-export async function updateGroup(formData: FormData, groupId: number) {
+export async function updateGroup(formData: FormData) {
+  const id = Number(formData.get("id"))
   const name = formData.get("name") as string;
   const code = formData.get("code") as string;
   const projectId = Number(formData.get("projectId"));
@@ -77,7 +79,7 @@ export async function updateGroup(formData: FormData, groupId: number) {
   
   const { data, error } = await dbQuery(
     prisma.group.update({
-      where: { id: groupId },
+      where: { id },
       data: {
         name,
         code,

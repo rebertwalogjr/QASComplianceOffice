@@ -1,53 +1,66 @@
 "use client"
 
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
-import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { PlusCircle, X } from "lucide-react";
-import { toast } from "sonner";
-import { Spinner } from "@/components/ui/spinner";
-import { createFindingCategory } from "@/server-actions/finding-category";
+import { useState } from "react"
+import { useIsMobile } from "@/hooks/use-mobile"
+import { useForm, Controller } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import z from "zod"
+import { toast } from "sonner"
+
+import { Button } from "@/components/ui/button"
+import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer"
+import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field"
+import { Input } from "@/components/ui/input"
+import { Separator } from "@/components/ui/separator"
+import { Loader2, PlusCircle, X } from "lucide-react"
+import { createFindingCategory } from "@/server-actions/finding-category"
+
+const findingCategorySchema = z.object({
+  name: z.string().min(1, "Finding Category name is required")
+})
+
+type FindingCategoryFormValues = z.infer<typeof findingCategorySchema>
 
 export default function CreateDrawer() {
-  const isMobile = useIsMobile();
-  const [isOpen, setIsOpen] = React.useState(false);
-  const [isPending, setIsPending] = React.useState(false);
-  const [formData, setFormData] = React.useState({ name: "" })
+  const isMobile = useIsMobile()
+  const [isOpen, setIsOpen] = useState(false)
 
-  const handleSubmit = async () => {
-    setIsPending(true);
-    const data = new FormData();
-    data.append("name", formData.name);
-
-    if (!formData.name.trim()) {
-      toast.error("Please fill in the name field.");
-      setIsPending(false);
-      return;
+  const { register, handleSubmit, control, reset, formState: { errors, isSubmitting }, } = useForm<FindingCategoryFormValues>({
+    resolver: zodResolver(findingCategorySchema),
+    defaultValues: {
+      name: "",
     }
+  })
 
-    const response = await createFindingCategory(data);
+  const onSubmit = async (values: FindingCategoryFormValues) => {
+    const formData = new FormData();
+    formData.append("name", values.name);
+
+    const response = await createFindingCategory(formData);
 
     if (response.error) {
       toast.error(response.error)
     } else {
-      toast.success("Finding category created successfully!", { position: "top-center" });
-      setFormData({ name: "" });
-      setIsOpen(false);
+      toast.success("Finding category created successfully!", { position: "top-center" })
+      reset()
+      setIsOpen(false)
     }
-    setIsPending(false);
   }
 
   const handleClose = () => {
-    setFormData({ name: "" });
-      setIsOpen(false);
+    reset()
+    setIsOpen(false)
   }
 
   return (
-    <Drawer direction={isMobile ? "bottom" : "right"} open={isOpen} onOpenChange={setIsOpen} onClose={handleClose}>
+    <Drawer
+      direction={isMobile ? "bottom" : "right"}
+      open={isOpen}
+      onOpenChange={(open) => {
+        setIsOpen(open)
+        if (!open) reset()
+      }}
+    >
       <DrawerTrigger asChild>
         <Button variant="default" size="sm" className="rounded-2xl">
           <PlusCircle className="fill-white text-primary" />
@@ -56,47 +69,48 @@ export default function CreateDrawer() {
       </DrawerTrigger>
 
       <DrawerContent>
-        <DrawerHeader className="gap-1 flex flex-row items-center h-12 justify-between">
-          <DrawerTitle>Add New Category</DrawerTitle>
-          <DrawerClose asChild>
-            <Button variant="ghost" size="icon-sm">
-              <X />
-            </Button>
-          </DrawerClose>
-        </DrawerHeader>
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col h-full">
+          <DrawerHeader className="gap-1 flex flex-row items-center h-12 justify-between">
+            <DrawerTitle>Add New Category</DrawerTitle>
+            <DrawerClose asChild>
+              <Button variant="ghost" size="icon-sm">
+                <X />
+              </Button>
+            </DrawerClose>
+          </DrawerHeader>
 
-        <Separator />
+          <Separator />
 
-        <div className="flex flex-col gap-4 overflow-y-auto px-4 py-4 text-sm">
+          <div className="flex flex-col gap-4 overflow-y-auto px-4 py-4 text-sm">
             <FieldGroup>
               <FieldSet>
                 <FieldGroup>
 
                   <Field>
-                    <FieldLabel htmlFor="name">Name</FieldLabel>
-                    <Input id="name" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
+                    <FieldLabel>Name</FieldLabel>
+                    <Input
+                      id="name"
+                      placeholder="e.g. Financial"
+                      {...register("name")}
+                    />
+                    {errors.name && <p className="text-xs text-destructive mt-1">{errors.name.message}</p>}
                   </Field>
 
                 </FieldGroup>
               </FieldSet>
             </FieldGroup>
-        </div>
+          </div>
 
-        <DrawerFooter>
-          <Button onClick={handleSubmit} disabled={isPending}>
-            {isPending ? (
-              <>
-                Saving
-                <Spinner className="mr-2" />
-              </>
-            ) : (
-              "Save"
-            )}
-          </Button>
-          <DrawerClose asChild>
-            <Button variant="outline" disabled={isPending}>Cancel</Button>
-          </DrawerClose>
-        </DrawerFooter>
+          <DrawerFooter className="border-t">
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting && <Loader2 className="mr-2 size-4 animate-spin" />}
+              Save Category
+            </Button>
+            <DrawerClose asChild>
+              <Button variant="outline" disabled={isSubmitting}>Cancel</Button>
+            </DrawerClose>
+          </DrawerFooter>
+        </form>
       </DrawerContent>
     </Drawer>
   );

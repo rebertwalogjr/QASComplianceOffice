@@ -49,19 +49,21 @@ export async function createAuditEngagement(formData: FormData) {
   return { data, error }
 }
 
-export async function updateAuditEngagement(formData: FormData, engagementId: number) {
-  const name = formData.get("name") as string;
-  const companyId = Number(formData.get("companyId"));
-  const isActive = formData.get("isActive") === "true";
+export async function updateAuditEngagement(formData: FormData) {
   const currentUserId = await getUserId();
-
+  
   if (!currentUserId) {
     throw new Error("You must be logged in.")
   }
+
+  const id = Number(formData.get("id"))
+  const name = formData.get("name") as string;
+  const companyId = Number(formData.get("companyId"));
+  const isActive = formData.get("isActive") === "true";
   
   const { data, error } = await dbQuery(
     prisma.auditEngagement.update({
-      where: { id: engagementId },
+      where: { id },
       data: {
         name,
         companyId,

@@ -33,7 +33,8 @@ export async function createFindingCategory(formData: FormData) {
   return { data, error }
 }
 
-export async function updateFindingCategory(formData: FormData, categoryId: number) {
+export async function updateFindingCategory(formData: FormData) {
+  const id = Number(formData.get("id"))
   const name = formData.get("name") as string;
   const isActive = formData.get("isActive") === "true";
   const currentUserId = await getUserId();
@@ -44,7 +45,7 @@ export async function updateFindingCategory(formData: FormData, categoryId: numb
   
   const { data, error } = await dbQuery(
     prisma.findingCategory.update({
-      where: { id: categoryId },
+      where: { id },
       data: {
         name,
         isActive,

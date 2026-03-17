@@ -21,8 +21,8 @@ export async function getActiveFindingTypes() : Promise<{ data: ActiveFindingTyp
 }
 
 export async function createFindingType(formData: FormData) {
-  const name = formData.get("name") as string;
-  const currentUserId = await getUserId();
+  const name = formData.get("name") as string
+  const currentUserId = await getUserId()
 
   if (!currentUserId) {
     throw new Error("You must be logged in.")
@@ -41,18 +41,20 @@ export async function createFindingType(formData: FormData) {
   return { data, error }
 }
 
-export async function updateFindingType(formData: FormData, typeId: number) {
-  const name = formData.get("name") as string;
-  const isActive = formData.get("isActive") === "true";
-  const currentUserId = await getUserId();
-
+export async function updateFindingType(formData: FormData) {
+  const currentUserId = await getUserId()
+  
   if (!currentUserId) {
     throw new Error("You must be logged in.")
   }
+
+  const id = Number(formData.get("id"))
+  const name = formData.get("name") as string
+  const isActive = formData.get("isActive") === "true"
   
   const { data, error } = await dbQuery(
     prisma.typeOfFinding.update({
-      where: { id: typeId },
+      where: { id },
       data: {
         name,
         isActive,

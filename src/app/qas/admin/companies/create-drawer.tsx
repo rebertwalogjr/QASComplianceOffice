@@ -1,114 +1,128 @@
 "use client"
 
-import React from "react";
+import { useState } from "react"
+import { useIsMobile } from "@/hooks/use-mobile"
+import { useForm, Controller } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import z from "zod"
+import { toast } from "sonner"
+
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { PlusCircle, X } from "lucide-react";
-import { toast } from "sonner";
-import { Spinner } from "@/components/ui/spinner";
+import { Loader2, PlusCircle, X } from "lucide-react";
 import { createCompany } from "@/server-actions/company";
+
+
+const companySchema = z.object({
+  name: z.string().min(1, "Company name is required"),
+  code: z.string().min(1, "Company code is required"),
+})
+
+type CompanyFormValues = z.infer<typeof companySchema>
 
 export default function CreateDrawer() {
   const isMobile = useIsMobile();
-  const [isOpen, setIsOpen] = React.useState(false);
-  const [isPending, setIsPending] = React.useState(false);
-  const [formData, setFormData] = React.useState({ name: "", code: "" });
+  const [isOpen, setIsOpen] = useState(false);
 
-  const handleSubmit = async () => {
-    const data = new FormData()
-
-    setIsPending(true)
-
-    if (!formData.name.trim() || !formData.code.trim()) {
-      toast.error("Please fill in all required fields.");
-      setIsPending(false)
-      return
+  const { register, handleSubmit, control, reset, formState: { errors, isSubmitting }, } = useForm<CompanyFormValues>({
+    resolver: zodResolver(companySchema),
+    defaultValues: {
+      name: "",
+      code: ""
     }
+  })
 
-    data.append("name", formData.name)
-    data.append("code", formData.code)
+  const onsubmit = async (values: CompanyFormValues) => {
+    const formData = new FormData()
+    formData.append("name", values.name)
+    formData.append("code", values.code)
 
-    const result = await createCompany(data)
+    const response = await createCompany(formData)
 
-    if (result.error) {
-      toast.error(result.error)
+    if (response.error) {
+      toast.error(response.error)
     } else {
-      toast.success("Company created successfully!", { position: "top-center" });
-      setFormData({ name: "", code: "" })
+      toast.success("Company created successfully!", { position: "top-center" })
+      reset()
       setIsOpen(false)
     }
-    setIsPending(false)
-  }
-
-  const handleClose = () => {
-    setFormData({ name: "", code: "" })
-    setIsOpen(false)
   }
 
   return (
-    <Drawer direction={isMobile ? "bottom" : "right"} open={isOpen} onOpenChange={setIsOpen} onClose={handleClose}>
+    <Drawer
+      direction={isMobile ? "bottom" : "right"}
+      open={isOpen}
+      onOpenChange={(open) => {
+        setIsOpen(open)
+        if (!open) reset()
+      }}
+    >
       <DrawerTrigger asChild>
         <Button variant="default" size="sm" className="rounded-2xl">
-          <PlusCircle className="fill-white text-primary" />
+          <PlusCircle className="fill-white text-primary size-4" />
           Add Company
         </Button>
       </DrawerTrigger>
 
       <DrawerContent>
-        <DrawerHeader className="gap-1 flex flex-row items-center h-12 justify-between">
-          <DrawerTitle>Add New Company</DrawerTitle>
-          <DrawerClose asChild>
-            <Button variant="ghost" size="icon-sm">
-              <X />
+        <form onSubmit={handleSubmit(onsubmit)} className="flex flex-col h-full">
+          <DrawerHeader className="gap-1 flex flex-row items-center h-12 justify-between">
+            <DrawerTitle>Add New Company</DrawerTitle>
+            <DrawerClose asChild>
+              <Button variant="ghost" size="icon-sm">
+                <X className="size-4" />
+              </Button>
+            </DrawerClose>
+          </DrawerHeader>
+
+          <Separator />
+
+          <div className="flex-1 overflow-y-auto px-4 py-4 text-sm">
+            <FieldGroup>
+              <FieldSet>
+                <FieldGroup>
+                  <div className="flex flex-col gap-5">
+
+                    {/* Name Field */}
+                    <Field>
+                      <FieldLabel htmlFor="name">Name</FieldLabel>
+                      <Input
+                        id="name"
+                        placeholder="e.g. DMCI Homes Inc."
+                        {...register("name")}
+                      />
+                      {errors.name && <p className="text-xs text-destructive mt-1">{errors.name.message}</p>}
+                    </Field>
+
+                    {/* Code Field */}
+                    <Field>
+                      <FieldLabel htmlFor="code">Code</FieldLabel>
+                      <Input
+                        id="code"
+                        placeholder="e.g. DMCI"
+                        {...register("code")}
+                      />
+                      {errors.code && <p className="text-xs text-destructive mt-1">{errors.code.message}</p>}
+                    </Field>
+                  </div>
+                </FieldGroup>
+              </FieldSet>
+            </FieldGroup>
+          </div>
+
+          <DrawerFooter>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting && <Loader2 className="mr-2 size-4 animate-spin" />}
+              Save Company
             </Button>
-          </DrawerClose>
-        </DrawerHeader>
-
-        <Separator />
-
-        <div className="flex flex-col gap-4 overflow-y-auto px-4 py-4 text-sm">
-          <FieldGroup>
-            <FieldSet>
-              <FieldGroup>
-
-                <Field>
-                  <FieldLabel htmlFor="name">Name</FieldLabel>
-                  <Input
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
-                </Field>
-
-                <Field>
-                  <FieldLabel htmlFor="code">Code</FieldLabel>
-                  <Input
-                    value={formData.code}
-                    onChange={(e) => setFormData({ ...formData, code: e.target.value })} />
-                </Field>
-
-              </FieldGroup>
-            </FieldSet>
-          </FieldGroup>
-        </div>
-
-        <DrawerFooter>
-          <Button onClick={handleSubmit} disabled={isPending}>
-            {isPending ? (
-              <>
-                Saving
-                <Spinner className="mr-2" />
-              </>
-            ) : (
-              "Save"
-            )}
-          </Button>
-          <DrawerClose asChild>
-            <Button variant="outline" disabled={isPending}>Cancel</Button>
-          </DrawerClose>
-        </DrawerFooter>
+            <DrawerClose asChild>
+              <Button variant="outline" disabled={isSubmitting}>Cancel</Button>
+            </DrawerClose>
+          </DrawerFooter>
+        </form>
       </DrawerContent>
     </Drawer>
   );

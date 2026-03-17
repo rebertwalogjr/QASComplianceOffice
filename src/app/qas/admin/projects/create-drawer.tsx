@@ -1,20 +1,31 @@
 "use client"
 
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
+import { useState } from "react"
+import { useIsMobile } from "@/hooks/use-mobile"
+import { useForm, Controller } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import z from "zod"
+import { toast } from "sonner"
+import { createProject } from "@/server-actions/project"
+import { ActiveCompanyPayload } from "@/server-actions/company"
+
+import { Button } from "@/components/ui/button"
+import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer"
 import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { PlusCircle, X } from "lucide-react";
-import { toast } from "sonner";
-import { Spinner } from "@/components/ui/spinner";
-import { Company } from "../../../../../generated/prisma/client";
-import { createProject } from "@/server-actions/project";
-import { ActiveCompanyPayload } from "@/server-actions/company";
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Separator } from "@/components/ui/separator"
+import { Textarea } from "@/components/ui/textarea"
+import { Loader2, PlusCircle, X } from "lucide-react"
+
+const projectSchema = z.object({
+  name: z.string().min(1, "Project name is required"),
+  code: z.string().min(1, "Project code is required"),
+  companyId: z.string().min(1, "Please select a company"),
+  remarks: z.string().optional(),
+})
+
+type ProjectFormValues = z.infer<typeof projectSchema>
 
 interface CreateDrawerProps {
   companies: ActiveCompanyPayload[] | null
@@ -22,133 +33,148 @@ interface CreateDrawerProps {
 
 export default function CreateDrawer({ companies }: CreateDrawerProps) {
   const isMobile = useIsMobile()
-  const [isOpen, setIsOpen] = React.useState(false);
-  const [isPending, setIsPending] = React.useState(false);
-  const [formData, setFormData] = React.useState({ name: "", code: "", company: "", remarks: "" })
+  const [isOpen, setIsOpen] = useState(false)
 
-  const handleSubmit = async () => {
-    const data = new FormData()
-
-    setIsPending(true)
-
-    if (!formData.name.trim() || !formData.code.trim()) {
-      toast.error("Please fill in all required fields.");
-      setIsPending(false)
-      return
+  const { register, handleSubmit, control, reset, formState: { errors, isSubmitting }, } = useForm<ProjectFormValues>({
+    resolver: zodResolver(projectSchema),
+    defaultValues: {
+      name: "",
+      code: "",
+      companyId: "",
+      remarks: "",
     }
+  })
 
-    if (!formData.company) {
-      toast.error("Please select a company first.");
-      setIsPending(false)
-      return
-    }
+  const onSubmit = async (values: ProjectFormValues) => {
+    const formData = new FormData()
 
-    data.append("name", formData.name)
-    data.append("code", formData.code)
-    data.append("companyId", formData.company)
-    data.append("remarks", formData.remarks)
+    formData.append("name", values.name)
+    formData.append("code", values.code)
+    formData.append("companyId", values.companyId)
+    formData.append("remarks", values.remarks ?? "")
 
-    const result = await createProject(data)
+    const result = await createProject(formData)
 
     if (result.error) {
       toast.error(result.error)
     } else {
       toast.success("Project created successfully!", { position: "top-center" });
-      setFormData({ name: "", code: "", company: "", remarks: "" })
       setIsOpen(false)
     }
-    setIsPending(false)
-  }
-
-  const handleClose = () => {
-    setFormData({ name: "", code: "", company: "", remarks: "" })
-    setIsOpen(false)
   }
 
   return (
-    <Drawer direction={isMobile ? "bottom" : "right"} open={isOpen} onOpenChange={setIsOpen} onClose={handleClose}>
+    <Drawer
+      direction={isMobile ? "bottom" : "right"}
+      open={isOpen}
+      onOpenChange={(open) => {
+        setIsOpen(open)
+        if (!open) reset()
+      }}
+    >
       <DrawerTrigger asChild>
         <Button variant="default" size="sm" className="rounded-2xl">
-          <PlusCircle className="fill-white text-primary" />
+          <PlusCircle className="fill-white text-primary size-4" />
           Add Project
         </Button>
       </DrawerTrigger>
 
       <DrawerContent>
-        <DrawerHeader className="gap-1 flex flex-row items-center h-12 justify-between">
-          <DrawerTitle>Add New Project</DrawerTitle>
-          <DrawerClose asChild>
-            <Button variant="ghost" size="icon-sm">
-              <X />
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col h-full">
+          <DrawerHeader className="gap-1 flex flex-row items-center h-12 justify-between">
+            <DrawerTitle>Add New Project</DrawerTitle>
+            <DrawerClose asChild>
+              <Button variant="ghost" size="icon-sm">
+                <X className="size-4" />
+              </Button>
+            </DrawerClose>
+          </DrawerHeader>
+
+          <Separator />
+
+          <div className="flex flex-col gap-4 overflow-y-auto px-4 py-4 text-sm">
+            <FieldGroup>
+              <FieldSet>
+                <FieldGroup>
+                  <div className="flex flex-col gap-5">
+
+                    {/* Name Field */}
+                    <Field>
+                      <FieldLabel htmlFor="name">Name</FieldLabel>
+                      <Input
+                        id="name"
+                        placeholder="e.g. Moncello Crest"
+                        {...register("name")}
+                      />
+                      {errors.name && <p className="text-xs text-destructive mt-1">{errors.name.message}</p>}
+                    </Field>
+
+                    {/* Code Field */}
+                    <Field>
+                      <FieldLabel htmlFor="code">Code</FieldLabel>
+                      <Input
+                        id="code"
+                        placeholder="MC"
+                        {...register("code")}
+                      />
+                      {errors.code && <p className="text-xs text-destructive mt-1">{errors.code.message}</p>}
+                    </Field>
+
+                    {/* Company Field */}
+                    <Field>
+                      <FieldLabel htmlFor="company">Company</FieldLabel>
+                      <Controller
+                        name="companyId"
+                        control={control}
+                        render={({ field }) => (
+                          <Select
+                            value={field.value}
+                            onValueChange={field.onChange}
+                          >
+                            <SelectTrigger id="company">
+                              <SelectValue placeholder="Select company..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectGroup>
+                                {companies?.map((company) => (
+                                  <SelectItem key={company.id} value={company.id.toString()}>
+                                    {company.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectGroup>
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
+                      {errors.companyId && <p className="text-xs text-destructive mt-1">{errors.companyId.message}</p>}
+                    </Field>
+
+                    {/* Remarks Field */}
+                    <Field>
+                      <FieldLabel htmlFor="remarks">Remarks</FieldLabel>
+                      <Textarea id="remarks"
+                        placeholder="Remarks or comments here..."
+                        {...register("remarks")}
+                      />
+                      {errors.remarks && <p className="text-xs text-destructive mt-1">{errors.remarks.message}</p>}
+                    </Field>
+
+                  </div>
+                </FieldGroup>
+              </FieldSet>
+            </FieldGroup>
+          </div>
+
+          <DrawerFooter className="border-t">
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting && <Loader2 className="mr-2 size-4 animate-spin" />}
+              Save Project
             </Button>
-          </DrawerClose>
-        </DrawerHeader>
-
-        <Separator />
-
-        <div className="flex flex-col gap-4 overflow-y-auto px-4 py-4 text-sm">
-          <FieldGroup>
-            <FieldSet>
-              <FieldGroup>
-
-                <Field>
-                  <FieldLabel htmlFor="name">Name</FieldLabel>
-                  <Input id="name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
-                </Field>
-
-                <Field>
-                  <FieldLabel htmlFor="code">Code</FieldLabel>
-                  <Input id="code" value={formData.code} onChange={(e) => setFormData({ ...formData, code: e.target.value })} />
-                </Field>
-
-                <Field>
-                  <FieldLabel htmlFor="company">Company</FieldLabel>
-                  <Select
-                    value={formData.company}
-                    onValueChange={(value) => setFormData({ ...formData, company: value })}
-                  >
-                    <SelectTrigger id="company">
-                      <SelectValue placeholder="Select a company" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        {companies?.map((company) => (
-                          <SelectItem key={company.id} value={company.id.toString()}>
-                            {company.name}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                </Field>
-
-                <Field>
-                  <FieldLabel htmlFor="remarks">Remarks</FieldLabel>
-                  <Textarea id="remarks"
-                    value={formData.remarks}
-                    onChange={(e) => setFormData({ ...formData, remarks: e.target.value })} />
-                </Field>
-
-              </FieldGroup>
-            </FieldSet>
-          </FieldGroup>
-        </div>
-
-        <DrawerFooter>
-          <Button onClick={handleSubmit} disabled={isPending}>
-            {isPending ? (
-              <>
-                Saving
-                <Spinner className="mr-2" />
-              </>
-            ) : (
-              "Save"
-            )}
-          </Button>
-          <DrawerClose asChild>
-            <Button variant="outline" disabled={isPending}>Cancel</Button>
-          </DrawerClose>
-        </DrawerFooter>
+            <DrawerClose asChild>
+              <Button variant="outline" disabled={isSubmitting}>Cancel</Button>
+            </DrawerClose>
+          </DrawerFooter>
+        </form>
       </DrawerContent>
     </Drawer>
   );

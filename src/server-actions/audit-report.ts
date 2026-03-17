@@ -45,21 +45,23 @@ export async function createAuditReport(formData: FormData) {
   return { data, error }
 }
 
-export async function updateAuditReport(formData: FormData, auditReportId: number) {
+export async function updateAuditReport(formData: FormData) {
+  const currentUserId = await getUserId();
+  
+  if (!currentUserId) {
+    throw new Error("You must be logged in.")
+  }
+  
+  const id = Number(formData.get("id"))
   const name = formData.get("name") as string;
   const projectId = Number(formData.get("projectId"));
   const companyId = Number(formData.get("companyId"));
   const auditEngagementId = Number(formData.get("auditEngagementId"));
   const isActive = formData.get("isActive") === "true";
-  const currentUserId = await getUserId();
-
-  if (!currentUserId) {
-    throw new Error("You must be logged in.")
-  }
 
   const { data, error } = await dbQuery(
     prisma.auditReport.update({
-      where: { id: auditReportId },
+      where: { id },
       data: {
         name,
         projectId,

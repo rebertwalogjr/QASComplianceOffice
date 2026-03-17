@@ -40,15 +40,15 @@ export const columns: ColumnDef<TransactionBasicPaylod>[] = [
     // },
   },
   {
-    accessorKey: "computedStatus",
-    accessorFn: row => {
-      if (row.jobStatus?.toLowerCase() === "open") {
-        // if (row.secondaryStatus === "New") return "New"
-        // if (row.secondaryStatus === "On-Hold") return "On-Hold"
-        return "open"
-      }
-      return row.jobStatus
-    },
+    accessorKey: "jobStatus",
+    // accessorFn: row => {
+    //   if (row.jobStatus?.toLowerCase() === "open") {
+    //     // if (row.secondaryStatus === "New") return "New"
+    //     // if (row.secondaryStatus === "On-Hold") return "On-Hold"
+    //     return "open"
+    //   }
+    //   return row.jobStatus
+    // },
     header: ({ column }) => (
       <div className="flex items-center justify-between">
         Status
@@ -56,8 +56,8 @@ export const columns: ColumnDef<TransactionBasicPaylod>[] = [
       </div>
     ),
     cell: ({ row }) => {
-      const value = row.getValue<string>("computedStatus")
-      return StatusBadge({ status: value })
+      // const value = row.getValue<string>("computedStatus")
+      return StatusBadge({ status: row.original.jobStatus })
     },
     filterFn: (row, columnnId, filterValues) => {
       const value = row.getValue(columnnId)

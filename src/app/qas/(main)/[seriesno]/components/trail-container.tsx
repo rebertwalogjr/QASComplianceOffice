@@ -31,11 +31,13 @@ interface BaseTrail {
 
 interface TrailContainerProps<T extends BaseTrail> {
   trails: T[]
-  currentUserId: number,
+  currentUserId: number
+  canWrite?: boolean
+  readonly?: boolean
   onSend: (message: string) => Promise<void>
 }
 
-export default function TrailContainer<T extends BaseTrail>({ trails, currentUserId, onSend }: TrailContainerProps<T>) {
+export default function TrailContainer<T extends BaseTrail>({ trails, currentUserId, canWrite, readonly, onSend }: TrailContainerProps<T>) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const groupedData = groupTrails(trails ?? [])
   const isEmpty = trails.length === 0
@@ -92,7 +94,7 @@ export default function TrailContainer<T extends BaseTrail>({ trails, currentUse
                       </div>
                       <Item variant="outline"
                         className={cn("relative overflow-hidden animate-in fade-in slide-in-from-top-2 duration-500",
-                          isMe ? "bg-primary/10 border-primary/30 rounded-tr-none" : "rounded-tl-none"
+                          isMe ? "bg-primary/10 border-primary/30 rounded-tr-none" : "bg-muted rounded-tl-none"
                         )}>
                         <ItemContent>
                           <Label className="text-sm font-normal tracking-wide leading-6 whitespace-pre-wrap">{trail.message}</Label>
@@ -108,9 +110,11 @@ export default function TrailContainer<T extends BaseTrail>({ trails, currentUse
         )}
       </div>
 
-      <div id="fixed-at-the-bottom" className="w-full p-2 bg-background">
-        <TextAreaComposerWithButton name="message" onSend={onSend} placeholder="Type here ..." />
-      </div>
+      {(canWrite && !readonly) &&
+        <div id="fixed-at-the-bottom" className="w-full p-2 bg-background">
+          <TextAreaComposerWithButton name="message" onSend={onSend} placeholder="Type here ..." />
+        </div>
+      }
 
     </div>
   )
