@@ -11,7 +11,8 @@ export async function getProjects() {
     prisma.project.findMany({
       include: {
         company: true
-      }
+      },
+      orderBy: { createdOn: "desc" }
     })
   )
 }

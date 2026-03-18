@@ -11,7 +11,8 @@ export async function getAuditRatings() {
     prisma.auditRating.findMany({
       include: {
         company: true
-      }
+      },
+      orderBy: { createdOn: "desc" }
     })
   )
 }

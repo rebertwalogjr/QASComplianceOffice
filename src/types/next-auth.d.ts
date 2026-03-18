@@ -15,6 +15,7 @@ declare module "next-auth" {
     id: string
     userRoles: number[]
     isActivated: boolean
+    employeeNumber: string
   }
 }
 
@@ -23,5 +24,6 @@ declare module "next-auth/jwt" {
     id: string
     userRoles: number[]
     isActivated: boolean
+    employeeNumber: string
   }
 }

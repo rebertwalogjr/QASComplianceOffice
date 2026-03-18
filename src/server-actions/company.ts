@@ -8,7 +8,9 @@ import { getUserId } from "./get-session";
 
 export async function getCompanies() {
   return await dbQuery(
-    prisma.company.findMany()
+    prisma.company.findMany({
+      orderBy: { createdOn: "desc"}
+    })
   )
 }
 

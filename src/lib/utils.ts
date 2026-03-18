@@ -1,17 +1,18 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { isToday, isYesterday, isThisWeek, format, parseISO } from "date-fns";
-import { AuditTrailPayload } from "@/server-actions/audit-trail";
-import { UpdateTrailPayload } from "@/server-actions/update-trail";
+import { isToday, isYesterday, isThisWeek, format } from "date-fns"
+import { AuditTrailPayload } from "@/server-actions/audit-trail"
+import { UpdateTrailPayload } from "@/server-actions/update-trail"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function generateUserName(firstName: string, lastName: string) {
-  if (!firstName || !lastName) return "";
-    const firstLetter = firstName.trim().charAt(0);
-    const username = (firstLetter + lastName)
+export function generateUserName(firstName: string, middleName: string, lastName: string) {
+  if (!firstName || !lastName) return ""
+    const firstLetter = firstName.trim().charAt(0)
+    const secondLetter = middleName.trim().charAt(0)
+    const username = (firstLetter + secondLetter + lastName)
       .replace(/\s+/g, "")
       .toLowerCase();
     return username;

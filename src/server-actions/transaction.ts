@@ -11,51 +11,52 @@ import path from 'path';
 import { getUserId } from "./get-session";
 
 export async function createTransaction(formData: FormData) {
-  const sessionId = formData.get("sessionId") as string
-  const status = "open"
   const creatorId = await getUserId()
-
+  
   if (!creatorId) {
     throw new Error("You must be logged in.")
   }
 
+  const sessionId = formData.get("sessionId") as string
+  const payload = formData.get("payload") as string
+  const values = JSON.parse(payload)
+
   const escalations = await prisma.user.findFirst({
-    where: { id: Number(formData.get("recipient")) },
+    where: { id: Number(values.recipientId) },
     select: { escalation1User: userSelect, escalation2User: userSelect, escalation3User: userSelect, escalation4User: userSelect }
   })
 
   const rawData = {
-    companyId: Number(formData.get("company")),
-    projectId: Number(formData.get("project")),
-    auditEngagementId: Number(formData.get("auditEngagement")),
-    typeOfFindingId: Number(formData.get("findingType")),
-    findingCategoryId: Number(formData.get("findingCategory")),
-    complianceOfficerId: Number(formData.get("complianceOfficer")),
-    supervisorId: Number(formData.get("supervisor")),
-    auditReportId: Number(formData.get("auditReport")),
+    companyId: Number(values.companyId),
+    projectId: Number(values.projectId),
+    auditEngagementId: Number(values.auditEngagementId),
+    typeOfFindingId: Number(values.typeOfFindingId),
+    findingCategoryId: Number(values.findingCategoryId),
+    complianceOfficerId: Number(values.complianceOfficerId),
+    supervisorId: Number(values.supervisorId),
+    auditReportId: Number(values.auditReportId),
     auditFindingNumber: "",
-    issuedOn: formData.get("datetimeIssued") ? new Date(formData.get("datetimeIssued") as string) : null,
-    targetDate: formData.get("datetimeTarget") ? new Date(formData.get("datetimeTarget") as string) : null,
-    auditRatingId: Number(formData.get("auditRating")),
-    projectManagerDepartmentHead: formData.get("projectHead") as string,
-    responsibleDepartment: formData.get("responsibleDepartment") as string,
-    responsiblePerson: formData.get("responsiblePerson") as string,
-    recurringPerProcess: formData.get("recurringPerProcess") === "yes",
-    recurringPerPerson: formData.get("recurringPerPerson") === "yes",
-    recipientGroupId: Number(formData.get("recipientGroup")),
-    recipientId: Number(formData.get("recipient")),
-    problemCriteria: formData.get("criteria") as string,
-    problemFindings: formData.get("findings") as string,
-    recommendations: formData.get("recommendations") as string,
+    issuedOn: values.issuedOn ? new Date(values.issuedOn as string) : null,
+    targetDate: values.targetDate ? new Date(values.targetDate as string) : null,
+    auditRatingId: Number(values.auditRatingId),
+    projectManagerDepartmentHead: values.projectManagerDepartmentHead as string,
+    responsibleDepartment: values.responsibleDepartment as string,
+    responsiblePerson: values.responsiblePerson as string,
+    recurringPerProcess: values.recurringPerProcess === "yes",
+    recurringPerPerson: values.recurringPerPerson === "yes",
+    recipientGroupId: Number(values.recipientGroupId),
+    recipientId: Number(values.recipientId),
+    problemCriteria: values.problemCriteria as string,
+    problemFindings: values.problemFindings as string,
+    recommendations: values.recommendations as string,
     complianceSecretariatId: creatorId,
-    jobStatus: status,
+    jobStatus: "open",
     createdBy: creatorId,
     jobEscalation1: escalations?.escalation1User?.id,
     jobEscalation2: escalations?.escalation2User?.id,
     jobEscalation3: escalations?.escalation3User?.id,
     jobEscalation4: escalations?.escalation4User?.id,
   }
-
 
   const tempDirPath = path.join(process.env.FILE_SERVER_PATH!, 'Temporary', sessionId)
   let fileNames: string[] = []
@@ -84,7 +85,7 @@ export async function createTransaction(formData: FormData) {
       await tx.auditTrail.create({
         data: {
           jobTransactionId: newJob.id,
-          jobStatus: status,
+          jobStatus: "open",
           actionTaken: "created this series",
           createdBy: creatorId,
           tag: "created"

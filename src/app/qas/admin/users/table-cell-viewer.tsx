@@ -1,14 +1,14 @@
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button"
+import { Separator } from "@/components/ui/separator"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
-import { useIsMobile } from "@/hooks/use-mobile";
-import Link from "next/link";
-import { X } from "lucide-react";
-import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
-import { User } from "../../../../../generated/prisma/client";
+import { useIsMobile } from "@/hooks/use-mobile"
+import Link from "next/link"
+import { X } from "lucide-react"
+import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field"
+import { User } from "../../../../../generated/prisma/client"
 
 interface Props {
   item: any
@@ -38,9 +38,8 @@ export default function TableCellViewer({ item, className }: Props) {
 
         <Separator />
 
-        <div className="flex flex-col gap-4 overflow-y-auto px-4 py-4 text-sm">
-          <form className="flex flex-col gap-4" onSubmit={(e) => e.preventDefault()}>
-
+        <div className="flex flex-col overflow-y-auto px-4 py-4 text-sm">
+          <form onSubmit={(e) => e.preventDefault()}>
             <FieldGroup>
               <FieldSet>
                 <FieldGroup>

@@ -1,33 +1,39 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { File, Group, LucideBadgeInfo, MegaphoneIcon, TextSelection } from "lucide-react";
+import { useEffect, useMemo, useState } from "react"
+import { useRouter } from "next/navigation"
+import { File, Group, LucideBadgeInfo, MegaphoneIcon, TextSelection } from "lucide-react"
+import { useIsMobile } from "@/hooks/use-mobile"
+import { useForm, Controller } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import z from "zod"
+import { toast } from "sonner"
+import { Session } from "next-auth"
 
-import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { FileUpload, FileWithPreview } from "@/components/FileUpload";
-import { Spinner } from "@/components/ui/spinner";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { FileUpload, FileWithPreview } from "@/components/FileUpload"
+import { Spinner } from "@/components/ui/spinner"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 
-import { ActiveCompanyPayload } from "@/server-actions/company";
-import { ActiveProjectPayload } from "@/server-actions/project";
-import { ActiveEngagementPayload } from "@/server-actions/engagement";
-import { ActiveFindingTypePayload } from "@/server-actions/finding-type";
-import { ActiveFindingCategoryPayload } from "@/server-actions/finding-category";
-import { ActiveGroupPayload } from "@/server-actions/group";
-import { UserBasicPayload } from "@/server-actions/user";
-import { ActiveAuditRatingPayload } from "@/server-actions/rating";
-import { ActiveAuditReportPayload } from "@/server-actions/audit-report";
-import { createTransaction } from "@/server-actions/transaction";
-import { deleteTempFolderBySessionId } from "@/server-actions/files";
-import { toUTCMidnight } from "@/lib/utils";
+import { ActiveCompanyPayload } from "@/server-actions/company"
+import { ActiveProjectPayload } from "@/server-actions/project"
+import { ActiveEngagementPayload } from "@/server-actions/engagement"
+import { ActiveFindingTypePayload } from "@/server-actions/finding-type"
+import { ActiveFindingCategoryPayload } from "@/server-actions/finding-category"
+import { ActiveGroupPayload } from "@/server-actions/group"
+import { UserBasicPayload } from "@/server-actions/user"
+import { ActiveAuditRatingPayload } from "@/server-actions/rating"
+import { ActiveAuditReportPayload } from "@/server-actions/audit-report"
+import { createTransaction } from "@/server-actions/transaction"
+import { deleteTempFolderBySessionId } from "@/server-actions/files"
+import { toUTCMidnight } from "@/lib/utils"
+import { addDate } from "@/lib/utils-server"
 
 interface EntryFormProps {
   companies: ActiveCompanyPayload[] | null
@@ -41,32 +47,87 @@ interface EntryFormProps {
   recipients: UserBasicPayload[] | null
   ratings: ActiveAuditRatingPayload[] | null
   reports: ActiveAuditReportPayload[] | null
+  session: Session | null
 }
 
 export default function EntryForm({ options }: { options: EntryFormProps }) {
   const router = useRouter()
-  const [sessionId, setSessionId] = useState<string>("")
-  const [isPending, setIsPending] = useState(false)
-  const [attachments, setAttachments] = useState<FileWithPreview[]>([])
 
-  const [selectedCompanyId, setSelectedCompanyId] = useState<string>("")
-  const [selectedProjectId, setSelectedProjectId] = useState<string>("")
-  const [selectedRecipientId, setSelectedRecipientId] = useState<string>("")
-  const [selectedEngagementId, setSelectedEngagementId] = useState<string>("")
+  const jobSchema = z.object({
+    companyId: z.string().min(1, "Please select a company"),
+    projectId: z.string().min(1, "Please select a project"),
+    auditEngagementId: z.string().min(1, "Please select an engagement"),
+    typeOfFindingId: z.string().min(1, "Please select a finding type"),
+    findingCategoryId: z.string().min(1, "Please select a finding category"),
+    complianceOfficerId: z.string(),
+    supervisorId: z.string().min(1, "Supervisor is required"),
+    auditReportId: z.string().min(1, "Please select audit report"),
+    issuedOn: z.string(),
+    targetDate: z.string(),
+    auditRatingId: z.string().min(1, "Please select audit rating"),
+    projectManagerDepartmentHead: z.string().min(1, "Project Manager / Department is required"),
+    responsibleDepartment: z.string().min(1, "Reponsible department is required"),
+    responsiblePerson: z.string().min(1, "Responsible person is required"),
+    recurringPerProcess: z.string().min(1, "Recurring process is required"),
+    recurringPerPerson: z.string().min(1, "Recurring person is required"),
+    recipientGroupId: z.string().min(1, "Please select recipient group"),
+    recipientId: z.string().min(1, "Please select a recipient"),
+    problemCriteria: z.string().nullable(),
+    problemFindings: z.string().nullable(),
+    recommendations: z.string().nullable(),
+  })
+
+  type JobFormValues = z.infer<typeof jobSchema>
 
   const datetimeIssued = toUTCMidnight(new Date())
   const tempTargetDate = new Date(datetimeIssued?.getTime() || Date.now())
   tempTargetDate.setDate(tempTargetDate.getDate() + 2)
   const targetDate = toUTCMidnight(tempTargetDate)
 
+  const { register, handleSubmit, control, watch, setValue, formState: { errors, isSubmitting }, } = useForm<JobFormValues>({
+    resolver: zodResolver(jobSchema),
+    defaultValues: {
+      companyId: "",
+      projectId: "",
+      auditEngagementId: "",
+      typeOfFindingId: "",
+      findingCategoryId: "",
+      complianceOfficerId: "",
+      supervisorId: "",
+      auditReportId: "",
+      issuedOn: datetimeIssued?.toDateString(),
+      // targetDate: targetDate?.toDateString(),
+      targetDate: "",
+      auditRatingId: "",
+      projectManagerDepartmentHead: "",
+      responsibleDepartment: "",
+      responsiblePerson: "",
+      recurringPerProcess: "",
+      recurringPerPerson: "",
+      recipientGroupId: "",
+      recipientId: "",
+      problemCriteria: null,
+      problemFindings: null,
+      recommendations: null,
+    }
+  })
+
+  const [sessionId, setSessionId] = useState<string>("")
+  const [attachments, setAttachments] = useState<FileWithPreview[]>([])
+
+  const selectedCompanyId = watch("companyId")
+  const selectedProjectId = watch("projectId")
+  const selectedRecipientId = watch("recipientId")
+  const selectedEngagementId = watch("auditEngagementId")
+
   useEffect(() => {
     if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-      setSessionId(crypto.randomUUID());
+      setSessionId(crypto.randomUUID())
     } else {
-      // Basic fallback for non-secure contexts
-      const fallbackId = (Math.random().toString(36).substring(2) + Date.now().toString(36));
-      setSessionId(fallbackId);
+      const fallbackId = (Math.random().toString(36).substring(2) + Date.now().toString(36))
+      setSessionId(fallbackId)
     }
+    calculateSmartDate()
   }, [])
 
   const filtered = useMemo(() => {
@@ -86,7 +147,6 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
     const pid = Number(selectedProjectId)
     return {
       groups: options.groups?.filter(g => g.projectId === pid) || [],
-      // recipients: options.recipients?.filter(r => r.userProjects.some(up => up.projectId === pid)) || [],
       recipients: options.recipients?.filter(recipient =>
         recipient.userGroups.some(ug =>
           options.groups?.find(g => g.id === ug.groupId)?.projectId === pid)
@@ -102,12 +162,9 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
     return options.recipients?.find(r => r.id.toString() === selectedRecipientId);
   }, [selectedRecipientId, options.recipients]);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setIsPending(true)
-
-    const formData = new FormData(e.currentTarget)
-
+  const onSubmit = async (values: JobFormValues) => {
+    const formData = new FormData()
+    formData.append("payload", JSON.stringify(values))
     formData.append("sessionId", sessionId)
 
     attachments.forEach((fileItem) => {
@@ -120,16 +177,13 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
       toast.error("Error: " + response.error)
     } else {
       toast.success("Transaction created successfully!", { position: "top-center" });
-      router.push(`/qas/${response.data.id}`)
       router.refresh()
+      router.push(`/qas/${response.data.id}`)
     }
-
-    setIsPending(false)
   }
 
   const handleCancel = async () => {
     try {
-      setIsPending(true)
       await deleteTempFolderBySessionId(sessionId)
       setTimeout(() => {
         router.push("/qas");
@@ -138,13 +192,19 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
     } catch (error) {
       toast.error("Failed to clean up temporary files.")
     }
-    setIsPending(false)
   }
+
+  const calculateSmartDate = async () => {
+    if (datetimeIssued) {
+      const smartDate = await addDate(datetimeIssued, 2);
+      setValue("targetDate", smartDate.toDateString());
+    }
+  };
 
   if (!sessionId) return null
 
   return (
-    <form className="flex flex-col gap-4 md:px-40" onSubmit={handleSubmit}>
+    <form className="flex flex-col gap-4 md:px-40" onSubmit={handleSubmit(onSubmit)}>
 
       <div className="grid lg:grid-cols-2 grid-cols-1 gap-8">
 
@@ -162,121 +222,165 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
               <FieldSet>
                 <FieldGroup>
 
-                  {/* <Field>
-                    <FieldLabel htmlFor="complianceSecretariatId">Compliance Secretariat</FieldLabel>
-                    <Input name="complianceSecretariat" placeholder="Rebert L. Walog Jr (9112154)" value="1002" readOnly />
-                  </Field> */}
-
                   <Field>
-                    <FieldLabel htmlFor="company">Company</FieldLabel>
-                    <Select
-                      name="company"
-                      required
-                      value={selectedCompanyId}
-                      onValueChange={(value) => setSelectedCompanyId(value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select company..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {options.companies?.map((company) => (
-                          <SelectItem key={company.id} value={company.id.toString()}>
-                            {company.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {/* <FieldError>Please select company.</FieldError> */}
+                    <FieldLabel>Compliance Secretariat</FieldLabel>
+                    <Input value={`${options.session?.user.name} (${options.session?.user.employeeNumber})`} readOnly />
                   </Field>
 
                   <Field>
-                    <FieldLabel htmlFor="project">Project</FieldLabel>
-                    <Select
-                      name="project"
-                      required
-                      value={selectedProjectId}
-                      onValueChange={(value) => setSelectedProjectId(value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select project..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {filtered.projects?.map((project) => (
-                          <SelectItem key={project.id} value={project.id.toString()}>
-                            {project.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {/* <FieldError>Please select project.</FieldError> */}
+                    <FieldLabel>Company</FieldLabel>
+                    <Controller
+                      name="companyId"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select company..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {options.companies?.map((company) => (
+                              <SelectItem key={company.id} value={company.id.toString()}>
+                                {company.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    {errors.companyId && <p className="text-xs text-destructive mt-1">{errors.companyId.message}</p>}
                   </Field>
 
                   <Field>
-                    <FieldLabel htmlFor="findingType">Type of Finding</FieldLabel>
-                    <Select name="findingType" required>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select item..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {options.findings?.map((finding) => (
-                          <SelectItem key={finding.id} value={finding.id.toString()}>
-                            {finding.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {/* <FieldError>Please select project.</FieldError> */}
+                    <FieldLabel>Project</FieldLabel>
+                    <Controller
+                      name="projectId"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select project..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {filtered.projects?.map((project) => (
+                              <SelectItem key={project.id} value={project.id.toString()}>
+                                {project.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    {errors.projectId && <p className="text-xs text-destructive mt-1">{errors.projectId.message}</p>}
                   </Field>
 
                   <Field>
-                    <FieldLabel htmlFor="fingingCategory">Finding Category</FieldLabel>
-                    <Select name="findingCategory" required>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select item..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {options.categories?.map((category) => (
-                          <SelectItem key={category.id} value={category.id.toString()}>
-                            {category.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {/* <FieldError>Please select project.</FieldError> */}
+                    <FieldLabel>Type of Finding</FieldLabel>
+                    <Controller
+                      name="typeOfFindingId"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select item..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {options.findings?.map((finding) => (
+                              <SelectItem key={finding.id} value={finding.id.toString()}>
+                                {finding.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    {errors.typeOfFindingId && <p className="text-xs text-destructive mt-1">{errors.typeOfFindingId.message}</p>}
                   </Field>
 
                   <Field>
-                    <FieldLabel htmlFor="manager">Compliance Officer</FieldLabel>
-                    <Select name="complianceOfficer" required>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select compliance officer..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {filtered.officers?.map((p) => (
-                          <SelectItem key={p.id} value={p.id.toString()} >
-                            {p.appSuiteEmployeeMaster.fullName}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {/* <FieldError>Please select project.</FieldError> */}
+                    <FieldLabel>Finding Category</FieldLabel>
+                    <Controller
+                      name="findingCategoryId"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select item..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {options.categories?.map((category) => (
+                              <SelectItem key={category.id} value={category.id.toString()}>
+                                {category.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    {errors.findingCategoryId && <p className="text-xs text-destructive mt-1">{errors.findingCategoryId.message}</p>}
                   </Field>
 
                   <Field>
-                    <FieldLabel htmlFor="supervisor">Supervisor</FieldLabel>
-                    <Select name="supervisor" required>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select supervisor..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {filtered.supervisors?.map((p) => (
-                          <SelectItem key={p.id} value={p.id.toString()} >
-                            {p.appSuiteEmployeeMaster.fullName}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {/* <FieldError>Please select project.</FieldError> */}
+                    <FieldLabel>Compliance Officer</FieldLabel>
+                    <Controller
+                      name="complianceOfficerId"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select compliance officer..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {filtered.officers?.map((p) => (
+                              <SelectItem key={p.id} value={p.id.toString()} >
+                                {p.appSuiteEmployeeMaster.fullName}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    {errors.complianceOfficerId && <p className="text-xs text-destructive mt-1">{errors.complianceOfficerId.message}</p>}
+                  </Field>
+
+                  <Field>
+                    <FieldLabel>Supervisor</FieldLabel>
+                    <Controller
+                      name="supervisorId"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select supervisor..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {filtered.supervisors?.map((p) => (
+                              <SelectItem key={p.id} value={p.id.toString()} >
+                                {p.appSuiteEmployeeMaster.fullName}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    {errors.supervisorId && <p className="text-xs text-destructive mt-1">{errors.supervisorId.message}</p>}
                   </Field>
 
                 </FieldGroup>
@@ -298,76 +402,102 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
               <FieldSet>
                 <FieldGroup>
                   <Field>
-                    <FieldLabel htmlFor="auditEngagement">Audit Engagement</FieldLabel>
-                    <Select
-                      name="auditEngagement"
-                      required
-                      onValueChange={(value) => setSelectedEngagementId(value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select engagement..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {filtered.engagements?.map((engagement) => (
-                          <SelectItem key={engagement.id} value={engagement.id.toString()}>
-                            {engagement.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {/* <FieldError>Please select project.</FieldError> */}
+                    <FieldLabel>Audit Engagement</FieldLabel>
+                    <Controller
+                      name="auditEngagementId"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select engagement..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {filtered.engagements?.map((engagement) => (
+                              <SelectItem key={engagement.id} value={engagement.id.toString()}>
+                                {engagement.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+
+                      )}
+                    />
+                    {errors.auditEngagementId && <p className="text-xs text-destructive mt-1">{errors.auditEngagementId.message}</p>}
                   </Field>
 
                   <Field>
-                    <FieldLabel htmlFor="auditreportno">Audit Report No.</FieldLabel>
-                    <Select name="auditReport" required>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select audit report..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {filteredReports?.map(r => (
-                          <SelectItem key={r.id} value={r.id.toString()}>
-                            {r.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {/* <FieldError>Please select project.</FieldError> */}
+                    <FieldLabel>Audit Report No.</FieldLabel>
+                    <Controller
+                      name="auditReportId"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select audit report..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {filteredReports?.map(r => (
+                              <SelectItem key={r.id} value={r.id.toString()}>
+                                {r.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    {errors.auditReportId && <p className="text-xs text-destructive mt-1">{errors.auditReportId.message}</p>}
                   </Field>
 
-                  <Field>
+                  {/* <Field>
                     <FieldLabel htmlFor="auditFindingNumber">Audit Finding No.</FieldLabel>
                     <Input name="auditFindingNumber" placeholder="Audit Finding Number" readOnly />
+                  </Field> */}
+
+                  <Field>
+                    <FieldLabel>Date and time issued</FieldLabel>
+                    {/* <Input name="datetimeIssued" placeholder={datetimeIssued?.toDateString()} readOnly /> */}
+                    <Input {...register("issuedOn")} readOnly />
+                    {errors.issuedOn && <p className="text-xs text-destructive mt-1">{errors.issuedOn.message}</p>}
                   </Field>
 
                   <Field>
-                    <FieldLabel htmlFor="datetimeIssued">Date and time issued</FieldLabel>
-                    <Input name="datetimeIssued" placeholder={datetimeIssued?.toDateString()} readOnly />
+                    <FieldLabel>Target Date</FieldLabel>
+                    {/* <Input name="datetimeTarget" placeholder={targetDate?.toDateString()} readOnly /> */}
+                    <Input {...register("targetDate")} readOnly />
+                    {errors.targetDate && <p className="text-xs text-destructive mt-1">{errors.targetDate.message}</p>}
                   </Field>
 
                   <Field>
-                    <FieldLabel htmlFor="datetimeTarget">Target Date</FieldLabel>
-                    <Input name="datetimeTarget" placeholder={targetDate?.toDateString()} readOnly />
+                    <FieldLabel>Audit Rating</FieldLabel>
+                    <Controller
+                      name="auditRatingId"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select audit rating..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {filtered.ratings?.map(r => (
+                              <SelectItem key={r.id} value={r.id.toString()}>
+                                {r.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    {errors.auditRatingId && <p className="text-xs text-destructive mt-1">{errors.auditRatingId.message}</p>}
                   </Field>
-
-                  <Field>
-                    <FieldLabel htmlFor="auditRating">Audit Rating</FieldLabel>
-                    <Select name="auditRating" required>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select audit rating..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {filtered.ratings?.map(r => (
-                          <SelectItem key={r.id} value={r.id.toString()}>
-                            {r.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {/* <FieldError>Please select project.</FieldError> */}
-                  </Field>
-
-
 
                 </FieldGroup>
               </FieldSet>
@@ -392,45 +522,59 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
               <FieldSet>
                 <FieldGroup>
                   <Field>
-                    <FieldLabel htmlFor="recipientGroup">Recipient Group</FieldLabel>
-                    <Select name="recipientGroup" required>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select recipient group..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {filteredRecipientGroup.groups.map(g => (
-                          <SelectItem key={g.id} value={g.id.toString()}>
-                            {g.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {/* <FieldError>Please select project.</FieldError> */}
+                    <FieldLabel>Recipient Group</FieldLabel>
+                    <Controller
+                      name="recipientGroupId"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select recipient group..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {filteredRecipientGroup.groups.map(g => (
+                              <SelectItem key={g.id} value={g.id.toString()}>
+                                {g.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    {errors.recipientGroupId && <p className="text-xs text-destructive mt-1">{errors.recipientGroupId.message}</p>}
                   </Field>
 
                   <Field>
-                    <FieldLabel htmlFor="recipient">Issued To</FieldLabel>
-                    <Select
-                      name="recipient"
-                      required
-                      onValueChange={(value) => setSelectedRecipientId(value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select recipient..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {filteredRecipientGroup.recipients?.map(r => (
-                          <SelectItem key={r.id} value={r.id.toString()}>
-                            {r.appSuiteEmployeeMaster.fullName}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {/* <FieldError>Please select project.</FieldError> */}
+                    <FieldLabel>Issued To</FieldLabel>
+                    <Controller
+                      name="recipientId"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select recipient..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {filteredRecipientGroup.recipients?.map(r => (
+                              <SelectItem key={r.id} value={r.id.toString()}>
+                                {r.appSuiteEmployeeMaster.fullName}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    {errors.recipientId && <p className="text-xs text-destructive mt-1">{errors.recipientId.message}</p>}
                   </Field>
 
                   <Field>
-                    <FieldLabel htmlFor="firstEscalation">First Escation</FieldLabel>
+                    <FieldLabel>First Escation</FieldLabel>
                     <Input
                       name="firstEscalation"
                       placeholder="N/A"
@@ -439,7 +583,7 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
                   </Field>
 
                   <Field>
-                    <FieldLabel htmlFor="secondEscalation">Second Escation</FieldLabel>
+                    <FieldLabel>Second Escation</FieldLabel>
                     <Input
                       name="secondEscalation"
                       placeholder="N/A"
@@ -448,7 +592,7 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
                   </Field>
 
                   <Field>
-                    <FieldLabel htmlFor="thirdEscalation">Third Escation</FieldLabel>
+                    <FieldLabel>Third Escation</FieldLabel>
                     <Input
                       name="thirdEscalation"
                       placeholder="N/A"
@@ -457,7 +601,7 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
                   </Field>
 
                   <Field>
-                    <FieldLabel htmlFor="fourthEscalation">Fourth Escation</FieldLabel>
+                    <FieldLabel>Fourth Escation</FieldLabel>
                     <Input
                       name="fourthEscalation"
                       placeholder="N/A"
@@ -483,46 +627,67 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
               <FieldSet>
                 <FieldGroup>
                   <Field>
-                    <FieldLabel htmlFor="projectHead">Project Manager / Department Head</FieldLabel>
-                    <Input name="projectHead" />
+                    <FieldLabel>Project Manager / Department Head</FieldLabel>
+                    <Input {...register("projectManagerDepartmentHead")} />
+                    {errors.projectManagerDepartmentHead && <p className="text-xs text-destructive mt-1">{errors.projectManagerDepartmentHead.message}</p>}
                   </Field>
 
                   <Field>
-                    <FieldLabel htmlFor="responsiblePerson">Responsible Person</FieldLabel>
-                    <Input name="responsiblePerson" />
+                    <FieldLabel>Responsible Person</FieldLabel>
+                    <Input {...register("responsiblePerson")} />
+                    {errors.responsiblePerson && <p className="text-xs text-destructive mt-1">{errors.responsiblePerson.message}</p>}
                   </Field>
 
                   <Field>
-                    <FieldLabel htmlFor="responsibleDepartment">Responsible Department</FieldLabel>
-                    <Input name="responsibleDepartment" />
+                    <FieldLabel>Responsible Department</FieldLabel>
+                    <Input {...register("responsibleDepartment")} />
+                    {errors.responsibleDepartment && <p className="text-xs text-destructive mt-1">{errors.responsibleDepartment.message}</p>}
                   </Field>
 
                   <Field>
-                    <FieldLabel htmlFor="recurringPerProcess">Recurring Per Process</FieldLabel>
-                    <Select name="recurringPerProcess" required>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select item..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="yes">Yes</SelectItem>
-                        <SelectItem value="no">No</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {/* <FieldError>Please select project.</FieldError> */}
+                    <FieldLabel>Recurring Per Process</FieldLabel>
+                    <Controller
+                      name="recurringPerProcess"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select item..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="yes">Yes</SelectItem>
+                            <SelectItem value="no">No</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    {errors.recurringPerProcess && <p className="text-xs text-destructive mt-1">{errors.recurringPerProcess.message}</p>}
                   </Field>
 
                   <Field>
-                    <FieldLabel htmlFor="recurringPerPerson">Recurring Per Person</FieldLabel>
-                    <Select name="recurringPerPerson" required>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select item..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="yes">Yes</SelectItem>
-                        <SelectItem value="no">No</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {/* <FieldError>Please select project.</FieldError> */}
+                    <FieldLabel>Recurring Per Person</FieldLabel>
+                    <Controller
+                      name="recurringPerPerson"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select item..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="yes">Yes</SelectItem>
+                            <SelectItem value="no">No</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    {errors.recurringPerPerson && <p className="text-xs text-destructive mt-1">{errors.recurringPerPerson.message}</p>}
                   </Field>
                 </FieldGroup>
               </FieldSet>
@@ -544,21 +709,20 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
           <FieldSet>
             <FieldGroup>
               <Field>
-                <FieldLabel htmlFor="detailsOfFinding">Details of Finding</FieldLabel>
+                <FieldLabel>Details of Finding</FieldLabel>
                 <FieldDescription>Criteria:</FieldDescription>
-                <Textarea name="criteria" placeholder="Type here.." rows={4} />
+                <Textarea {...register("problemCriteria")} placeholder="Type here.." rows={4} />
                 <FieldDescription>Findings:</FieldDescription>
-                <Textarea name="findings" placeholder="Type here.." rows={4} />
+                <Textarea {...register("problemFindings")} placeholder="Type here.." rows={4} />
               </Field>
 
               <Field>
-                <FieldLabel htmlFor="detailsOfFinding">Recommendations</FieldLabel>
-                <Textarea name="recommendations" placeholder="Type here.." rows={4} />
+                <FieldLabel>Recommendations</FieldLabel>
+                <Textarea {...register("recommendations")} placeholder="Type here.." rows={4} />
               </Field>
 
               <Field>
-                <FieldLabel htmlFor="attachments">Attachments</FieldLabel>
-                {/* <Input name="attachments" /> */}
+                <FieldLabel>Attachments</FieldLabel>
                 <FileUpload sessionId={sessionId} onFilesChange={setAttachments} />
               </Field>
 
@@ -573,7 +737,7 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
         <div className="flex items-center gap-4 justify-end py-2">
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="outline" disabled={isPending}>Cancel</Button>
+              <Button variant="outline" disabled={isSubmitting}>Cancel</Button>
             </AlertDialogTrigger>
             <AlertDialogContent className="sm:max-w-sm">
               <AlertDialogHeader>
@@ -590,13 +754,13 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
                   onClick={handleCancel}
                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                 >
-                  {isPending ? "Cleaning up..." : "Proceed"}
+                  {isSubmitting ? "Cleaning up..." : "Proceed"}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-          <Button type="submit" disabled={isPending}>
-            {isPending ? (
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? (
               <>
                 Saving
                 <Spinner className="mr-2" />

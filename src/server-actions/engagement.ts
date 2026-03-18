@@ -11,7 +11,8 @@ export async function getAuditEngagements() {
     prisma.auditEngagement.findMany({
       include: {
         company: true,
-      }
+      },
+      orderBy: { createdOn: "desc" }
     })
   )
 }

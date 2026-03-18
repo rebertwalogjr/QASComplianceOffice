@@ -12,6 +12,7 @@ import { getActiveAuditRatings } from "@/server-actions/rating";
 import { getActiveAuditReport } from "@/server-actions/audit-report";
 
 import EntryForm from "./entry-form";
+import { getSession } from "@/server-actions/get-session";
 
 export default async function NewQASForm() {
 
@@ -26,8 +27,10 @@ export default async function NewQASForm() {
     getActiveSupervisors(),
     getActiveRecipients(),
     getActiveAuditRatings(),
-    getActiveAuditReport()
+    getActiveAuditReport(),
   ]);
+
+  const session = await getSession()
 
   const result = [companies, projects, engagements, findings, categories, groups, officers, supervisors, recipients, ratings]
   const firstError = result.find(r => r.error)?.error
@@ -58,7 +61,8 @@ export default async function NewQASForm() {
               supervisors: supervisors.data ?? [],
               recipients: recipients.data ?? [],
               ratings: ratings.data ?? [],
-              reports: reports.data ?? []
+              reports: reports.data ?? [],
+              session: session
             }}
           />
         </>

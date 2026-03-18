@@ -8,7 +8,9 @@ import { getUserId } from "./get-session";
 
 export async function getFindingTypes() {
   return await dbQuery(
-    prisma.typeOfFinding.findMany()
+    prisma.typeOfFinding.findMany({
+      orderBy: { createdOn: "desc" }
+    })
   )
 }
 

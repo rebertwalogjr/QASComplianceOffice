@@ -32,10 +32,10 @@ export default async function UserPage() {
       ) : (
         <>
           <UserForm
-            companies={companiesRes.data}
-            groups={activeGroupRes.data}
-            projects={activeProjectRes.data}
-            roles={activeRolesRes.data}
+            companies={companiesRes.data ?? []}
+            groups={activeGroupRes.data ?? []}
+            projects={activeProjectRes.data ?? []}
+            roles={activeRolesRes.data ?? []}
           />
         </>
       )}

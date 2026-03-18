@@ -8,7 +8,9 @@ import { getUserId } from "./get-session";
 
 export async function getHolidays() {
   return await dbQuery(
-    prisma.holiday.findMany()
+    prisma.holiday.findMany({
+      orderBy: { createdOn: "desc" }
+    })
   )
 }
 

@@ -54,6 +54,7 @@ export const authOptions: AuthOptions = {
           name: `${firstName} ${lastName}`.trim() || user.username,
           username: user.username,
           isActivated: user.isActivated,
+          employeeNumber: user.employeeNumber,
           userRoles: user.userRoles.map((ur: any) => ur.role.id)
         }
 
@@ -66,14 +67,16 @@ export const authOptions: AuthOptions = {
         token.id = user.id
         token.userRoles = user.userRoles
         token.isActivated = user.isActivated
+        token.employeeNumber = user.employeeNumber
       }
       if (trigger === "update" && session?.user) {
         const dbUser = await prisma.user.findUnique({
           where: { id: Number(token.id) },
-          select: { isActivated: true }
+          select: { isActivated: true, employeeNumber: true }
         })
         if (dbUser) {
           token.isActivated = dbUser.isActivated
+          token.employeeNumber = dbUser.employeeNumber
         }
       }
       return token
@@ -83,6 +86,7 @@ export const authOptions: AuthOptions = {
         session.user.id = token.id as string
         session.user.userRoles = token.userRoles as any[]
         session.user.isActivated = token.isActivated as boolean
+        session.user.employeeNumber = token.employeeNumber as string
       }
       return session
     }

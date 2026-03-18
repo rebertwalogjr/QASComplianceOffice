@@ -1,5 +1,5 @@
 import { getActiveCompanies } from "@/server-actions/company"
-import UserForm from "./user-form"
+import UserUpdateForm from "./user-form"
 import { getUserById } from "@/server-actions/user"
 import { getActiveGroups } from "@/server-actions/group"
 import { getActiveProjects } from "@/server-actions/project"
@@ -45,7 +45,7 @@ export default async function UserPage({ params }: { params: Promise<{ id?: stri
         </div>
       ) : (
         <>
-          <UserForm
+          <UserUpdateForm
             initialData={userToEditRes.data}
             companies={companiesRes.data}
             groups={activeGroupRes.data}

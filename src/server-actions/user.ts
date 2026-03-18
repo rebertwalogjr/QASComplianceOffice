@@ -13,7 +13,8 @@ export async function getUsers() {
       include: {
         appSuiteEmployeeMaster: true,
         company: true
-      }
+      },
+      orderBy: { createdOn: "desc" }
     })
   )
 }
@@ -90,7 +91,11 @@ export async function createUser(formData: any) {
           companyId: companyId ? Number(companyId) : null,
           isEscalation,
           createdBy: currentUser,
-
+          escalation1: escalations.first?.id || null,
+          escalation2: escalations.second?.id || null,
+          escalation3: escalations.third?.id || null,
+          escalation4: escalations.fourth?.id || null,
+          
           // 2. Create UserRoles
           userRoles: {
             create: roleIds.map((rId: number) => ({
@@ -127,10 +132,6 @@ export async function createUser(formData: any) {
             }))
           },
 
-          escalation1: escalations.first?.id || null,
-          escalation2: escalations.second?.id || null,
-          escalation3: escalations.third?.id || null,
-          escalation4: escalations.fourth?.id || null,
         }
       })
     })

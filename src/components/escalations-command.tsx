@@ -45,9 +45,7 @@ export function EscalationCommand({ onSelect, defaultValue, disabled }: Escalati
   }, [open]);
 
   useEffect(() => {
-    if (defaultValue) {
-      setSelected(defaultValue)
-    }
+    setSelected(defaultValue || null)
   }, [defaultValue])
 
   // Initial and Search fetch

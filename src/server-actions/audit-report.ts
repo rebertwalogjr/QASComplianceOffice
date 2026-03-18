@@ -13,7 +13,8 @@ export async function getAuditReports() {
         company: true,
         project: true,
         auditEngagement: true
-      }
+      },
+      orderBy: { createdOn: "desc" }
     })
   )
 }

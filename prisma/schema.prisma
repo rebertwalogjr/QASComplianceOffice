@@ -345,7 +345,7 @@ model Holiday {
   id         Int      @id @default(autoincrement())
   name       String   @db.NVarChar(255)
   type       String   @db.NVarChar(25)
-  date       DateTime @db.DateTime
+  date       DateTime @unique @db.DateTime
   isActive   Boolean  @default(true) @db.Bit
   createdBy  Int
   createdOn  DateTime @default(now()) @db.DateTime

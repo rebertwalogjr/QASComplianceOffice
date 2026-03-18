@@ -11,7 +11,8 @@ export async function getGroups() {
     prisma.group.findMany({
       include: {
         project: true,
-      }
+      },
+      orderBy: { createdOn: "desc" }
     })
   )
 }
