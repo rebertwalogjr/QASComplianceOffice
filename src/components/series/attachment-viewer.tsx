@@ -1,7 +1,7 @@
 import { ChevronDown } from "lucide-react"
-import { Item, ItemActions, ItemContent, ItemDescription, ItemTitle } from "./ui/item"
-import { Button } from "./ui/button"
-import { DropdownMenu, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuContent } from "./ui/dropdown-menu"
+import { Item, ItemActions, ItemContent, ItemDescription, ItemTitle } from "../ui/item"
+import { Button } from "../ui/button"
+import { DropdownMenu, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuContent } from "../ui/dropdown-menu"
 
 // DUMMY DATA
 type typeAttachment = {

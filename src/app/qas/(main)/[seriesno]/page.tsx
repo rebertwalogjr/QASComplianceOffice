@@ -12,7 +12,7 @@ import AuditTrail from "./components/audit-trail"
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
-import { SeriesTabs, SeriesTabsContent, SeriesTabsList, SeriesTabsTrigger } from "@/components/series-tabs"
+import { SeriesTabs, SeriesTabsContent, SeriesTabsList, SeriesTabsTrigger } from "@/components/series/series-tabs"
 import CardHoldAction from "./components/card-hold-action"
 import { getActiveHolding } from "@/server-actions/hold-history"
 

@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import { useState, startTransition } from "react"
 import Image from "next/image"
 import { signIn } from "next-auth/react"
 import { useForm } from "react-hook-form"
@@ -59,13 +59,17 @@ export default function SignInPage() {
       return
     }
 
-    toast.success("Welcome back!", { position: "top-center" })
-
-    router.prefetch("/qas")
-
-    React.startTransition(() => {
+    startTransition(() => {
       router.push("/qas")
     })
+
+    // toast.success("Welcome back!", { position: "top-center" })
+
+    // router.prefetch("/qas")
+
+    // React.startTransition(() => {
+    //   router.push("/qas")
+    // })
 
     // setIsLoading(false)
   }

@@ -1,7 +1,7 @@
 import { File, Group, LucideBadgeInfo, MegaphoneIcon, TextSelection } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import AttachmentViewer from "@/components/attachments-viewer";
+import AttachmentViewer from "@/components/series/attachments-viewer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { TransactionPayload } from "@/server-actions/transaction";

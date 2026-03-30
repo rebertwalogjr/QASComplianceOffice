@@ -5,7 +5,6 @@ import { AppSidebar } from "@/components/app-sidebar"
 import { SiteHeader } from "@/components/site-header"
 import React, { Suspense } from "react"
 import { SidebarWrapper } from "@/components/sidebar-wrapper"
-import Loading from "./(main)/loading"
 
 export default async function QasLayout({
   children,

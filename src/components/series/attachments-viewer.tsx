@@ -2,9 +2,9 @@
 
 import { downloadFileAction } from "@/server-actions/files"
 import { toast } from "sonner"
-import { Card } from "./ui/card"
+import { Card } from "../ui/card"
 import { Download, FileText } from "lucide-react"
-import { Button } from "./ui/button"
+import { Button } from "../ui/button"
 import { IconSwitcher } from "@/lib/utils"
 
 interface Attachment {

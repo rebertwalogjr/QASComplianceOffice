@@ -20,7 +20,7 @@ import StatusBadge from "@/components/status-badge"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { HoldingPayload } from "@/server-actions/hold-history"
 import { FileUpload, FileWithPreview } from "@/components/FileUpload"
-import AttachmentViewer from "@/components/attachments-viewer"
+import AttachmentViewer from "@/components/series/attachments-viewer"
 
 export default function RightPanel({ jobTransaction, activeHolding }: { jobTransaction: TransactionPayload, activeHolding: HoldingPayload | null }) {
   const router = useRouter()
