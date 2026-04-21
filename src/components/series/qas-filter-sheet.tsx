@@ -38,6 +38,8 @@ export default function QASFilterSheet({ options }: { options: FilterOptionsPayl
     const formData = new FormData(e.currentTarget)
     const params = new URLSearchParams(searchParams.toString())
 
+    console.log("Form Date: " + formData)
+
     formData.forEach((value, key) => {
       if (value) params.set(key, value as string)
       else params.delete(key)
@@ -54,14 +56,14 @@ export default function QASFilterSheet({ options }: { options: FilterOptionsPayl
 
   return (
     <Sheet>
-      <form onSubmit={handleApply}>
-        <SheetTrigger asChild>
-          <Button variant="outline" onClick={handleReset}>
-            <FilterIcon className="size-4" />QAS Filter
-          </Button>
-        </SheetTrigger>
-        {/* <SheetTrigger type="button" className="">QAS Filter</SheetTrigger> */}
-        <SheetContent>
+      <SheetTrigger asChild>
+        <Button variant="outline">
+          <FilterIcon className="size-4" />QAS Filter
+        </Button>
+      </SheetTrigger>
+      {/* <SheetTrigger type="button" className="">QAS Filter</SheetTrigger> */}
+      <SheetContent>
+        <form onSubmit={handleApply} className="flex flex-col h-full">
           <SheetHeader>
             <SheetTitle>Advance Filters</SheetTitle>
           </SheetHeader>
@@ -69,17 +71,17 @@ export default function QASFilterSheet({ options }: { options: FilterOptionsPayl
             {/* Company Field */}
             <FilterSelect
               label="Company"
-              name="companyId"
+              name="company"
               data={options.companies}
-              defaultValue={searchParams.get("companyId")}
+              defaultValue={searchParams.get("company")}
               onValueChange={setSelectedCompany}
             />
             {/* Project Field */}
             <FilterSelect
               label="Project"
-              name="projectId"
+              name="project"
               data={options.projects}
-              defaultValue={searchParams.get("projectId")}
+              defaultValue={searchParams.get("project")}
               selectedCompanyId={selectedCompanyId}
               onValueChange={setSelectedProject}
             />
@@ -93,9 +95,9 @@ export default function QASFilterSheet({ options }: { options: FilterOptionsPayl
             {/* Type of Findings Field */}
             <FilterSelect
               label="Type of Findings"
-              name="typeOfFindings"
+              name="type"
               data={options.findings}
-              defaultValue={searchParams.get("typeOfFindings")}
+              defaultValue={searchParams.get("type")}
             />
             {/* Findings Category Field */}
             <FilterSelect
@@ -109,7 +111,7 @@ export default function QASFilterSheet({ options }: { options: FilterOptionsPayl
               label="Audit Report Number"
               name="report"
               data={options.reports}
-              defaultValue={searchParams.get("reports")}
+              defaultValue={searchParams.get("report")}
               selectedCompanyId={selectedCompanyId}
               selectedProjectId={selectedProjectId}
             />
@@ -137,29 +139,15 @@ export default function QASFilterSheet({ options }: { options: FilterOptionsPayl
               defaultValue={searchParams.get("group")}
               selectedProjectId={selectedProjectId}
             />
-            {/* Recipient */}
-            {/* <div className="grid gap-3">
-              <Label>Recipient</Label>
-              <Select>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select a recipient" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectItem value="proj 1">Project 1</SelectItem>
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </div> */}
           </div>
           <SheetFooter>
-            <Button type="submit">Apply</Button>
+            <Button type="submit">Apply Filters</Button>
             <SheetClose asChild>
               <Button variant="outline" onClick={handleReset}>Close</Button>
             </SheetClose>
           </SheetFooter>
-        </SheetContent>
-      </form>
+        </form>
+      </SheetContent>
     </Sheet >
   )
 }
@@ -180,7 +168,7 @@ function FilterSelect({ label, name, data, defaultValue, selectedCompanyId, sele
     placeholder = "Select project first"
     isDisabled = true
   }
-  
+
   const filteredData = useMemo(() => {
     return data.filter((item) => {
       if (missingCompany || missingProject) return false

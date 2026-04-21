@@ -5,14 +5,14 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ArrowDownAZ, ArrowDownZA, ArrowDown01  } from "lucide-react"
 import TableCellViewer from "./table-cell-viewer"
-import Escalation from "@/lib/escalation"
+import { TypeOfFinding } from "../../../../../generated/prisma/client"
 
-export const columns: ColumnDef<Escalation>[] = [
+export const columns: ColumnDef<TypeOfFinding>[] = [
   {
     accessorKey: "name",
     header: "Name",
     cell: ({ row }) => {
-      return <TableCellViewer item={row.original as Escalation} />
+      return <TableCellViewer item={row.original as TypeOfFinding} />
     }
   },
   {
@@ -47,7 +47,7 @@ export const columns: ColumnDef<Escalation>[] = [
         </div>
     },
     cell: ({ row }) => {
-      return <Badge variant="outline" className={ row.original.status === "Active" ? "bg-green-50 text-green-500 border-green-500" : "bg-gray-50 text-gray-600 border-gray-600" } >{ row.original.status }</Badge>
+      return <Badge variant="outline" className={ row.original.isActive === true ? "bg-green-50 text-green-500 border-green-500" : "bg-gray-50 text-gray-600 border-gray-600" } >{ row.original.isActive }</Badge>
     }
   },
 ]

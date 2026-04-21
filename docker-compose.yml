@@ -1,0 +1,33 @@
+# version: '3.8'
+
+services:
+  # SQL Server Service
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: qas-sql-server
+    ports:
+      - "1435:1433"
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=@Dmci12345
+      - MSSQL_PID=Developer
+    volumes:
+      - mssql_data:/var/opt/mssql
+
+  # Next.js App Service
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: qas-app
+    ports:
+      - "3000:3000"
+    environment:
+      # Use 'db' (the service name) instead of 'localhost'
+      - DATABASE_URL=sqlserver://db:1433;database=QAS_Compliance;user=qas_testinhousedb;password=@Dmci12345;trustServerCertificate=true;encrypt=true;
+      - NODE_ENV=uat
+    depends_on:
+      - db
+
+volumes:
+  mssql_data:
