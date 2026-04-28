@@ -101,15 +101,37 @@ export async function createTransaction(formData: FormData) {
   return { data: newJob, error }
 }
 
-export async function getTransactions(page: number = 1, pageSize: number = 10): Promise<{
+export async function getTransactions(page: number = 1, pageSize: number = 10, filters: {[key: string]: string | undefined} = {}): Promise<{
   data: TransactionBasicPaylod[] | null,
   totalCount: number,
   error: any
 }> {
   const skip = (page - 1) * pageSize;
+  const where: any = {}
+
+  const addIntFilter = (key: string, value: string | undefined) => {
+    if (value && !isNaN(parseInt(value))) {
+      where[key] = parseInt(value)
+    }
+  }
+
+  addIntFilter('companyId', filters.company)
+  addIntFilter('projectId', filters.project)
+  addIntFilter('typeOfFindingId', filters.type)
+  addIntFilter('findingCategoryId', filters.category)
+  addIntFilter('auditReportId', filters.report)
+  addIntFilter('auditEngagementId', filters.engagement)
+  addIntFilter('auditRatingId', filters.rating)
+  addIntFilter('recipientGroupId', filters.group)
+
+  if (filters.status) {
+    where.jobStatus = { equals: filters.status };
+  }
+
   const { data, error } = await dbQuery(
     Promise.all([
       prisma.jobTransaction.findMany({
+        where,
         select: transactionBasicSelect,
         skip: skip,
         take: pageSize,
@@ -118,7 +140,9 @@ export async function getTransactions(page: number = 1, pageSize: number = 10): 
       prisma.jobTransaction.count()
     ])
   )
+
   const [transactions, totalCount] = data ?? [[], 0]
+
   return {
     data: transactions as TransactionBasicPaylod[],
     totalCount: totalCount as number,
@@ -244,6 +268,28 @@ export async function jobTransactionClientUpdate(formData: FormData) {
   }
 
    return { data: newJob, error }
+}
+
+export async function search(params: string, page: number = 1, pageSize: number = 10): Promise<{ data: TransactionBasicPaylod[] | null, error: any }> {
+  const idValue = parseInt(params)
+  const isNumeric = !isNaN(idValue)
+
+  return await dbQuery(
+    prisma.jobTransaction.findMany({
+      where: {
+        OR: [
+          ...(isNumeric ? [{ id: { equals: idValue }}] : []),
+          { jobStatus: { contains: params, lte: "insensitive" } },
+          { company: { name: { contains: params, lte: "insensitive" } } },
+          { project: { name: { contains: params, lte: "insensitive" } } },
+          { auditReport: { name: {contains: params, lte: "insensitive" } } },
+        ]
+      },
+      select: transactionBasicSelect,
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    })
+  )
 }
 
 const transactionBasicSelect = {

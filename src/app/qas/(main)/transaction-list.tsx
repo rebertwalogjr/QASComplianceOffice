@@ -7,12 +7,10 @@ import { TransactionTableWrapper } from "./transaction-table-wrapper"
 export default async function TransactionList({ searchParamsPromise }: { searchParamsPromise: Promise<any> }) {
   const searchParams = await searchParamsPromise
 
-  // await new Promise((resolve) => setTimeout(resolve, 10000))
-
   const page = Number(searchParams.page) || 1
   const pageSize = Number(searchParams.pageSize) || 10
 
-  const { data: transactions, totalCount, error } = await getTransactions(page, pageSize)
+  const { data: transactions, totalCount, error } = await getTransactions(page, pageSize, searchParams)
   const pageCount = Math.ceil((totalCount || 0) / pageSize)
 
   if (error) {

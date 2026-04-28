@@ -37,9 +37,6 @@ ENV NODE_ENV=uat
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Copy only what we need to run the app
-# COPY --from=builder /qas-compliance/package.json ./
-# COPY --from=builder /qas-compliance/node_modules ./node_modules
-# COPY --from=builder /qas-compliance/.next ./.next
 COPY --from=builder /qas-compliance/public ./public
 COPY --from=builder /qas-compliance/.next/standalone ./
 COPY --from=builder /qas-compliance/.next/static ./.next/static
@@ -47,5 +44,4 @@ COPY --from=builder /qas-compliance/prisma ./prisma
 
 EXPOSE 3000
 
-# CMD ["npm", "start"]
 CMD ["node", "server.js"]

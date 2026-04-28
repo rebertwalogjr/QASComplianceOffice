@@ -21,6 +21,8 @@ interface DataTableProps<TData, TValue> {
   defaultPageSize?: number
   getRowClassName?: (row: TData) => string | undefined
   searchPlaceholder?: string
+  searchValue: string
+  onSearchChange: (value: string) => void  
 }
 
 export function DataTable<TData, TValue>({
@@ -33,10 +35,32 @@ export function DataTable<TData, TValue>({
   onPaginationChange,
   defaultPageSize = 10,
   getRowClassName,
-  searchPlaceholder
+  searchPlaceholder,
+  searchValue,
+  onSearchChange,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+  const [localSearch, setLocalSearch] = React.useState(searchValue);
+  const isFirstRender = React.useRef(true)
+
+  React.useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+      return
+    }
+
+    if (localSearch === searchValue) return
+
+    const timeout = setTimeout(() => {
+      onSearchChange(localSearch);
+    }, 500);
+    return () => clearTimeout(timeout);
+  }, [localSearch, onSearchChange, searchValue]);
+
+  React.useEffect(() => {
+    setLocalSearch(searchValue);
+  }, [searchValue]);
 
   const table = useReactTable({
     data: data ?? [],
@@ -75,20 +99,21 @@ export function DataTable<TData, TValue>({
     <div className="justify-start mt-2">
 
       {/* FIXED TOP SECTION */}
-      <div className="px-6 z-40 w-full h-18 flex items-center">
+      {/* <div className="px-6 z-40 w-full h-18 flex items-center">
         <div className="flex items-center w-100">
           <Input
             placeholder={searchPlaceholder ?? "Type to search..."}
             // value={(table.getColumn("id")?.getFilterValue() as string) ?? ""}
-            value={(table.getState().globalFilter as string) ?? ""}
-            onChange={(event) =>
-              // table.getColumn("id")?.setFilterValue(event.target.value)
-              table.setGlobalFilter(event.target.value)
+            value={localSearch}
+            onChange={(e) =>
+              // table.getColumn("id")?.setFilterValue(e.target.value)
+              // table.setGlobalFilter(e.target.value)
+              setLocalSearch(e.target.value)
             }
             className="max-w-sm"
           />
         </div>
-      </div>
+      </div> */}
 
       {/* TABLE */}
       <div className="overflow-auto rounded-md border  mx-6">
