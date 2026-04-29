@@ -123,6 +123,8 @@ export async function getTransactions(page: number = 1, pageSize: number = 10, f
   addIntFilter('auditEngagementId', filters.engagement)
   addIntFilter('auditRatingId', filters.rating)
   addIntFilter('recipientGroupId', filters.group)
+  addIntFilter('createdBy', filters.creator)
+  // addIntFilter('assignedTo', filters.assignedTo)
 
   if (filters.status) {
     where.jobStatus = { equals: filters.status };
@@ -270,7 +272,7 @@ export async function jobTransactionClientUpdate(formData: FormData) {
    return { data: newJob, error }
 }
 
-export async function search(params: string, page: number = 1, pageSize: number = 10): Promise<{ data: TransactionBasicPaylod[] | null, error: any }> {
+export async function search(params: string): Promise<{ data: TransactionBasicPaylod[] | null, error: any }> {
   const idValue = parseInt(params)
   const isNumeric = !isNaN(idValue)
 
@@ -279,15 +281,11 @@ export async function search(params: string, page: number = 1, pageSize: number 
       where: {
         OR: [
           ...(isNumeric ? [{ id: { equals: idValue }}] : []),
-          { jobStatus: { contains: params, lte: "insensitive" } },
-          { company: { name: { contains: params, lte: "insensitive" } } },
-          { project: { name: { contains: params, lte: "insensitive" } } },
-          { auditReport: { name: {contains: params, lte: "insensitive" } } },
+          { auditReport: { name: {contains: params } } },
         ]
       },
       select: transactionBasicSelect,
-      skip: (page - 1) * pageSize,
-      take: pageSize,
+      take: 10,
     })
   )
 }

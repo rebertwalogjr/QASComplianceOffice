@@ -24,7 +24,7 @@ export default function QASFilterSheet({ options }: { options: FilterOptionsPayl
   const searchParams = useSearchParams()
   const [isOpen, setIsOpen] = useState(false)
 
-  const [filters, setFilters] = useState<{[key: string]: string | null}>({
+  const [filters, setFilters] = useState<{ [key: string]: string | null }>({
     company: searchParams.get("company"),
     project: searchParams.get("project"),
     status: searchParams.get("status"),
@@ -34,6 +34,8 @@ export default function QASFilterSheet({ options }: { options: FilterOptionsPayl
     engagement: searchParams.get("engagement"),
     rating: searchParams.get("rating"),
     group: searchParams.get("group"),
+    creator: searchParams.get("creator"),
+    assignedTo: searchParams.get("assignedTo"),
   })
 
   useEffect(() => {
@@ -50,22 +52,24 @@ export default function QASFilterSheet({ options }: { options: FilterOptionsPayl
       engagement: searchParams.get("engagement"),
       rating: searchParams.get("rating"),
       group: searchParams.get("group"),
+      creator: searchParams.get("creator"),
+      assignedTo: searchParams.get("assignedTo")
     })
   }, [searchParams])
 
   const handleFieldChange = (name: string, value: string | null) => {
     setFilters((prev) => ({ ...prev, [name]: value }))
   }
-  
+
   const handleApply = (e: React.FormEvent) => {
     e.preventDefault()
     const params = new URLSearchParams(searchParams.toString())
-    
+
     Object.entries(filters).forEach(([key, value]) => {
       if (value) params.set(key, value)
-        else params.delete(key)
+      else params.delete(key)
     })
-    
+
     params.set("page", "1")
     router.push(`${pathname}?${params.toString()}`)
     setIsOpen(false)
@@ -86,7 +90,9 @@ export default function QASFilterSheet({ options }: { options: FilterOptionsPayl
     { id: "on-hold", name: "On-Hold" },
     { id: "cancelled", name: "Cancelled" },
   ]
-  
+
+  const hasActiveFilters = Object.values(filters).some(value => value !== null && value !== "")
+
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
@@ -99,17 +105,27 @@ export default function QASFilterSheet({ options }: { options: FilterOptionsPayl
         <form onSubmit={handleApply} className="flex flex-col h-full">
           <SheetHeader>
             <SheetTitle>Advance Filters</SheetTitle>
-            <Button 
-              type="button" 
-              variant="ghost" 
-              size="sm" 
-              onClick={handleResetAll}
-              className="h-8 text-xs text-muted-foreground hover:text-primary"
-            >
-              Reset All
-            </Button>
+            {hasActiveFilters && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleResetAll}
+                className="h-8 text-xs text-muted-foreground hover:text-primary"
+              >
+                Reset All
+              </Button>
+            )}
           </SheetHeader>
           <div className="flex-1 overflow-y-auto space-y-6 px-4">
+            {/* Assigned To */}
+            <FilterSelect
+              label="Created by"
+              name="creator"
+              data={options.users}
+              value={filters.creator}
+              onValueChange={(val) => handleFieldChange("creator", val)}
+            />
             {/* Company Field */}
             <FilterSelect
               label="Company"
@@ -234,8 +250,8 @@ function FilterSelect({ label, name, data, value, selectedCompanyId, selectedPro
   return (
     <div className="grid gap-2 w-full">
       <div className="flex items-center justify-between">
-      <Label className={isDisabled ? "text-muted-foreground" : ""}>{label}</Label>
-      {value && value !== "" && (
+        <Label className={isDisabled ? "text-muted-foreground" : ""}>{label}</Label>
+        {value && value !== "" && (
           <button
             type="button"
             onClick={() => onValueChange(null)}
@@ -259,7 +275,7 @@ function FilterSelect({ label, name, data, value, selectedCompanyId, selectedPro
           <SelectGroup>
             {filteredData?.map((item: any) => (
               <SelectItem key={item.id} value={item.id.toString()}>
-                {item.name}
+                {item.name ?? item.firstName}
               </SelectItem>
             ))}
           </SelectGroup>

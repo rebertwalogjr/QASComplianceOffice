@@ -1,29 +1,31 @@
 "use client"
 
-import * as React from "react"
+import { useEffect, useRef, useState } from "react"
 import { Search, Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useDebounce } from "@/hooks/use-debounce" // See hook below
 import { search, TransactionBasicPaylod } from "@/server-actions/transaction"
 
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Button } from "@/components/ui/button"
+import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Input } from "../ui/input"
 
 export function SeriesSearchField() {
-  const [open, setOpen] = React.useState(false)
-  const [query, setQuery] = React.useState("")
-  const [results, setResults] = React.useState<TransactionBasicPaylod[]>([])
-  const [isLoading, setIsLoading] = React.useState(false)
-  
+  const [results, setResults] = useState<TransactionBasicPaylod[]>([])
+  const [query, setQuery] = useState("")
+  const [isOpen, setIsOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+
   const debouncedQuery = useDebounce(query, 500)
   const router = useRouter()
+  const containerRef = useRef<HTMLDivElement>(null)
 
   // Effect to handle the searching
-  React.useEffect(() => {
+  useEffect(() => {
     const fetchResults = async () => {
       if (debouncedQuery.length < 2) {
         setResults([])
+        setIsOpen(false)
         return
       }
 
@@ -31,65 +33,64 @@ export function SeriesSearchField() {
       const data = await search(debouncedQuery)
       setResults(data.data || [])
       setIsLoading(false)
+
+      if (debouncedQuery.length >= 2) {
+        setIsOpen(true)
+      }
     }
 
     fetchResults()
   }, [debouncedQuery])
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button variant="outline" className="w-[300px] justify-start text-muted-foreground font-normal">
-          <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-          Search series...
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[350px] p-0" align="start">
-        <Command shouldFilter={false}> {/* Disable internal filtering since we filter on server */}
-          <CommandInput 
-            placeholder="Type ID or title..." 
-            value={query}
-            onValueChange={setQuery}
-          />
-          <CommandList>
-            {isLoading && (
-              <div className="flex items-center justify-center p-4">
-                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-              </div>
-            )}
-            
-            {!isLoading && query.length > 0 && results.length === 0 && (
-              <CommandEmpty>No results found.</CommandEmpty>
-            )}
+    <div className="relative w-full max-w-sm" ref={containerRef}>
+      <div className="relative">
+        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Search Series No. or Audit Finding No."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onFocus={() => query.length >= 2 && setIsOpen(true)}
+          className="pl-9 h-9"
+        />
+        {isLoading && (
+          <div className="absolute right-3 top-2.5">
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          </div>
+        )}
+      </div>
 
-            {!isLoading && query.length === 0 && (
-              <div className="p-4 text-xs text-center text-muted-foreground">
-                Start typing to search (min. 2 characters)
+      {/* Manual Dropdown - No Radix/Popover event hijacking */}
+      {isOpen && (
+        <div className="absolute z-50 mt-2 w-full rounded-md border bg-popover text-popover-foreground shadow-md outline-none animate-in fade-in-0 zoom-in-95">
+          <div className="max-h-[300px] overflow-y-auto p-1">
+            {results.length === 0 && !isLoading ? (
+              <div className="py-6 text-center text-sm text-muted-foreground">
+                No matches found for "{query}"
               </div>
-            )}
-
-            <CommandGroup>
-              {results.map((item) => (
-                <CommandItem
-                  key={item.id}
-                  onSelect={() => {
-                    setOpen(false)
-                    router.push(`/qas/${item.id}`)
-                  }}
-                  className="cursor-pointer"
-                >
-                  <div className="flex flex-col">
-                    <span className="font-medium">{item.id}</span>
-                    <span className="text-xs text-muted-foreground font-mono">
-                      ID: {item.id}
+            ) : (
+              <div className="space-y-1">
+                {results.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      setQuery("")
+                      setIsOpen(false)
+                      router.push(`/qas/${item.id}`)
+                    }}
+                    className="flex w-full flex-col rounded-sm px-3 py-2 text-left text-sm hover:bg-accent hover:text-accent-foreground outline-none focus:bg-accent"
+                  >
+                    <span className="font-medium">{`Series No: ${item.id} – ${item.jobStatus}`}</span>
+                    <span className="text-medium text-muted-foreground">
+                      Finding No: {item.auditReport.name}
                     </span>
-                  </div>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
