@@ -44,3 +44,4 @@ next-env.d.ts
 
 # Local simulation of File Server
 /192.168.200.49
+.vscode
