@@ -1,0 +1,28 @@
+BEGIN TRY
+
+BEGIN TRAN;
+
+-- CreateTable
+CREATE TABLE [dbo].[EmailLog] (
+    [id] INT NOT NULL IDENTITY(1,1),
+    [recipientAddress] NVARCHAR(max) NOT NULL,
+    [subject] NVARCHAR(max) NOT NULL,
+    [content] NVARCHAR(max) NOT NULL,
+    [carbonCopy] NVARCHAR(max) NOT NULL,
+    [sentOn] DATETIME NOT NULL CONSTRAINT [EmailLog_sentOn_df] DEFAULT CURRENT_TIMESTAMP,
+    [isValid] BIT NOT NULL,
+    CONSTRAINT [EmailLog_pkey] PRIMARY KEY CLUSTERED ([id])
+);
+
+COMMIT TRAN;
+
+END TRY
+BEGIN CATCH
+
+IF @@TRANCOUNT > 0
+BEGIN
+    ROLLBACK TRAN;
+END;
+THROW
+
+END CATCH

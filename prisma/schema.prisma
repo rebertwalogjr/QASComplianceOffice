@@ -304,6 +304,8 @@ model User {
   holdingHistoryEnder       HoldingHistory[]       @relation("HoldingEnder")
   updateTrails              UpdateTrail[]          @relation("UpdateTrailCreator")
   reviewTrails              ReviewTrail[]          @relation("ReviewTrailCreator")
+  emailTemplatesCreator     EmailTemplate[]        @relation("EmailTemplateCreator")
+  emailTemplatesModifier    EmailTemplate[]        @relation("EmailTemplateModifier")
 }
 
 model AuditReport {
@@ -462,4 +464,29 @@ model ReviewTrail {
   createOn         DateTime       @default(now()) @db.DateTime
   jobTransaction   JobTransaction @relation(fields: [jobTransactionId], references: [id], onUpdate: NoAction, onDelete: NoAction)
   creator          User           @relation("ReviewTrailCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+}
+
+model EmailLog {
+  id               Int      @id @default(autoincrement())
+  recipientAddress String   @db.NVarChar(Max)
+  subject          String   @db.NVarChar(Max)
+  content          String   @db.NVarChar(Max)
+  carbonCopy       String   @db.NVarChar(Max)
+  sentOn           DateTime @default(now()) @db.DateTime
+  isValid          Boolean  @db.Bit
+}
+
+model EmailTemplate {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  subject     String   @db.NVarChar(500)
+  content     String   @db.NVarChar(Max)
+  description String   @db.NVarChar(500)
+  isActive    Boolean  @default(true) @db.Bit
+  createdBy   Int
+  createdOn   DateTime @default(now()) @db.DateTime
+  modifiedBy  Int?
+  modifiedOn  DateTime @updatedAt
+  creator     User     @relation("EmailTemplateCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  mofifier    User?    @relation("EmailTemplateModifier", fields: [modifiedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }

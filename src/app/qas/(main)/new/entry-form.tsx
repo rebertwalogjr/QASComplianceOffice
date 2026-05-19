@@ -34,6 +34,7 @@ import { createTransaction } from "@/server-actions/transaction"
 import { deleteTempFolderBySessionId } from "@/server-actions/files"
 import { toUTCMidnight } from "@/lib/utils"
 import { addDate } from "@/lib/utils-server"
+import { triggerDatabaseMail } from "@/lib/mail-service"
 
 interface EntryFormProps {
   companies: ActiveCompanyPayload[] | null

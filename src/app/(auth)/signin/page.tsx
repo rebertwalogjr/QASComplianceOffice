@@ -4,7 +4,7 @@ import { useState, startTransition } from "react"
 import Image from "next/image"
 import { signIn } from "next-auth/react"
 import { useForm } from "react-hook-form"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import z from "zod"
 import { toast } from "sonner"
@@ -26,6 +26,8 @@ type LoginFormValues = z.infer<typeof loginSchema>
 export default function SignInPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  const searchParams = useSearchParams()
+    const callbackUrl = searchParams.get("callbackUrl") || "/qas"
 
   const {
     register,
@@ -60,7 +62,7 @@ export default function SignInPage() {
     }
 
     startTransition(() => {
-      router.push("/qas")
+      router.push(callbackUrl)
     })
 
     // toast.success("Welcome back!", { position: "top-center" })

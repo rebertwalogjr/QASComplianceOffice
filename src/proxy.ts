@@ -5,14 +5,18 @@ export default withAuth(
   function middleware(req) {
     const token = req.nextauth.token
     const isActivated = token?.isActivated
-    const { pathname } = req.nextUrl
+    const { pathname, searchParams } = req.nextUrl
+
+    const callbackUrl = searchParams.get("callbackUrl") || "/qas"
 
     if (token && !isActivated && pathname !== "/activate") {
-      return NextResponse.redirect(new URL("/activate", req.url))
+      const url = new URL("/activate", req.url)
+      url.searchParams.set("callbackUrl", pathname)
+      return NextResponse.redirect(url)
     }
 
     if (token && isActivated && pathname === "/activate") {
-      return NextResponse.redirect(new URL("/qas", req.url))
+      return NextResponse.redirect(new URL(callbackUrl, req.url))
     }
 
     if (pathname === "/") {

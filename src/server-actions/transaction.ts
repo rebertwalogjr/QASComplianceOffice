@@ -9,10 +9,13 @@ import { promoteToFinal } from "@/lib/file-server";
 import fs from 'fs-extra';
 import path from 'path';
 import { getUserId } from "./get-session";
+import { triggerDatabaseMail } from "@/lib/mail-service";
+import { getNewlyCreatedEmailHtml } from "@/lib/email-builder";
+// import { NewlyCreatedTemplate } from "@/lib/email-builder";
 
 export async function createTransaction(formData: FormData) {
   const creatorId = await getUserId()
-  
+
   if (!creatorId) {
     throw new Error("You must be logged in.")
   }
@@ -79,7 +82,8 @@ export async function createTransaction(formData: FormData) {
               creator: { connect: { id: creatorId } }
             }))
           }
-        }
+        },
+        select: transactionBasicSelect
       })
       // Create the audit trail
       await tx.auditTrail.create({
@@ -97,11 +101,18 @@ export async function createTransaction(formData: FormData) {
 
   if (newJob) {
     await promoteToFinal(sessionId, newJob.id)
+    // Send email
+    const emailHtml = await getNewlyCreatedEmailHtml(newJob)
+    triggerDatabaseMail({
+      to: 'rlwalog@dmcihomes.com',
+      subject: `[TEST] QAS Series Created: ${newJob.id}`,
+      body: emailHtml
+    }).catch(err => console.error("Background Email Error:", error))
   }
   return { data: newJob, error }
 }
 
-export async function getTransactions(page: number = 1, pageSize: number = 10, filters: {[key: string]: string | undefined} = {}): Promise<{
+export async function getTransactions(page: number = 1, pageSize: number = 10, filters: { [key: string]: string | undefined } = {}): Promise<{
   data: TransactionBasicPaylod[] | null,
   totalCount: number,
   error: any
@@ -269,7 +280,7 @@ export async function jobTransactionClientUpdate(formData: FormData) {
     await promoteToFinal(sessionId, newJob.id)
   }
 
-   return { data: newJob, error }
+  return { data: newJob, error }
 }
 
 export async function search(params: string): Promise<{ data: TransactionBasicPaylod[] | null, error: any }> {
@@ -280,8 +291,8 @@ export async function search(params: string): Promise<{ data: TransactionBasicPa
     prisma.jobTransaction.findMany({
       where: {
         OR: [
-          ...(isNumeric ? [{ id: { equals: idValue }}] : []),
-          { auditReport: { name: {contains: params } } },
+          ...(isNumeric ? [{ id: { equals: idValue } }] : []),
+          { auditReport: { name: { contains: params } } },
         ]
       },
       select: transactionBasicSelect,

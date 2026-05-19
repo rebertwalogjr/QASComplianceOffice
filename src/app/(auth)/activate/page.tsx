@@ -1,7 +1,7 @@
 "use client"
 
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { activateAccount } from "@/server-actions/user";
@@ -13,6 +13,8 @@ export default function ActivatePage() {
   const { data: session, update } = useSession()
   const router = useRouter()
   const [isPending, setIsPending] = useState(false)
+  const searchParams = useSearchParams()
+  const callbackUrl = searchParams.get("callbackUrl") || "/qas"
 
   const handleActivate = async () => {
     setIsPending(true)
@@ -31,7 +33,7 @@ export default function ActivatePage() {
 
     toast.success("Account acticated successfully", { position: "top-center" })
 
-    router.push("/qas")
+    router.push(callbackUrl)
 
     setIsPending(false)
   }
