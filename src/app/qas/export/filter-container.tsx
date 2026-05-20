@@ -73,7 +73,7 @@ export default function ExportFilterContainer({ options }: { options: FilterOpti
   ]
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6 p-6 w-2xl">
       <MultiFilterSelect
         label="Status"
         name="status"

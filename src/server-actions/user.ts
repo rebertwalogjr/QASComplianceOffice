@@ -77,7 +77,7 @@ export async function createUser(formData: any) {
     currentUser = currentUserId
   } = formData
 
-  const hashedPassword = await bcrypt.hash("12345", 10)
+  const hashedPassword = await bcrypt.hash("12345678", 10)
 
   const { data, error } = await dbQuery(
     prisma.$transaction(async (tx) => {
@@ -289,17 +289,39 @@ export async function getActiveRecipients() : Promise<{data: UserBasicPayload[] 
   )
 }
 
-export async function activateAccount() {
+export async function activateAccount(newPassword: string) {
   const session = await getSession()
-  if (!session?.user?.id) {
+  const userId = session?.user.id
+
+  if (!userId) {
     return { data: null, error: "You must be logged in to activate your account." };
   }
+
+  const user = await prisma.user.findUnique({
+    where: { id: Number(userId) },
+    select: { password: true }
+  })
+
+  if (!user) {
+    return { data: null, error: "User account not found."}
+  }
+
+  if (user.password) {
+    const isSamePassword = await bcrypt.compare(newPassword, user.password)
+    if (isSamePassword) {
+      return { data: null, error: "PASSWORD_SAME_AS_CURRENT"}
+    }
+  }
+
+  const hashedPassword = await bcrypt.hash(newPassword, 10)
+
   return await dbQuery(
     prisma.user.update({
       where: {
         id: Number(session.user.id)
       },
       data: {
+        password: hashedPassword,
         isActivated: true
       }
     })

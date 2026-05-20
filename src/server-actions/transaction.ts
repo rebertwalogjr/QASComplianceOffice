@@ -10,7 +10,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import { getUserId } from "./get-session";
 import { triggerDatabaseMail } from "@/lib/mail-service";
-import { getNewlyCreatedEmailHtml } from "@/lib/email-builder";
+import { getNewlyCreatedEmailHtml, getOfficerApprovalRequestEmailHtml, getOfficerForClosingApprovedEmailHtml, getRecipientApprovalRequestEmailHtml, getSecretariatApprovalRequestEmailHtml, getSupervisorForClosingRequestEmailHtml, getSupervisorVerificationRequestEmailHtml } from "@/lib/email-builder";
 // import { NewlyCreatedTemplate } from "@/lib/email-builder";
 
 export async function createTransaction(formData: FormData) {
@@ -83,7 +83,7 @@ export async function createTransaction(formData: FormData) {
             }))
           }
         },
-        select: transactionBasicSelect
+        select: transactionEmailSelect
       })
       // Create the audit trail
       await tx.auditTrail.create({
@@ -101,13 +101,16 @@ export async function createTransaction(formData: FormData) {
 
   if (newJob) {
     await promoteToFinal(sessionId, newJob.id)
-    // Send email
-    const emailHtml = await getNewlyCreatedEmailHtml(newJob)
+    // -- EMAIL NOTIFICATION START
+    // Send email to verifier
+    const emailHtml = await getSupervisorVerificationRequestEmailHtml(newJob)
     triggerDatabaseMail({
-      to: 'rlwalog@dmcihomes.com',
-      subject: `[TEST] QAS Series Created: ${newJob.id}`,
-      body: emailHtml
-    }).catch(err => console.error("Background Email Error:", error))
+      to: emailHtml.recipient,
+      cc: emailHtml.cc,
+      subject: emailHtml.subject,
+      body: emailHtml.template
+    })
+    // -- EMAIL NOTIFICATION END
   }
   return { data: newJob, error }
 }
@@ -181,7 +184,6 @@ export async function jobTransactionClientUpdate(formData: FormData) {
   const type = formData.get("actionType")
   const comment = formData.get("comment") as string
   let rawData = {}
-  let holdRawData = {}
   let actionTaken = ""
 
   const tempDirPath = path.join(process.env.FILE_SERVER_PATH!, 'Temporary', sessionId)
@@ -247,7 +249,8 @@ export async function jobTransactionClientUpdate(formData: FormData) {
               creator: { connect: { id: creatorId } }
             }))
           }
-        }
+        },
+        select: transactionEmailSelect
       })
 
       await tx.auditTrail.create({
@@ -278,6 +281,60 @@ export async function jobTransactionClientUpdate(formData: FormData) {
 
   if (newJob) {
     await promoteToFinal(sessionId, newJob.id)
+
+    // -- EMAIL NOTIFICATION START
+    switch (type) {
+      case "verify":
+        // Send email to compliance officer for approval
+        const emailHtml1 = await getOfficerApprovalRequestEmailHtml(newJob)
+        triggerDatabaseMail({
+          to: emailHtml1.recipient,
+          subject: emailHtml1.subject,
+          cc: emailHtml1.cc,
+          body: emailHtml1.template
+        }).catch(err => console.error("Background Email Error:", error))
+        console.log("Verified na ni Supervisor")
+        break;
+      case "approve":
+        // Send email to recipient
+        const emailHtml2 = await getRecipientApprovalRequestEmailHtml(newJob)
+        triggerDatabaseMail({
+          to: emailHtml2.recipient,
+          subject: emailHtml2.subject,
+          cc: emailHtml2.cc,
+          body: emailHtml2.template
+        }).catch(err => console.error("Background Email Error:", error))
+        break;
+      case "accept":
+        // Send email to secretariat
+        const emailHtml3 = await getSecretariatApprovalRequestEmailHtml(newJob)
+        triggerDatabaseMail({
+          to: emailHtml3.recipient,
+          subject: emailHtml3.subject,
+          body: emailHtml3.template
+        }).catch(err => console.error("Background Email Error:", error))
+        break;
+      case "for closing":
+        // send email to supervisor
+        const emailHtml4 = await getSupervisorForClosingRequestEmailHtml(newJob)
+        triggerDatabaseMail({
+          to: emailHtml4.recipient,
+          subject: emailHtml4.subject,
+          body: emailHtml4.template
+        }).catch(err => console.error("Background Email Error:", error))
+        break;
+      case "close":
+        // send email to compliance secretariat
+        const emailHtml5 = await getOfficerForClosingApprovedEmailHtml(newJob)
+        triggerDatabaseMail({
+          to: emailHtml5.recipient,
+          subject: emailHtml5.subject,
+          cc: emailHtml5.cc,
+          body: emailHtml5.template
+        }).catch(err => console.error("Background Email Error:", error))
+        break;
+    }
+    // -- EMAIL NOTIFICATION END
   }
 
   return { data: newJob, error }
@@ -319,6 +376,8 @@ const transactionBasicSelect = {
   auditEngagement: { select: { name: true } },
   findingCategory: { select: { name: true } },
   recipient: recipientSelect,
+  typeOfFinding: { select: { name: true } },
+  problemCriteria: true,
 } satisfies Prisma.JobTransactionSelect
 
 const transactionInfoInclude = {
@@ -344,10 +403,39 @@ const transactionInfoInclude = {
   creator: userSelect,
 } satisfies Prisma.JobTransactionInclude
 
+const transactionEmailSelect = {
+  id: true,
+  jobStatus: true,
+  verifier: userSelect,
+  verifiedOn: true,
+  approver: userSelect,
+  approvedOn: true,
+  creator: userSelect,
+  createdOn: true,
+  company: { select: { name: true } },
+  project: { select: { name: true } },
+  auditRating: { select: { name: true } },
+  auditReport: { select: { id: true, name: true, isActive: true } },
+  auditEngagement: { select: { name: true } },
+  findingCategory: { select: { name: true } },
+  typeOfFinding: { select: { name: true } },
+  problemCriteria: true,
+  supervisor: userSelect,
+  recipient: recipientSelect,
+  complianceOfficer: userSelect,
+  complianceSecretariat: userSelect,
+  correctiveAction: true,
+  preventiveAction: true,
+} satisfies Prisma.JobTransactionSelect
+
 export type TransactionBasicPaylod = Prisma.JobTransactionGetPayload<{
   select: typeof transactionBasicSelect
 }>
 
 export type TransactionPayload = Prisma.JobTransactionGetPayload<{
   include: typeof transactionInfoInclude
+}>
+
+export type TransactionEmailPayload = Prisma.JobTransactionGetPayload<{
+  select: typeof transactionEmailSelect
 }>

@@ -21,7 +21,7 @@ export function AppSidebar() {
     const isExactMatch = pathname === item.url
     const isSubPath = pathname.startsWith(`${item.url}`)
 
-    const reservedSubPaths = ["/qas/admin", "/qas/new"]
+    const reservedSubPaths = ["/qas/admin", "/qas/new", "/qas/export"]
     const isReservedPath = item.url === "/qas" && reservedSubPaths.some(path => pathname.startsWith(path))
     const isActive = (isExactMatch || isSubPath) && !isReservedPath
 

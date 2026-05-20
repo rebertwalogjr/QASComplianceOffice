@@ -1,4 +1,4 @@
-import { Calendar, Grid2X2, Grid2X2Check, Grid2x2X, FileSearch, FolderSearch, FolderRoot, Building, Star, Asterisk, ChartBarBig, BookHeart, UserCog, UserPen, UserRoundCheck, SquareUserRound, CircleUser, Ampersand, Hash, Building2, CornerRightUp, UsersRound, Users, Boxes, FilePenLine } from "lucide-react"
+import { Calendar, Grid2X2, Grid2X2Check, Grid2x2X, FileSearch, FolderSearch, FolderRoot, Building, Star, Asterisk, ChartBarBig, BookHeart, UserCog, UserPen, UserRoundCheck, SquareUserRound, CircleUser, Ampersand, Hash, Building2, CornerRightUp, UsersRound, Users, Boxes, FilePenLine, LucideDownload } from "lucide-react"
 
 export const sidebarItems = {
   mainMenu: [
@@ -7,12 +7,13 @@ export const sidebarItems = {
     // { title: "Cancelled NCR", url: "#", icon: Grid2x2X },
     // { title: "Closed NCR", url: "#", icon: Grid2X2 },
     { title: "QA Entry", url: "/qas/new", icon: FilePenLine },
+    { title: "Export", url: "/qas/export", icon: LucideDownload},
   ],
 
   adminMenu: [
     { title: "Users", url: "/qas/admin/users", icon: Users },
     { title: "Group", url: "/qas/admin/groups", icon: Boxes },
-    { title: "Escalation", url: "/qas/admin/escalations", icon: CornerRightUp },
+    // { title: "Escalation", url: "/qas/admin/escalations", icon: CornerRightUp },
     { title: "Finding Type", url: "/qas/admin/types", icon: FileSearch },
     { title: "Finding Category", url: "/qas/admin/categories", icon: FolderSearch },
     { title: "Holiday", url: "/qas/admin/holidays", icon: Calendar },

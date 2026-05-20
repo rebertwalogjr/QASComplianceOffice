@@ -83,7 +83,7 @@ model JobTransaction {
   typeOfFindingId              Int
   findingCategoryId            Int
   complianceSecretariatId      Int
-  complianceOfficerId          Int?
+  complianceOfficerId          Int
   supervisorId                 Int
   auditReportId                Int
   auditFindingNumber           String           @db.NVarChar(100)
@@ -135,7 +135,7 @@ model JobTransaction {
   auditRating                  AuditRating      @relation(fields: [auditRatingId], references: [id], onUpdate: NoAction)
   recipient                    User?            @relation("JobTransactionRecipient", fields: [recipientId], references: [id], onUpdate: NoAction, onDelete: NoAction)
   complianceSecretariat        User             @relation("ComplianceSecretariat", fields: [complianceSecretariatId], references: [id], onUpdate: NoAction)
-  complianceOfficer            User?            @relation("ComplianceOfficer", fields: [complianceOfficerId], references: [id], onUpdate: NoAction)
+  complianceOfficer            User             @relation("ComplianceOfficer", fields: [complianceOfficerId], references: [id], onUpdate: NoAction)
   supervisor                   User             @relation("Supervisor", fields: [supervisorId], references: [id], onUpdate: NoAction)
   verifier                     User?            @relation("JobTransactionVerifier", fields: [verifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
   approver                     User?            @relation("JobTransactionApprover", fields: [approvedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
