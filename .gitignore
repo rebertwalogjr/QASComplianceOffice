@@ -40,6 +40,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# pm2
+ecosystem.config.js
+
 /generated/prisma
 
 # Local simulation of File Server

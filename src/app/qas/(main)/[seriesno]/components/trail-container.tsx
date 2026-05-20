@@ -19,11 +19,14 @@ interface BaseTrail {
   creator: {
     id: number
     isActive: boolean
+    emailAddress: string | null
     appSuiteEmployeeMaster: {
       employeeNumber: string
       emailAddress: string | null
       position: string | null
       fullName: string
+      firstName: string
+      lastName: string
       department: string | null
     }
   }
