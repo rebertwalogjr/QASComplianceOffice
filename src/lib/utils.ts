@@ -3,6 +3,7 @@ import { twMerge } from "tailwind-merge"
 import { isToday, isYesterday, isThisWeek, format } from "date-fns"
 import { AuditTrailPayload } from "@/server-actions/audit-trail"
 import { UpdateTrailPayload } from "@/server-actions/update-trail"
+import crypto from "crypto"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -10,15 +11,15 @@ export function cn(...inputs: ClassValue[]) {
 
 export function generateUserName(firstName: string, middleName: string, lastName: string) {
   if (!firstName || !lastName) return ""
-    const firstLetter = firstName.trim().charAt(0)
-    const secondLetter = middleName.trim().charAt(0)
-    const username = (firstLetter + secondLetter + lastName)
-      .replace(/\s+/g, "")
-      .toLowerCase();
-    return username;
+  const firstLetter = firstName.trim().charAt(0)
+  const secondLetter = middleName.trim().charAt(0)
+  const username = (firstLetter + secondLetter + lastName)
+    .replace(/\s+/g, "")
+    .toLowerCase();
+  return username;
 }
 
-export function formatLongDate( input: Date | string | undefined ) {
+export function formatLongDate(input: Date | string | undefined) {
   if (!input) return ""
   const d = typeof input === "string" ? new Date(input) : input
   if (Number.isNaN(d.getTime())) return ""
@@ -46,7 +47,7 @@ export function groupAuditTrails(data: AuditTrailPayload[]) {
 
   data.forEach((trail) => {
     const date = new Date(trail.createdOn);
-    
+
     if (isToday(date)) {
       groups["Today"].push(trail);
     } else if (isYesterday(date)) {
@@ -86,8 +87,8 @@ export function groupTrails(data: UpdateTrailPayload[]) {
 }
 
 export const IconSwitcher = (extension: string): string => {
-  const ext = extension.toLowerCase().startsWith('.') 
-    ? extension.toLowerCase() 
+  const ext = extension.toLowerCase().startsWith('.')
+    ? extension.toLowerCase()
     : `.${extension.toLowerCase()}`;
   const iconMap: Record<string, string> = {
     // Images
@@ -117,7 +118,7 @@ export const IconSwitcher = (extension: string): string => {
   return iconMap[ext] || "bi-file-earmark text-gray-700";
 };
 
-export function toTitleCase(str: string | null | undefined) : string {
+export function toTitleCase(str: string | null | undefined): string {
   if (!str) return ""
 
   return str
@@ -125,4 +126,17 @@ export function toTitleCase(str: string | null | undefined) : string {
     .split(" ")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ")
+}
+
+export function generateRandomPassword(length = 8) {
+  const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+  let password = ""
+
+  // Use crypto.randomBytes to pick characters securely
+  const randomBytes = crypto.randomBytes(length)
+  for (let i = 0; i < length; i++) {
+    password += chars[randomBytes[i] % chars.length]
+  }
+
+  return password
 }

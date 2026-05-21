@@ -29,7 +29,7 @@ export default async function RatingsPage() {
       ) : (
         <>
           <div className="flex flex-row px-6 pt-6 justify-between items-center">
-            <Label className="text-md font-semibold text-foreground">Audit Ratings</Label>
+            <Label className="text-md font-semibold text-foreground">Ratings</Label>
             <CreateDrawer companies={activeCompaniesRes.data} />
           </div>
           <div>

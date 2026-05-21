@@ -1,5 +1,6 @@
 import { render } from 'react-email'
 import { TransactionEmailPayload } from '@/server-actions/transaction';
+import { UserInfoPayload } from '@/server-actions/user';
 
 interface ApprovalEmailProps {
   seriesId: string;
@@ -484,6 +485,41 @@ const NewlyCreatedTemplate = ({ job }: { job: TransactionEmailPayload }) => (
   </html>
 )
 
+const UserInvitationTemplate = ({ firstName, username, password }: { firstName: string, username: string, password: string  }) => (
+  <html>
+    <body>
+      <div style={{ backgroundColor: '#ffffff', margin: '1rem' }}>
+        <p>Hi {firstName},</p>
+        <br />
+        <p>You have been added as user in <strong>QAS Compliance Office System</strong>.</p>
+        <p>Here's your credentials:</p>
+        <br />
+        <table style={{ width: '100%', borderCollapse: 'separate', border: '1px solid #e5e7eb' }}>
+          <tbody>
+            <tr>
+              <td style={{ border: '1px solid #e5e7eb', padding: '0.25rem', verticalAlign: 'top', width: '33.333333%' }}>Username</td>
+              <td style={{ border: '1px solid #e5e7eb', padding: '0.25rem', verticalAlign: 'top' }}>{username}</td>
+            </tr>
+            <tr>
+              <td style={{ border: '1px solid #e5e7eb', padding: '0.25rem', verticalAlign: 'top' }}>Password</td>
+              <td style={{ border: '1px solid #e5e7eb', padding: '0.25rem', verticalAlign: 'top' }}>{password}</td>
+            </tr>
+          </tbody>
+        </table>
+        <br />
+        <p>Activate your activate now, visit the following address:</p>
+        <a href={process.env.NEXTAUTH_URL || 'http://localhost:3000'} style={{ color: '#0066cc', textDecoration: 'underline' }} target='_blank'>QAS Compliance Office</a>
+        <br />
+        <br />
+        <p>Regards,</p>
+        <p>QA Audit System Administrator</p>
+        <br />
+        <p style={{ color: '#ef4444' }}>*** This is a system generated email, please do not reply ***</p>
+      </div>
+    </body>
+  </html>
+)
+
 // 0. Newly created finding
 export async function getNewlyCreatedEmailHtml(job: TransactionEmailPayload) {
   return {
@@ -558,5 +594,14 @@ export async function getOfficerForClosingApprovedEmailHtml(job: TransactionEmai
     recipient: job.supervisor.emailAddress || "rlwalog@dmcihomes.com",
     cc: job.complianceSecretariat.emailAddress || "",
     template: await render(<OfficerForClosingApproved job={job} />)
+  }
+}
+
+// User Invitation Email
+export async function getUserInvitationEmailHtml({newUser, password}: {newUser: UserInfoPayload, password: string}) {
+  return {
+    subject: `[QAS Compliance Office] Account Activation Details ${newUser.employeeNumber}`,
+    recipient: newUser.emailAddress || "rlwalog@dmcihomes.com",
+    template: await render(<UserInvitationTemplate firstName={newUser.appSuiteEmployeeMaster.firstName} username={newUser.username} password={password} />)
   }
 }

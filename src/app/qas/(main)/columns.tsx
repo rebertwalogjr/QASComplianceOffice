@@ -34,7 +34,7 @@ export const columns: ColumnDef<TransactionBasicPaylod>[] = [
   },
   {
     accessorKey: "auditReport.name",
-    header: "Audit Finding No.",
+    header: "Audit Report No.",
     // cell: ({row}) => {
     //   return <div className={row.original.status === "Closed" ? "opacity-50" : ""}>{row.original.auditNo}</div>
     // },

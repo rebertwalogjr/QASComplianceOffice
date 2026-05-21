@@ -109,7 +109,7 @@ export async function createTransaction(formData: FormData) {
       cc: emailHtml.cc,
       subject: emailHtml.subject,
       body: emailHtml.template
-    })
+    }).catch(err => console.error("Background Email Error:", err))
     // -- EMAIL NOTIFICATION END
   }
   return { data: newJob, error }
@@ -292,7 +292,7 @@ export async function jobTransactionClientUpdate(formData: FormData) {
           subject: emailHtml1.subject,
           cc: emailHtml1.cc,
           body: emailHtml1.template
-        }).catch(err => console.error("Background Email Error:", error))
+        }).catch(err => console.error("Background Email Error:", err))
         console.log("Verified na ni Supervisor")
         break;
       case "approve":
@@ -303,7 +303,7 @@ export async function jobTransactionClientUpdate(formData: FormData) {
           subject: emailHtml2.subject,
           cc: emailHtml2.cc,
           body: emailHtml2.template
-        }).catch(err => console.error("Background Email Error:", error))
+        }).catch(err => console.error("Background Email Error:", err))
         break;
       case "accept":
         // Send email to secretariat
@@ -312,7 +312,7 @@ export async function jobTransactionClientUpdate(formData: FormData) {
           to: emailHtml3.recipient,
           subject: emailHtml3.subject,
           body: emailHtml3.template
-        }).catch(err => console.error("Background Email Error:", error))
+        }).catch(err => console.error("Background Email Error:", err))
         break;
       case "for closing":
         // send email to supervisor
@@ -321,7 +321,7 @@ export async function jobTransactionClientUpdate(formData: FormData) {
           to: emailHtml4.recipient,
           subject: emailHtml4.subject,
           body: emailHtml4.template
-        }).catch(err => console.error("Background Email Error:", error))
+        }).catch(err => console.error("Background Email Error:", err))
         break;
       case "close":
         // send email to compliance secretariat
@@ -331,7 +331,7 @@ export async function jobTransactionClientUpdate(formData: FormData) {
           subject: emailHtml5.subject,
           cc: emailHtml5.cc,
           body: emailHtml5.template
-        }).catch(err => console.error("Background Email Error:", error))
+        }).catch(err => console.error("Background Email Error:", err))
         break;
     }
     // -- EMAIL NOTIFICATION END

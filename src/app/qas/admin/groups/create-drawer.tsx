@@ -184,7 +184,7 @@ export default function CreateDrawer({ projects }: CreateDrawerProps) {
           <DrawerFooter className="border-t">
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting && <Loader2 className="mr-2 size-4 animate-spin" />}
-              Save Project
+              Save Group
             </Button>
             <DrawerClose asChild>
               <Button variant="outline" disabled={isSubmitting}>Cancel</Button>

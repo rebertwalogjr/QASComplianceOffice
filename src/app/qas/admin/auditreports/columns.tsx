@@ -11,7 +11,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 export const columns: ColumnDef<AuditReport>[] = [
   {
     accessorKey: "name",
-    header: "Audit Number",
+    header: "Audit Report No.",
     cell: ({ row }) => {
       return <TableCellViewer item={row.original as AuditReport} />
     }
@@ -72,7 +72,7 @@ export const columns: ColumnDef<AuditReport>[] = [
   },
   {    
     accessorKey: "auditEngagementId.name",
-    header: "Audit Engagement",
+    header: "Engagement",
     cell: ({ row }) => {
       const engagement = row.original.auditEngagementId ? (row.original as any).auditEngagement : null
       const isActive = engagement ? engagement.isActive : null

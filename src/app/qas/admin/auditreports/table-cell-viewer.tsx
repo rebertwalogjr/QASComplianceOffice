@@ -154,7 +154,7 @@ export default function TableCellViewer({ item, className }: Props) {
 
                   {/* Name Field */}
                   <Field>
-                    <FieldLabel htmlFor="name">Audit Number</FieldLabel>
+                    <FieldLabel htmlFor="name">Audit Report No.</FieldLabel>
                     <Input
                       {...register("name")}
                       readOnly

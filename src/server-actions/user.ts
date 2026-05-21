@@ -6,6 +6,9 @@ import { dbQuery } from "@/lib/prisma-db-utils";
 import { Prisma } from "../../generated/prisma/client";
 import bcrypt from "bcryptjs";
 import { getUserId, getSession } from "./get-session";
+import { triggerDatabaseMail } from "@/lib/mail-service";
+import { getUserInvitationEmailHtml } from "@/lib/email-builder";
+import { generateRandomPassword } from "@/lib/utils";
 
 export async function getUsers() {
   return await dbQuery(
@@ -19,11 +22,24 @@ export async function getUsers() {
   )
 }
 
-export async function getUserById(id: number) : Promise<{ data: UserInfoPayload | null , error: any }> {
+export async function getUserById(id: number): Promise<{ data: UserInfoPayload | null, error: any }> {
   return await dbQuery(
     prisma.user.findUnique({
       where: { id },
       include: userInfoInclude
+    })
+  )
+}
+
+export async function getEscalations() {
+  return await dbQuery(
+    prisma.user.findMany({
+      where: { isEscalation: true },
+      include: {
+        appSuiteEmployeeMaster: true,
+        company: true
+      },
+      orderBy: { createdOn: "desc" }
     })
   )
 }
@@ -77,12 +93,13 @@ export async function createUser(formData: any) {
     currentUser = currentUserId
   } = formData
 
-  const hashedPassword = await bcrypt.hash("12345678", 10)
+  const genPassword = generateRandomPassword(8)
+  const hashedPassword = await bcrypt.hash(genPassword, 10)
 
-  const { data, error } = await dbQuery(
+  const { data: newUser, error } = await dbQuery(
     prisma.$transaction(async (tx) => {
       // 1. Create the User
-      return await tx.user.create({
+      const newUser = await tx.user.create({
         data: {
           employeeNumber,
           username,
@@ -95,7 +112,7 @@ export async function createUser(formData: any) {
           escalation2: escalations.second?.id || null,
           escalation3: escalations.third?.id || null,
           escalation4: escalations.fourth?.id || null,
-          
+
           // 2. Create UserRoles
           userRoles: {
             create: roleIds.map((rId: number) => ({
@@ -132,13 +149,26 @@ export async function createUser(formData: any) {
             }))
           },
 
-        }
+        },
+        include: userInfoInclude
       })
+
+      return newUser
     })
   )
-  if (error) { return { data, error } }
+
+  if (newUser) {
+    const emailHtml = await getUserInvitationEmailHtml({newUser, password: genPassword})
+    triggerDatabaseMail({
+      to: emailHtml.recipient,
+      subject: emailHtml.subject,
+      body: emailHtml.template
+    }).catch(err => console.error("Background Email Error:", err))
+  }
+
+  if (error) { return { newUser, error } }
   revalidatePath("/qas/admin/users");
-  return { data, error }
+  return { newUser, error }
 }
 
 export async function updateUser(userId: number, formData: any) {
@@ -247,13 +277,13 @@ export async function updateUser(userId: number, formData: any) {
   return { data, error }
 }
 
-export async function getActiveComplianceOfficers() : Promise<{data: UserBasicPayload[] | null, error: any}> {
+export async function getActiveComplianceOfficers(): Promise<{ data: UserBasicPayload[] | null, error: any }> {
   return await dbQuery(
     prisma.user.findMany({
       where: {
         isActive: true,
         userRoles: {
-          some: { roleId: 1003, isActive: true}
+          some: { roleId: 1003, isActive: true }
         }
       },
       select: userBasicSelect
@@ -261,13 +291,13 @@ export async function getActiveComplianceOfficers() : Promise<{data: UserBasicPa
   )
 }
 
-export async function getActiveSupervisors() : Promise<{data: UserBasicPayload[] | null, error: any}> {
+export async function getActiveSupervisors(): Promise<{ data: UserBasicPayload[] | null, error: any }> {
   return await dbQuery(
     prisma.user.findMany({
       where: {
         isActive: true,
         userRoles: {
-          some: { roleId: 1002, isActive: true}
+          some: { roleId: 1002, isActive: true }
         }
       },
       select: userBasicSelect
@@ -275,13 +305,13 @@ export async function getActiveSupervisors() : Promise<{data: UserBasicPayload[]
   )
 }
 
-export async function getActiveRecipients() : Promise<{data: UserBasicPayload[] | null, error: any}> {
+export async function getActiveRecipients(): Promise<{ data: UserBasicPayload[] | null, error: any }> {
   return await dbQuery(
     prisma.user.findMany({
       where: {
         isActive: true,
         userRoles: {
-          some: { roleId: 1004, isActive: true}
+          some: { roleId: 1004, isActive: true }
         }
       },
       select: userBasicSelect
@@ -303,13 +333,13 @@ export async function activateAccount(newPassword: string) {
   })
 
   if (!user) {
-    return { data: null, error: "User account not found."}
+    return { data: null, error: "User account not found." }
   }
 
   if (user.password) {
     const isSamePassword = await bcrypt.compare(newPassword, user.password)
     if (isSamePassword) {
-      return { data: null, error: "PASSWORD_SAME_AS_CURRENT"}
+      return { data: null, error: "PASSWORD_SAME_AS_CURRENT" }
     }
   }
 
@@ -330,11 +360,11 @@ export async function activateAccount(newPassword: string) {
 
 // user payload
 const escalationSelect = {
-  select: { 
-    id: true, 
-    appSuiteEmployeeMaster: { select: { fullName: true, employeeNumber: true } } 
+  select: {
+    id: true,
+    appSuiteEmployeeMaster: { select: { fullName: true, employeeNumber: true } }
   }
-};
+}
 
 const userInfoInclude = {
   appSuiteEmployeeMaster: {
@@ -384,7 +414,7 @@ const userBasicSelect = {
 } satisfies Prisma.UserSelect;
 
 export type UserInfoPayload = Prisma.UserGetPayload<{
-  include:  typeof userInfoInclude
+  include: typeof userInfoInclude
 }>
 
 export type UserBasicPayload = Prisma.UserGetPayload<{

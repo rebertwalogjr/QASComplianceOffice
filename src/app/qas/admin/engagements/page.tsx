@@ -32,7 +32,7 @@ export default async function AuditEngagementPage() {
       ) : (
         <>
           <div className="flex flex-row px-6 pt-6 justify-between items-center">
-            <Label className="text-md font-semibold text-foreground">Audit Engagements</Label>
+            <Label className="text-md font-semibold text-foreground">Engagements</Label>
             <CreateDrawer companies={activeCompanies} />
           </div>
           <div>

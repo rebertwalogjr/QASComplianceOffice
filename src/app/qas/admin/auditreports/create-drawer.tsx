@@ -125,7 +125,7 @@ export default function CreateDrawer({ companies, projects, auditEngagements }: 
       <DrawerContent>
         <form onSubmit={handleSubmit(onsubmit)} className="flex flex-col h-full">
           <DrawerHeader className="gap-1 flex flex-row items-center h-12 justify-between">
-            <DrawerTitle>Add Audit Number</DrawerTitle>
+            <DrawerTitle>Add Audit Report</DrawerTitle>
             <DrawerClose asChild>
               <Button variant="ghost" size="icon-sm">
                 <X className="size-4" />
@@ -142,7 +142,7 @@ export default function CreateDrawer({ companies, projects, auditEngagements }: 
 
                     {/* Name Field */}
                     <Field>
-                      <FieldLabel htmlFor="name">Audit Number</FieldLabel>
+                      <FieldLabel htmlFor="name">Audit Report No.</FieldLabel>
                       <Input id="name"
                         placeholder="----"
                         {...register("name")}
