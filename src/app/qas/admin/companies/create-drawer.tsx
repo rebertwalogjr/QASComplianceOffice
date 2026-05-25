@@ -8,7 +8,7 @@ import z from "zod"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button";
-import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
+import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
@@ -71,6 +71,7 @@ export default function CreateDrawer() {
         <form onSubmit={handleSubmit(onsubmit)} className="flex flex-col h-full">
           <DrawerHeader className="gap-1 flex flex-row items-center h-12 justify-between">
             <DrawerTitle>Add New Company</DrawerTitle>
+            <DrawerDescription></DrawerDescription>
             <DrawerClose asChild>
               <Button variant="ghost" size="icon-sm">
                 <X className="size-4" />

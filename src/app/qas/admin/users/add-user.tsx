@@ -21,7 +21,7 @@ export default function AddUser() {
       <DrawerContent>
         <DrawerHeader >
           <DrawerTitle>New User</DrawerTitle>
-          <DrawerDescription>sda</DrawerDescription>
+          <DrawerDescription></DrawerDescription>
         </DrawerHeader>
 
         {/* <Separator /> */}

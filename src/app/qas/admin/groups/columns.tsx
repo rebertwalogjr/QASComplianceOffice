@@ -10,15 +10,15 @@ import { Group } from "../../../../../generated/prisma/client"
 
 export const columns: ColumnDef<Group>[] = [
   {
-    accessorKey: "name",
-    header: "Name",
+    accessorKey: "code",
+    header: "Group Code",
     cell: ({ row }) => {
       return <TableCellViewer item={row.original as Group} />
     }
   },
   {
-    accessorKey: "code",
-    header: "Code",
+    accessorKey: "name",
+    header: "Group Name",
   },
   {
     accessorKey: "projectId.name",
@@ -53,7 +53,7 @@ export const columns: ColumnDef<Group>[] = [
   },
   {
     accessorKey: "emailAddress",
-    header: "Email Address",
+    header: "In-Charge Email",
   },
   {
     accessorKey: "isActive",

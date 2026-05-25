@@ -80,7 +80,13 @@ export function SignInForm() {
     <Card className="w-full max-w-[400px]">
       <CardHeader>
         <div className="flex gap-2 mb-4">
-          <Image src="/DMCILogo.png" width={128} height={32} alt="DMCI Logo" priority className="object-contain" />
+          <Image
+            src="/DMCILogo.png"
+            width={128} height={32}
+            alt="DMCI Logo"
+            priority
+            className="object-contain"
+          />
         </div>
         <CardTitle>Login to your account</CardTitle>
         <CardDescription>Enter your username below to login to your account</CardDescription>

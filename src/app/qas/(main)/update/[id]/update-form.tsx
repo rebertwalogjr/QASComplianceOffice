@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
-import { File, Group, LucideBadgeInfo, MegaphoneIcon, TextSelection } from "lucide-react"
+import { File as FileIcon, Group, LucideBadgeInfo, MegaphoneIcon, TextSelection } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -10,33 +10,34 @@ import z from "zod"
 import { toast } from "sonner"
 import { Session } from "next-auth"
 
-import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Card, CardContent } from "@/components/ui/card"
+import { Field, FieldDescription, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field"
+import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
 import { FileUpload, Attachment } from "@/components/FileUpload"
-import { Spinner } from "@/components/ui/spinner"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
+import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
 
-import { ActiveCompanyPayload } from "@/server-actions/company"
-import { ActiveProjectPayload } from "@/server-actions/project"
-import { ActiveEngagementPayload } from "@/server-actions/engagement"
-import { ActiveFindingTypePayload } from "@/server-actions/finding-type"
-import { ActiveFindingCategoryPayload } from "@/server-actions/finding-category"
-import { ActiveGroupPayload } from "@/server-actions/group"
-import { UserBasicPayload } from "@/server-actions/user"
-import { ActiveAuditRatingPayload } from "@/server-actions/rating"
+
 import { ActiveAuditReportPayload } from "@/server-actions/audit-report"
-import { createTransaction } from "@/server-actions/transaction"
+import { ActiveCompanyPayload } from "@/server-actions/company"
+import { ActiveEngagementPayload } from "@/server-actions/engagement"
+import { ActiveFindingCategoryPayload } from "@/server-actions/finding-category"
+import { ActiveFindingTypePayload } from "@/server-actions/finding-type"
+import { ActiveGroupPayload } from "@/server-actions/group"
+import { ActiveProjectPayload } from "@/server-actions/project"
+import { ActiveAuditRatingPayload } from "@/server-actions/rating"
+import { UserBasicPayload } from "@/server-actions/user"
+import { TransactionPayload, updateTransaction } from "@/server-actions/transaction"
 import { deleteTempFolderBySessionId } from "@/server-actions/files"
-import { cn, toUTCMidnight } from "@/lib/utils"
 import { addDate } from "@/lib/utils-server"
-import { triggerDatabaseMail } from "@/lib/mail-service"
+import { cn } from "@/lib/utils"
 
 interface EntryFormProps {
+  initialData: TransactionPayload | null
   companies: ActiveCompanyPayload[] | null
   projects: ActiveProjectPayload[] | null
   engagements: ActiveEngagementPayload[] | null
@@ -51,11 +52,12 @@ interface EntryFormProps {
   session: Session | null
 }
 
-export default function EntryForm({ options }: { options: EntryFormProps }) {
+export default function UpdateForm({ options }: { options: EntryFormProps }) {
   const router = useRouter()
   const isMobile = useIsMobile()
 
   const jobSchema = z.object({
+    jobTransactionId: z.string(),
     companyId: z.string().min(1, "Please select a company"),
     projectId: z.string().min(1, "Please select a project"),
     auditEngagementId: z.string().min(1, "Please select an engagement"),
@@ -81,40 +83,36 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
 
   type JobFormValues = z.infer<typeof jobSchema>
 
-  const datetimeIssued = toUTCMidnight(new Date())
-  const tempTargetDate = new Date(datetimeIssued?.getTime() || Date.now())
-  tempTargetDate.setDate(tempTargetDate.getDate() + 2)
-  const targetDate = toUTCMidnight(tempTargetDate)
-
   const { register, handleSubmit, control, watch, setValue, formState: { errors, isSubmitting }, } = useForm<JobFormValues>({
     resolver: zodResolver(jobSchema),
     defaultValues: {
-      companyId: "",
-      projectId: "",
-      auditEngagementId: "",
-      typeOfFindingId: "",
-      findingCategoryId: "",
-      complianceOfficerId: "",
-      supervisorId: "",
-      auditReportId: "",
-      issuedOn: datetimeIssued?.toDateString(),
-      // targetDate: targetDate?.toDateString(),
-      targetDate: "",
-      auditRatingId: "",
-      projectManagerDepartmentHead: "",
-      responsibleDepartment: "",
-      responsiblePerson: "",
-      recurringPerProcess: "",
-      recurringPerPerson: "",
-      recipientGroupId: "",
-      recipientId: "",
-      problemCriteria: "",
-      problemFindings: "",
-      recommendations: "",
+      jobTransactionId: options.initialData?.id.toString(),
+      companyId: options.initialData?.companyId.toString(),
+      projectId: options.initialData?.projectId.toString(),
+      auditEngagementId: options.initialData?.auditEngagementId.toString(),
+      typeOfFindingId: options.initialData?.typeOfFindingId.toString(),
+      findingCategoryId: options.initialData?.findingCategoryId.toString(),
+      complianceOfficerId: options.initialData?.complianceOfficerId.toString(),
+      supervisorId: options.initialData?.supervisorId.toString(),
+      auditReportId: options.initialData?.auditReportId.toString(),
+      issuedOn: options.initialData?.issuedOn?.toDateString(),
+      targetDate: options.initialData?.targetDate?.toDateString(),
+      auditRatingId: options.initialData?.auditRatingId.toString(),
+      projectManagerDepartmentHead: options.initialData?.projectManagerDepartmentHead?.toString(),
+      responsibleDepartment: options.initialData?.responsibleDepartment?.toString(),
+      responsiblePerson: options.initialData?.responsiblePerson?.toString(),
+      recurringPerProcess: options.initialData?.recurringPerPerson ? "yes" : "no",
+      recurringPerPerson: options.initialData?.recurringPerPerson ? "yes" : "no",
+      recipientGroupId: options.initialData?.recipientGroupId?.toString(),
+      recipientId: options.initialData?.recipientId?.toString(),
+      problemCriteria: options.initialData?.problemCriteria?.toString(),
+      problemFindings: options.initialData?.problemFindings?.toString(),
+      recommendations: options.initialData?.recommendations?.toString(),
     }
   })
 
   const [sessionId, setSessionId] = useState<string>("")
+  const [isLoadingAttachments, setIsLoadingAttachments] = useState(false)
   const [attachments, setAttachments] = useState<Attachment[]>([])
 
   const selectedCompanyId = watch("companyId")
@@ -165,22 +163,34 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
   }, [selectedRecipientId, options.recipients]);
 
   const onSubmit = async (values: JobFormValues) => {
+
     const formData = new FormData()
-    formData.append("payload", JSON.stringify(values))
+
+    const activeAttachmentIds = attachments.filter((f) => f.isDbRecord && !f.isMarkedForDeletion).map((f) => f.id) //optional
+    const deletedAttachmentIds = attachments.filter((f) => f.isDbRecord && f.isMarkedForDeletion).map((f) => f.id)
+
+    const extendedPayload = {
+      ...values,
+      activeAttachmentIds,
+      deletedAttachmentIds
+    }
+
+
+    formData.append("payload", JSON.stringify(extendedPayload))
     formData.append("sessionId", sessionId)
 
     attachments.forEach((fileItem) => {
-      if(!fileItem.isDbRecord && fileItem.file) {
+      if (!fileItem.isDbRecord && fileItem.file) {
         formData.append("attachments", fileItem.file)
       }
     })
 
-    const response = await createTransaction(formData)
+    const response = await updateTransaction(formData)
 
     if (response.error) {
       toast.error("Error: " + response.error)
     } else {
-      toast.success("Transaction created successfully!", { position: "top-center" });
+      toast.success("Transaction updated successfully!", { position: "top-center" });
       router.refresh()
       router.push(`/qas/${response.data.id}`)
     }
@@ -190,7 +200,7 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
     try {
       await deleteTempFolderBySessionId(sessionId)
       setTimeout(() => {
-        router.push("/qas");
+        router.push(`/qas/${options.initialData?.id}`);
         router.refresh();
       }, 100);
     } catch (error) {
@@ -199,10 +209,10 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
   }
 
   const calculateSmartDate = async () => {
-    if (datetimeIssued) {
-      const smartDate = await addDate(datetimeIssued, 2);
-      setValue("targetDate", smartDate.toDateString());
-    }
+    // if (datetimeIssued) {
+    //   const smartDate = await addDate(datetimeIssued, 2);
+    //   setValue("targetDate", smartDate.toDateString());
+    // }
   }
 
   if (!sessionId) return null
@@ -210,13 +220,13 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
   return (
     <form className={cn(`flex flex-col gap-4 ${isMobile ? "px-4" : "px-20"} lg:px-40`)} onSubmit={handleSubmit(onSubmit)}>
 
-      <div className="grid lg:grid-cols-2 grid-cols-1 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
         <div className="flex flex-col gap-4">
 
           <div className="flex items-center gap-2">
             <div className="rounded-md border p-2 bg-primary/10 text-primary border-primary">
-              <File size={16} />
+              <FileIcon size={16} />
             </div>
             <Label className="text-lg">Findings</Label>
           </div>
@@ -225,6 +235,10 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
             <CardContent>
               <FieldSet>
                 <FieldGroup>
+
+                  <Field>
+                    <Input {...register("jobTransactionId")} value={options.initialData?.id} hidden readOnly />
+                  </Field>
 
                   <Field>
                     <FieldLabel>Compliance Secretariat</FieldLabel>
@@ -733,7 +747,7 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
                 <FileUpload
                   sessionId={sessionId}
                   onFilesChange={setAttachments}
-                  initialAttachments={null}
+                  initialAttachments={options.initialData?.attachments.filter(att => att.isActive)}
                 />
               </Field>
 
@@ -755,7 +769,7 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
                 <AlertDialogTitle>Are you sure you want to cancel?</AlertDialogTitle>
               </AlertDialogHeader>
               <AlertDialogDescription>
-                This will cancel the creation of this record and permanently delete all uploaded attachments from the temporary server.
+                This will cancel the modification of this record and permanently delete all uploaded attachments from the temporary server.
               </AlertDialogDescription>
               <AlertDialogFooter>
                 <AlertDialogCancel asChild>

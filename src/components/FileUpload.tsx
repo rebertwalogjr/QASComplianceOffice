@@ -1,36 +1,75 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
-import { FileText, Paperclip, X } from "lucide-react"
+import { Download, FileText, Paperclip, Trash2, Undo2, X } from "lucide-react"
 import { Card } from "./ui/card"
 import { Button } from "./ui/button"
-import { deleteTempFileAction, uploadFilesAction } from "@/server-actions/files"
+import { deleteTempFileAction, downloadFileAction, uploadFilesAction } from "@/server-actions/files"
 import { toast } from "sonner"
+import { IconSwitcher } from "@/lib/utils"
+import path from 'path'
 
-export interface FileWithPreview {
-  file: File
+export interface Attachment {
+  id: string | number
+  fileName: string
+  fileSize: number
   preview: string
-  id: string
+  isDbRecord: boolean
+  jobTransactionId?: number
+  file?: File
+  isMarkedForDeletion?: boolean
 }
 
 interface FileUploadProps {
   sessionId: string
-  onFilesChange: (files: FileWithPreview[]) => void
+  onFilesChange: (files: Attachment[]) => void
+  initialAttachments?: {
+    id: number
+    jobTransactionId: number
+    fileName: string
+    fileSize: number
+  }[] | null
 }
 
-export function FileUpload({ sessionId, onFilesChange }: FileUploadProps) {
-  const [files, setFiles] = useState<FileWithPreview[]>([])
+export function FileUpload({ sessionId, onFilesChange, initialAttachments = [] }: FileUploadProps) {
+  const [files, setFiles] = useState<Attachment[]>(() => {
+    if (!initialAttachments) return []
+    return initialAttachments?.map(att => ({
+      id: att.id,
+      fileName: att.fileName,
+      fileSize: att.fileSize,
+      isDbRecord: true,
+      jobTransactionId: att.jobTransactionId,
+      preview: "",
+      isMarkedForDeletion: false
+    }))
+  })
 
   useEffect(() => {
     onFilesChange(files)
   }, [files, onFilesChange])
+
+  useEffect(() => {
+    if (initialAttachments && initialAttachments.length > 0 && files.length === 0) {
+      const mapped = initialAttachments.map(att => ({
+        id: att.id,
+        fileName: att.fileName,
+        fileSize: att.fileSize,
+        isDbRecord: true,
+        jobTransactionId: att.jobTransactionId,
+        preview: "",
+        isMarkedForDeletion: false
+      }))
+      setFiles(mapped)
+    }
+  }, [initialAttachments])
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return
 
     const selectedFiles = Array.from(e.target.files)
     const newFilesToUpload = selectedFiles.filter(
-      (sf) => !files.some((f) => f.file.name === sf.name)
+      (sf) => !files.some((f) => f.fileName === sf.name)
     )
 
     if (newFilesToUpload.length < selectedFiles.length) {
@@ -42,38 +81,79 @@ export function FileUpload({ sessionId, onFilesChange }: FileUploadProps) {
       return
     }
 
-    const uniqueInSelection = newFilesToUpload.filter(
-      (file, index, self) => index === self.findIndex((t) => t.name === file.name)
-    )
+    // const uniqueInSelection = newFilesToUpload.filter(
+    //   (file, index, self) => index === self.findIndex((t) => t.name === file.name)
+    // )
 
     const formData = new FormData()
-    uniqueInSelection.forEach((file) => formData.append("attachments", file));
-    selectedFiles.forEach(file => formData.append("attachments", file))
-    const result = await uploadFilesAction(sessionId, formData)
+    // uniqueInSelection.forEach((file) => formData.append("attachments", file));
+    // selectedFiles.forEach(file => formData.append("attachments", file))
+    newFilesToUpload.forEach((file) => formData.append("attachments", file))
 
-    if (result.success) {
-      const newFiles: FileWithPreview[] = selectedFiles.map(file => ({
-        file,
-        id: `${file.name}-${file.size}-${Date.now()}`,
-        preview: file.type.startsWith("image/") ? URL.createObjectURL(file) : ""
-      }))
-      setFiles(prev => [...prev, ...newFiles])
+    try {
+      const result = await uploadFilesAction(sessionId, formData)
+
+      if (result.success) {
+        const newUploadeFiles: Attachment[] = newFilesToUpload.map(file => ({
+          id: `${file.name}-${file.size}-${Date.now()}`,
+          fileName: file.name,
+          fileSize: file.size,
+          isDbRecord: false,
+          file: file,
+          preview: file.type.startsWith("image/") ? URL.createObjectURL(file) : "",
+          isMarkedForDeletion: false
+        }))
+        setFiles(prev => [...prev, ...newUploadeFiles])
+      } else {
+        toast.error(result.error || "Failed to upload files.")
+      }
+    } catch (err) {
+      toast.error("An error occured during the file upload.")
+    } finally {
+      e.target.value = ""
     }
-    e.target.value = ""
   }
 
-  const removeFile = async (id: string, fileName: string) => {
-    const result = await deleteTempFileAction(sessionId, fileName)
+  const removeFile = async (targetFile: Attachment) => {
+    if (targetFile.isDbRecord) {
+      setFiles(prev => prev.map(f => f.id === targetFile.id ? { ...f, isMarkedForDeletion: !f.isMarkedForDeletion } : f))
+      return
+    }
+    const result = await deleteTempFileAction(sessionId, targetFile.fileName)
     if (result.success) {
-      const fileToRemove = files.find(f => f.id === id)
-      
-      if(fileToRemove?.preview) {
-        URL.revokeObjectURL(fileToRemove.preview)
+      if (targetFile.preview) {
+        URL.revokeObjectURL(targetFile.preview)
       }
-
-      setFiles(prev => prev.filter(f => f.id !== id))
+      setFiles(prev => prev.filter(f => f.id !== targetFile.id))
     } else {
       toast.error("Could not delete file from the server: " + result.error)
+    }
+  }
+
+  const handleDownload = async (jobTransactionId: number | undefined, fileName: string) => {
+    if (!jobTransactionId) {
+      toast.error("Download is only available for saved transactions.")
+      return
+    }
+    try {
+      const result = await downloadFileAction(jobTransactionId, fileName)
+      const byteCharacters = atob(result.base64)
+      const byteNumbers = new Array(byteCharacters.length)
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i)
+      }
+      const byteArray = new Uint8Array(byteNumbers)
+      const blob = new Blob([byteArray])
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = fileName
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild
+    } catch (error) {
+      toast.error("Error downloading file");
     }
   }
 
@@ -90,29 +170,61 @@ export function FileUpload({ sessionId, onFilesChange }: FileUploadProps) {
         </label>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        {files.map((fileItem) => (
-          <Card key={fileItem.id} className="relative p-2 flex items-center gap-2 group">
-            {fileItem.preview ? (
-              <img src={fileItem.preview} className="h-12 w-12 object-cover rounded" />
-            ) : (
-              <FileText className="h-12 w-12 text-blue-500" />
-            )}
-            <div className="flex-1 overflow-hidden">
-              <p className="text-xs font-medium truncate">{fileItem.file.name}</p>
-              <p className="text-[10px] text-gray-400">{(fileItem.file.size / 1024).toFixed(1)} KB</p>
-            </div>
-            <Button
-              type="button"
-              variant="destructive"
-              size="icon"
-              className="absolute -top-2 -right-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-              onClick={() => removeFile(fileItem.id, fileItem.file.name)}
+      <div className="grid grid-cols-1 gap-4">
+        {files.map((fileItem) => {
+          const isDeleted = fileItem.isMarkedForDeletion
+          return (
+            <Card key={fileItem.id}
+              className={`h-14 p-3 flex flex-row items-center justify-between group hover:border-primary/50 transition-colors shadow-none
+                ${isDeleted ? "bg-red-50/40 border-red-200/60 opacity-60" : ""}`}
             >
-              <X className="h-3 w-3" />
-            </Button>
-          </Card>
-        ))}
+
+              <div className="flex items-center overflow-hidden">
+                <div className={`p-2 ${isDeleted ? "opacity-40" : ""}`}>
+                  <i className={IconSwitcher(path.extname(fileItem.fileName))}></i>
+                </div>
+                <div className="flex flex-col overflow-hidden">
+                  <div className={`flex items-center gap-2 `}>
+                    <p className={`text-sm truncate ${isDeleted ? "line-through text-muted-foreground select-none" : ""}`}>{fileItem.fileName}</p>
+                    <span className="text-xs text-muted-foreground">{(fileItem.fileSize / 1024).toFixed(1)} KB</span>
+                    {fileItem.isDbRecord && (
+                      <span className={`text-[10px] border px-1.5 rounded-sm shrink-0
+                      ${isDeleted ? "bg-red-100 text-red-700 border-red-300" : "bg-emerald-50 text-emerald-700 border-emerald-200"}`}>
+                        Saved
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                {fileItem.isDbRecord &&
+                  <div className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      title="Download"
+                      onClick={() => handleDownload(fileItem.jobTransactionId, fileItem.fileName)}
+                    >
+                      <Download className="" />
+                    </Button>
+                  </div>
+                }
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="hover:bg-destructive"
+                  onClick={() => removeFile(fileItem)}
+                >
+                  {isDeleted ? <Undo2 className="h-3 w-3" /> : <Trash2 className="h-3 w-3" />}
+                </Button>
+              </div>
+
+            </Card>
+          )
+        })}
       </div>
     </div>
   )

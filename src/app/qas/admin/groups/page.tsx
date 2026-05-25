@@ -16,6 +16,10 @@ export default async function GroupsPage() {
   const activeProjects = activeProjectsRes.data ?? []
   const error = groupsRes.error || projectsRes.error || activeProjectsRes.error
 
+  const sortedProjects = [...activeProjects].sort((a, b) => {
+    return a.name.localeCompare(b.name)
+  })
+
   return (
     <div className="@container/main flex flex-col">
       {error ? (
@@ -32,7 +36,7 @@ export default async function GroupsPage() {
         <>
           <div className="flex flex-row px-6 pt-6 justify-between items-center">
             <Label className="text-md font-semibold text-foreground">Group Management</Label>
-            <CreateDrawer projects={activeProjects} />
+            <CreateDrawer projects={sortedProjects} />
           </div>
           <div>
             <LookupsProvider data={{ groups, projects, activeProjects }}>

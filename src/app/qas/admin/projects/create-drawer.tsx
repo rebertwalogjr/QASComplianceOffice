@@ -10,7 +10,7 @@ import { createProject } from "@/server-actions/project"
 import { ActiveCompanyPayload } from "@/server-actions/company"
 
 import { Button } from "@/components/ui/button"
-import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer"
+import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer"
 import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -83,6 +83,7 @@ export default function CreateDrawer({ companies }: CreateDrawerProps) {
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col h-full">
           <DrawerHeader className="gap-1 flex flex-row items-center h-12 justify-between">
             <DrawerTitle>Add New Project</DrawerTitle>
+            <DrawerDescription></DrawerDescription>
             <DrawerClose asChild>
               <Button variant="ghost" size="icon-sm">
                 <X className="size-4" />
@@ -98,26 +99,26 @@ export default function CreateDrawer({ companies }: CreateDrawerProps) {
                 <FieldGroup>
                   <div className="flex flex-col gap-5">
 
-                    {/* Name Field */}
-                    <Field>
-                      <FieldLabel htmlFor="name">Name</FieldLabel>
-                      <Input
-                        id="name"
-                        placeholder="e.g. Moncello Crest"
-                        {...register("name")}
-                      />
-                      {errors.name && <p className="text-xs text-destructive mt-1">{errors.name.message}</p>}
-                    </Field>
-
                     {/* Code Field */}
                     <Field>
-                      <FieldLabel htmlFor="code">Code</FieldLabel>
+                      <FieldLabel htmlFor="code">Project Code</FieldLabel>
                       <Input
                         id="code"
                         placeholder="MC"
                         {...register("code")}
                       />
                       {errors.code && <p className="text-xs text-destructive mt-1">{errors.code.message}</p>}
+                    </Field>
+
+                    {/* Name Field */}
+                    <Field>
+                      <FieldLabel htmlFor="name">Project Name</FieldLabel>
+                      <Input
+                        id="name"
+                        placeholder="e.g. Moncello Crest"
+                        {...register("name")}
+                      />
+                      {errors.name && <p className="text-xs text-destructive mt-1">{errors.name.message}</p>}
                     </Field>
 
                     {/* Company Field */}

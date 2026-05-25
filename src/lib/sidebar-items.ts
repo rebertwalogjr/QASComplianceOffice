@@ -1,4 +1,4 @@
-import { Calendar, Grid2X2, Grid2X2Check, Grid2x2X, FileSearch, FolderSearch, FolderRoot, Building, Star, Asterisk, ChartBarBig, BookHeart, UserCog, UserPen, UserRoundCheck, SquareUserRound, CircleUser, Ampersand, Hash, Building2, CornerRightUp, UsersRound, Users, Boxes, FilePenLine, LucideDownload } from "lucide-react"
+import { Calendar, Grid2X2, Grid2X2Check, Grid2x2X, FileSearch, FolderSearch, FolderRoot, Building, Star, Asterisk, ChartBarBig, BookHeart, UserCog, UserPen, UserRoundCheck, SquareUserRound, CircleUser, Ampersand, Hash, Building2, CornerRightUp, UsersRound, Users, Boxes, FilePenLine, LucideDownload, Settings } from "lucide-react"
 
 export const sidebarItems = {
   mainMenu: [
@@ -8,6 +8,7 @@ export const sidebarItems = {
     // { title: "Closed NCR", url: "#", icon: Grid2X2 },
     { title: "QA Entry", url: "/qas/new", icon: FilePenLine },
     { title: "Export", url: "/qas/export", icon: LucideDownload},
+    // { title: "Settings", url: "/qas/settings", icon: Settings},
   ],
 
   adminMenu: [
@@ -22,6 +23,6 @@ export const sidebarItems = {
     { title: "Engagement", url: "/qas/admin/engagements", icon: BookHeart },
     { title: "Rating", url: "/qas/admin/ratings", icon: Star },
     { title: "Audit Reports", url: "/qas/admin/auditreports", icon: Hash },
-    { title: "Manage Status", url: "/qas/admin/managestatus", icon: ChartBarBig },
+    // { title: "Manage Status", url: "/qas/admin/managestatus", icon: ChartBarBig },
   ],
 }

@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer"
+import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer"
 import { Loader2, X } from "lucide-react"
 import { Textarea } from "@/components/ui/textarea"
 import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field"
@@ -99,7 +99,7 @@ export default function TableCellViewer({ item, className }: Props) {
 
       <DrawerTrigger asChild>
         <Button variant="link" className={`text-foreground w-fit px-0 ml-1 text-left ${className}`}>
-          {item.name}
+          {item.code}
         </Button>
       </DrawerTrigger>
 
@@ -107,6 +107,7 @@ export default function TableCellViewer({ item, className }: Props) {
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col h-full">
           <DrawerHeader className="gap-1 flex flex-row items-center h-12 justify-between">
             <DrawerTitle>{isEditing ? "Edit Group" : "Group Details"}</DrawerTitle>
+            <DrawerDescription></DrawerDescription>
             <DrawerClose asChild>
               <Button variant="ghost" size="icon-sm">
                 <X className="size-4" />
@@ -122,26 +123,26 @@ export default function TableCellViewer({ item, className }: Props) {
               <FieldSet>
                 <FieldGroup>
 
-                  {/* Name Field */}
-                  <Field>
-                    <FieldLabel htmlFor="groupName">Name</FieldLabel>
-                    <Input
-                      {...register("name")}
-                      readOnly={!isEditing}
-                      className={!isEditing ? "bg-muted/30 border-transparent shadow-none" : ""}
-                    />
-                    {errors.name && <p className="text-xs text-destructive mt-1">{errors.name.message}</p>}
-                  </Field>
-
                   {/* Code Field */}
                   <Field>
-                    <FieldLabel htmlFor="groupCode">Code</FieldLabel>
+                    <FieldLabel htmlFor="groupCode">Group Code</FieldLabel>
                     <Input
                       {...register("code")}
                       readOnly={!isEditing}
                       className={!isEditing ? "bg-muted/30 border-transparent shadow-none" : ""}
                     />
                     {errors.code && <p className="text-xs text-destructive mt-1">{errors.code.message}</p>}
+                  </Field>
+
+                  {/* Name Field */}
+                  <Field>
+                    <FieldLabel htmlFor="groupName">Group Name</FieldLabel>
+                    <Input
+                      {...register("name")}
+                      readOnly={!isEditing}
+                      className={!isEditing ? "bg-muted/30 border-transparent shadow-none" : ""}
+                    />
+                    {errors.name && <p className="text-xs text-destructive mt-1">{errors.name.message}</p>}
                   </Field>
 
                   {/* Project Field */}

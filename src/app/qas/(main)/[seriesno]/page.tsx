@@ -53,6 +53,7 @@ export default async function SeriesViewer({ params }: { params: Promise<{ serie
               seriesno={transId.toString()}
               creator={jobTransaction.data.creator.appSuiteEmployeeMaster.fullName}
               createdOn={jobTransaction.data.createdOn.toDateString()}
+              canUpdate={!jobTransaction.data.verifiedBy}
             />
             <div className="">
               <SeriesTabs defaultValue="details">

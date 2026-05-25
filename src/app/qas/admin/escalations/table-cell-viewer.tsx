@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
-import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
+import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile"
 import Link from "next/link"
 import { X } from "lucide-react"
@@ -27,6 +27,7 @@ export default function TableCellViewer({ item, className }: Props) {
       <DrawerContent>
         <DrawerHeader className="gap-1 flex flex-row items-center h-12 justify-between">
           <DrawerTitle>Quick View</DrawerTitle>
+          <DrawerDescription></DrawerDescription>
           <DrawerClose asChild>
             <Button variant="ghost" size="icon-sm">
               <X />

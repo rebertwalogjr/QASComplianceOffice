@@ -21,7 +21,7 @@ export function AppSidebar() {
     const isExactMatch = pathname === item.url
     const isSubPath = pathname.startsWith(`${item.url}`)
 
-    const reservedSubPaths = ["/qas/admin", "/qas/new", "/qas/export"]
+    const reservedSubPaths = ["/qas/admin", "/qas/new", "/qas/export", "/qas/settings"]
     const isReservedPath = item.url === "/qas" && reservedSubPaths.some(path => pathname.startsWith(path))
     const isActive = (isExactMatch || isSubPath) && !isReservedPath
 
@@ -53,8 +53,8 @@ export function AppSidebar() {
               className="data-[slot=sidebar-menu-button]:p-1.5!"
             >
               <Link href="#">
-                <Star className="size-5!" />
-                <span className="text-base font-semibold">QAS</span>
+                {/* <Star className="size-5!" /> */}
+                <span className="text-base font-semibold">QAS Compliance Office</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

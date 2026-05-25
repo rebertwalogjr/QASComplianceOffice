@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { FilterIcon } from "lucide-react"
-import { Sheet, SheetClose, SheetContent, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "../ui/sheet"
+import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "../ui/sheet"
 import { Button } from "../ui/button"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { BaseFilterOption, FilterOptionsPayload } from "@/server-actions/common"
@@ -95,6 +95,7 @@ export default function QASFilterSheet({ options }: { options: FilterOptionsPayl
         <form onSubmit={handleApply} className="flex flex-col h-full">
           <SheetHeader>
             <SheetTitle>Advance Filters</SheetTitle>
+            <SheetDescription></SheetDescription>
             {hasActiveFilters && (
               <Button
                 type="button"

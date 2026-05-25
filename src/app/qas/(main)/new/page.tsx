@@ -32,7 +32,7 @@ export default async function NewQASForm() {
 
   const session = await getSession()
 
-  const result = [companies, projects, engagements, findings, categories, groups, officers, supervisors, recipients, ratings]
+  const result = [companies, projects, engagements, findings, categories, groups, officers, supervisors, recipients, ratings, reports]
   const firstError = result.find(r => r.error)?.error
 
   return (

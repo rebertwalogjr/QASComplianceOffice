@@ -115,6 +115,120 @@ export async function createTransaction(formData: FormData) {
   return { data: newJob, error }
 }
 
+export async function updateTransaction(formData: FormData) {
+  const creatorId = await getUserId()
+
+  if (!creatorId) {
+    throw new Error("You must be logged in.")
+  }
+
+  const payload = formData.get("payload") as string
+  const sessionId = formData.get("sessionId") as string
+
+  const { deletedAttachmentIds, ...values } = JSON.parse(payload)
+  const jobTransactionId = Number(values.jobTransactionId)
+
+  const escalations = await prisma.user.findFirst({
+    where: { id: Number(values.recipientId) },
+    select: { escalation1User: userSelect, escalation2User: userSelect, escalation3User: userSelect, escalation4User: userSelect }
+  })
+
+  const rawData = {
+    companyId: Number(values.companyId),
+    projectId: Number(values.projectId),
+    auditEngagementId: Number(values.auditEngagementId),
+    typeOfFindingId: Number(values.typeOfFindingId),
+    findingCategoryId: Number(values.findingCategoryId),
+    complianceOfficerId: Number(values.complianceOfficerId),
+    supervisorId: Number(values.supervisorId),
+    auditReportId: Number(values.auditReportId),
+    auditFindingNumber: "",
+    issuedOn: values.issuedOn ? new Date(values.issuedOn as string) : null,
+    targetDate: values.targetDate ? new Date(values.targetDate as string) : null,
+    auditRatingId: Number(values.auditRatingId),
+    projectManagerDepartmentHead: values.projectManagerDepartmentHead as string,
+    responsibleDepartment: values.responsibleDepartment as string,
+    responsiblePerson: values.responsiblePerson as string,
+    recurringPerProcess: values.recurringPerProcess === "yes",
+    recurringPerPerson: values.recurringPerPerson === "yes",
+    recipientGroupId: Number(values.recipientGroupId),
+    recipientId: Number(values.recipientId),
+    problemCriteria: values.problemCriteria as string,
+    problemFindings: values.problemFindings as string,
+    recommendations: values.recommendations as string,
+    jobStatus: "open",
+    modifiedBy: creatorId,
+    jobEscalation1: escalations?.escalation1User?.id,
+    jobEscalation2: escalations?.escalation2User?.id,
+    jobEscalation3: escalations?.escalation3User?.id,
+    jobEscalation4: escalations?.escalation4User?.id,
+  }
+
+  const tempDirPath = path.join(process.env.FILE_SERVER_PATH!, 'Temporary', sessionId)
+  let fileNames: string[] = []
+  if (fs.existsSync(tempDirPath)) {
+    fileNames = fs.readdirSync(tempDirPath)
+  }
+
+  const { data: modJob, error } = await dbQuery(
+    prisma.$transaction(async (tx) => {
+      // Update transaction
+      const modJob = await tx.jobTransaction.update({
+        where: { id: jobTransactionId },
+        data: {
+          ...rawData,
+          attachments: {
+            create: fileNames.map(name => ({
+              fileName: name,
+              fileType: path.extname(name),
+              fileSize: 0,
+              fromRecipient: false,
+              creator: { connect: { id: creatorId } }
+            }))
+          }
+        },
+        select: transactionEmailSelect
+      })
+      // Create the audit trail
+      await tx.auditTrail.create({
+        data: {
+          jobTransactionId: jobTransactionId,
+          jobStatus: "open",
+          actionTaken: "modified this series",
+          createdBy: creatorId,
+          tag: "created"
+        }
+      })
+      // Soft-delete the attachments
+      if (deletedAttachmentIds && deletedAttachmentIds.length > 0) {
+        await tx.attachment.updateMany({
+          where: {
+            id: { in: deletedAttachmentIds },
+            jobTransactionId: jobTransactionId
+          },
+          data: { isActive: false }
+        })
+      }
+      return modJob
+    })
+  )
+
+  if (modJob) {
+    await promoteToFinal(sessionId, modJob.id)
+    // -- EMAIL NOTIFICATION START
+    // Send email to verifier
+    // const emailHtml = await getSupervisorVerificationRequestEmailHtml(modJob)
+    // triggerDatabaseMail({
+    //   to: emailHtml.recipient,
+    //   cc: emailHtml.cc,
+    //   subject: emailHtml.subject,
+    //   body: emailHtml.template
+    // }).catch(err => console.error("Background Email Error:", err))
+    // -- EMAIL NOTIFICATION END
+  }
+  return { data: modJob, error }
+}
+
 export async function getTransactions(page: number = 1, pageSize: number = 10, filters: { [key: string]: string | undefined } = {}): Promise<{
   data: TransactionBasicPaylod[] | null,
   totalCount: number,
@@ -337,6 +451,7 @@ export async function jobTransactionClientUpdate(formData: FormData) {
     // -- EMAIL NOTIFICATION END
   }
 
+  revalidatePath(`/qas/${newJob.id}`)
   return { data: newJob, error }
 }
 

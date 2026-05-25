@@ -292,7 +292,7 @@ export default function FormView({ data }: { data: TransactionPayload | null }) 
             <Label className="text-muted-foreground">Attachments</Label>
             <AttachmentViewer
               jobTransactionId={data?.id ?? 0}
-              attachments={data?.attachments ? data.attachments.filter(e => !e.fromRecipient) : []}
+              attachments={data?.attachments ? data.attachments.filter(e => !e.fromRecipient && e.isActive) : []}
             />
           </div>
         </CardContent>

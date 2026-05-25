@@ -5,7 +5,7 @@ export default async function ExportPage() {
   const filterOptions = await getFilterOptions()
 
   return (
-    <div className="@container/main flex flex-1 flex-col gap-2">
+    <div className="@container/main flex flex-col p-6 items-center">
       <ExportFilterContainer options={filterOptions} />
     </div>
   )

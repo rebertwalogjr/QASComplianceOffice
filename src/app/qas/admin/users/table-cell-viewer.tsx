@@ -29,6 +29,7 @@ export default function TableCellViewer({ item, className }: Props) {
       <DrawerContent>
         <DrawerHeader className="gap-1 flex flex-row items-center h-12 justify-between">
           <DrawerTitle>Quick View</DrawerTitle>
+          <DrawerDescription></DrawerDescription>
           <DrawerClose asChild>
             <Button variant="ghost" size="icon-sm">
               <X />

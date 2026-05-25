@@ -19,13 +19,13 @@ import { Loader2 } from "lucide-react"
 import StatusBadge from "@/components/status-badge"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { HoldingPayload } from "@/server-actions/hold-history"
-import { FileUpload, FileWithPreview } from "@/components/FileUpload"
+import { FileUpload, Attachment } from "@/components/FileUpload"
 import AttachmentViewer from "@/components/series/attachments-viewer"
 
 export default function RightPanel({ jobTransaction, activeHolding }: { jobTransaction: TransactionPayload, activeHolding: HoldingPayload | null }) {
   const router = useRouter()
   const [sessionId, setSessionId] = useState<string>("")
-  const [attachments, setAttachments] = useState<FileWithPreview[]>([])
+  const [attachments, setAttachments] = useState<Attachment[]>([])
   const [isPending, setIsPending] = useState(false)
 
   const { data: session } = useSession()
@@ -41,12 +41,12 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
   // Generate sessionId for attachment upload
   useEffect(() => {
     if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-    setSessionId(crypto.randomUUID());
-  } else {
-    // Basic fallback for non-secure contexts
-    const fallbackId = (Math.random().toString(36).substring(2) + Date.now().toString(36));
-    setSessionId(fallbackId);
-  }
+      setSessionId(crypto.randomUUID());
+    } else {
+      // Basic fallback for non-secure contexts
+      const fallbackId = (Math.random().toString(36).substring(2) + Date.now().toString(36));
+      setSessionId(fallbackId);
+    }
   }, [])
 
   // reset permissions if any of the following changes: [jobTransaction, userId, userRoles]
@@ -56,13 +56,25 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
     const isOfficer = String(jobTransaction.complianceOfficerId) === userId
     const isRecipient = String(jobTransaction.recipientId) === userId
 
+    const hasAuditorRole = userRoles?.includes(1001)
+    const hasSupervisorRole = userRoles?.includes(1002)
+    const hasOfficerRole = userRoles?.includes(1003)
+    const hasRecipientRole = userRoles?.includes(1004)
+
+    const isOpen = jobTransaction.jobStatus === "open"
+    const isStateNew = isOpen && !jobTransaction.verifiedBy && !jobTransaction.approvedBy
+    const isStateVerified = isOpen && !!jobTransaction.verifiedBy && !jobTransaction.approvedBy
+    const isStateApproved = isOpen && !!jobTransaction.verifiedBy && !!jobTransaction.approvedBy && !isAccepted
+
     return {
-      canVerify: userRoles?.includes(1002) && !jobTransaction.verifiedBy && isSupervisor,
-      canApprove: userRoles?.includes(1003) && !!jobTransaction.verifiedBy && !jobTransaction.approvedBy && isOfficer,
-      canAccept: userRoles?.includes(1004) && !!jobTransaction.verifiedBy && !!jobTransaction.approvedBy && !isAccepted && !isForClosing && !isClosed && isRecipient,
-      canAskForClosing: userRoles?.includes(1001) && isAccepted && isAuditor,
-      canCancel: userRoles?.includes(1001) && isAuditor,
-      canClose: userRoles?.includes(1002) && isForClosing && isSupervisor,
+      isAuditor, isSupervisor, isOfficer, isRecipient,
+      isOpen, isStateNew, isStateVerified, isStateApproved,
+      canCancel: isStateNew && hasAuditorRole && isAuditor,
+      canVerify: isStateNew && hasSupervisorRole && isSupervisor,
+      canApprove: isStateVerified && hasOfficerRole && isOfficer,
+      canAccept: isStateApproved && hasRecipientRole && isRecipient,
+      canAskForClosing: isAccepted && hasAuditorRole && isAuditor,
+      canClose: isForClosing && hasSupervisorRole && isSupervisor,
     }
   }, [jobTransaction, userId, userRoles])
 
@@ -71,6 +83,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
       // Actions
       isVerified: z.boolean(),
       isApproved: z.boolean(),
+      isForAcceptance: z.boolean(),
       isForClosing: z.boolean(),
       isToClose: z.boolean(),
       isHold: z.boolean(),
@@ -91,6 +104,44 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
       // Global
       comment: z.string().optional(),
     }).superRefine((data, ctx) => {
+      const requiresUpdateValidation = permissions.isStateApproved && permissions.canAccept && !isFormDisabled //data.isVerified && data.isApproved && !data.isHold && !data.isCancel
+      console.log("Requires Validation: ", requiresUpdateValidation)
+      console.log("isVerified: ", data.isVerified)
+      console.log("isApproved: ", data.isApproved)
+      console.log("!isHold: ", !data.isHold)
+      console.log("!isCancel: ", !data.isCancel)
+
+      if (requiresUpdateValidation) {
+        if (!data.correctiveAction || data.correctiveAction.trim() === "") {
+          ctx.addIssue({
+            code: "custom",
+            message: "Please provide details.",
+            path: ["correctiveAction"]
+          })
+        }
+        if (!data.corrCommitmentDate) {
+          ctx.addIssue({
+            code: "custom",
+            message: "Please select a commitment date.",
+            path: ["corrCommitmentDate"]
+          })
+        }
+        if (!data.preventiveAction || data.preventiveAction.trim() === "") {
+          ctx.addIssue({
+            code: "custom",
+            message: "Please provide details.",
+            path: ["preventiveAction"]
+          })
+        }
+        if (!data.prevCommitmentDate) {
+          ctx.addIssue({
+            code: "custom",
+            message: "Please select a commitment date.",
+            path: ["prevCommitmentDate"]
+          })
+        }
+      }
+
       if (!data.isHold && !data.isCancel) {
         if (!!jobTransaction.approvedBy || permissions.canAccept) {
           if (!data.correctiveAction || data.correctiveAction.trim() === "") {
@@ -153,6 +204,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
     defaultValues: {
       isVerified: !!jobTransaction.verifiedBy,
       isApproved: !!jobTransaction.approvedBy,
+      isForAcceptance: (permissions.canAccept || isAccepted || isForClosing || isClosed) && !!jobTransaction.approvedBy && jobTransaction.jobStatus === "open",
       isForClosing: jobTransaction.jobStatus === "for closing",
       isToClose: !!jobTransaction.closedOn,
       isHold: !!jobTransaction.onHold,
@@ -171,8 +223,53 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
 
   const isHoldChecked = watch("isHold")
   const isCancelChecked = watch("isCancel")
-  const hasAnyPermission = Object.values(permissions).some(p => p === true)
-  const showUpdateArea = !isHoldChecked && !isCancelChecked && (permissions.canAccept || isAccepted || isForClosing || isClosed) && !!jobTransaction.approvedBy
+  const isVerifiedChecked = watch("isVerified")
+  const isApprovedChecked = watch("isApproved")
+  const isForAcceptance = watch("isForAcceptance")
+  const isForClosingChecked = watch("isForClosing")
+  const isToCloseChecked = watch("isToClose")
+
+  const showUpdateArea = !isHoldChecked && !isCancelChecked && (permissions.canAccept || isAccepted || isForClosing || isClosed)
+  const isCommentDisabled = isClosed || isCancelled || isHeld || (!permissions.canCancel && !permissions.canVerify)
+
+  const isFormDisabled = useMemo(() => {
+    if (isPending) return true
+    if (isClosed || isCancelled || isHeld) return true
+    // RULE 1: New ticket validation
+    if (permissions.isStateNew) {
+      const changesMade = (permissions.canCancel && isCancelChecked) || (permissions.canVerify && isVerifiedChecked)
+      if (!changesMade) return true
+    }
+    // RULE 2: Verified stage requirements
+    if (permissions.isStateVerified) {
+      if (permissions.canApprove && !isApprovedChecked) return true
+      if (!permissions.canApprove) return true
+    }
+    // RULE 3: Acceptance criteria validation
+    if (permissions.isStateApproved) {
+      if (!permissions.canAccept) return true
+      if (!isHoldChecked) {
+        const hasActions = !!watch("correctiveAction")?.trim() && !!watch("preventiveAction")?.trim()
+        const hasDates = !!watch("corrCommitmentDate") && !!watch("prevCommitmentDate")
+        if (!hasActions || !hasDates) return true
+      } else {
+        const hasDates = !watch("holdRange.start") && !watch("holdRange.end")
+        console.log("hasDates: ", hasDates)
+        if (!hasDates) return true
+      }
+    }
+    // RULE 4: Action check configurations
+    if (isAccepted) {
+      if (permissions.canAskForClosing && !isForClosingChecked) return true
+      if (!permissions.canAskForClosing) return true
+    }
+    // RULE 5: Closing stage
+    if (isForClosing) {
+      if (permissions.canClose && !isToCloseChecked) return true
+      if (!permissions.canClose) return true
+    }
+    return false
+  }, [permissions, isPending, isAccepted, isForClosing, isCancelChecked, isVerifiedChecked, isApprovedChecked, isHoldChecked, isApprovedChecked, isForClosingChecked, isToCloseChecked, watch("correctiveAction"), watch("preventiveAction"), watch("corrCommitmentDate"), watch("prevCommitmentDate"), watch("holdRange.start"), watch("holdRange.end")])
 
   useEffect(() => {
     // Clear validation errors for Update Area when moving to hold
@@ -246,6 +343,10 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
     setIsPending(false)
   }
 
+  // const isFormDisabled = isPending || !hasAnyPermission || isClosed || isCancelled || isHeld || (!isHoldChecked && jobTransaction.onHold)
+
+  console.log("Form Validation Errors: ", errors)
+
   return (
     <div className="bg-muted py-2 px-2 border-l h-full">
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col h-full bg-background rounded-md border shadow-2xl">
@@ -259,7 +360,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
           <Label className="text-muted-foreground text-xs uppercase font-bold">Entry Actions</Label>
 
           <FieldGroup className="gap-3">
-            {/* For Verification */}
+            {/* VERIFICATION CHECKBOX */}
             <Field>
               <div className="flex items-center gap-3">
                 <Controller
@@ -271,35 +372,37 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
                       {...register("isVerified")}
                       checked={field.value}
                       onCheckedChange={field.onChange}
-                      disabled={isHoldChecked || !permissions.canVerify} />
+                      disabled={!permissions.isStateNew || isHoldChecked || !permissions.canVerify || isCancelChecked} />
                   )}
                 />
                 <FieldLabel htmlFor="isVerified">{jobTransaction.verifiedBy ? "Verified" : "Verify"}</FieldLabel>
               </div>
             </Field>
 
-            {/* For Approval */}
-            <Field>
-              <div className="flex items-center gap-3">
-                <Controller
-                  control={control}
-                  name="isApproved"
-                  render={({ field }) => (
-                    <Checkbox
-                      id="isApproved"
-                      {...register("isApproved")}
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                      disabled={isHoldChecked || !permissions.canApprove}
-                    />
-                  )}
-                />
-                <FieldLabel htmlFor="isApproved">{jobTransaction.approvedBy ? "Approved" : "Approve"}</FieldLabel>
-              </div>
-            </Field>
+            {/* APPROVAL CHECKBOX */}
+            {!permissions.isStateNew && (
+              <Field>
+                <div className="flex items-center gap-3">
+                  <Controller
+                    control={control}
+                    name="isApproved"
+                    render={({ field }) => (
+                      <Checkbox
+                        id="isApproved"
+                        {...register("isApproved")}
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        disabled={!permissions.isStateVerified || isHoldChecked || !permissions.canApprove}
+                      />
+                    )}
+                  />
+                  <FieldLabel htmlFor="isApproved">{jobTransaction.approvedBy ? "Approved" : "Approve"}</FieldLabel>
+                </div>
+              </Field>
+            )}
 
-            {/* For Closing */}
-            {isAccepted && (
+            {/* FOR CLOSING CHECKBOX */}
+            {(isAccepted || isForClosing || !isClosed) && (
               <Field>
                 <div className="flex items-center gap-3">
                   <Controller
@@ -311,7 +414,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
                         {...register("isForClosing")}
                         checked={field.value}
                         onCheckedChange={field.onChange}
-                        disabled={isHoldChecked || !permissions.canAskForClosing}
+                        disabled={!isAccepted || isHoldChecked || !permissions.canAskForClosing}
                       />
                     )}
                   />
@@ -320,8 +423,8 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
               </Field>
             )}
 
-            {/* Closing */}
-            {((isForClosing && permissions.canClose) || isClosed) && (
+            {/* CLOSING CHECKBOX */}
+            {(isForClosing || isClosed) && (
               <Field>
                 <div className="flex items-center gap-3">
                   <Controller
@@ -333,7 +436,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
                         {...register("isToClose")}
                         checked={field.value}
                         onCheckedChange={field.onChange}
-                        disabled={isHoldChecked || !permissions.canClose}
+                        disabled={!permissions.canClose}
                       />
                     )}
                   />
@@ -342,8 +445,8 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
               </Field>
             )}
 
-            {/* Cancellation */}
-            {(permissions.canCancel || isCancelled) && (
+            {/* CANCEL CHECKBOX */}
+            {(permissions.isStateNew && permissions.canCancel || isCancelled) && (
               <Field>
                 <div className="flex items-center gap-3">
                   <Controller
@@ -355,7 +458,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
                         {...register("isCancel")}
                         checked={field.value}
                         onCheckedChange={field.onChange}
-                        disabled={isHoldChecked || !permissions.canCancel || isCancelled}
+                        disabled={isHoldChecked || !permissions.canCancel || isCancelled || isVerifiedChecked}
                       />
                     )}
                   />
@@ -366,8 +469,9 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
 
           </FieldGroup>
 
-          {/* Holding Request */}
-          {(permissions.canVerify || permissions.canApprove || permissions.canAccept) && !isCancelled &&
+          {/* HOLDING AREA */}
+          {/* {(permissions.isStateApproved && permissions.canAccept) || isHeld && ( */}
+          {(showUpdateArea || isHeld || isHoldChecked) && !(isAccepted || isForClosing || isClosed) && (
             <FieldGroup className="gap-3">
               <Field>
                 <div className="flex items-center gap-3">
@@ -380,7 +484,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
                         {...register("isHold")}
                         checked={field.value}
                         onCheckedChange={field.onChange}
-                        disabled={jobTransaction.onHold || isCancelChecked}
+                        disabled={jobTransaction.onHold}
                       />
                     )}
                   />
@@ -408,9 +512,10 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
                 </FieldGroup>
               }
             </FieldGroup>
-          }
+          )}
 
           {showUpdateArea &&
+            // {isForAcceptance && !isHoldChecked && !isCancelChecked &&
             <FieldGroup className="gap-3 animate-in fade-in slide-in-from-top-2 duration-500">
               <Separator />
 
@@ -444,6 +549,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
                     />
                   )}
                 />
+                {errors.corrCommitmentDate && <FieldError>{errors.corrCommitmentDate.message}</FieldError>}
               </Field>
 
               <Field>
@@ -474,6 +580,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
                     />
                   )}
                 />
+                {errors.prevCommitmentDate && <FieldError>{errors.prevCommitmentDate.message}</FieldError>}
               </Field>
 
               {/* Recipient's Attachement Upload */}
@@ -490,7 +597,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
                   <FieldLabel className="text-muted-foreground" htmlFor="attachments">Attachments</FieldLabel>
                   <AttachmentViewer
                     jobTransactionId={jobTransaction?.id ?? 0}
-                    attachments={jobTransaction?.attachments ? jobTransaction.attachments.filter(e => e.fromRecipient) : []}
+                    attachments={jobTransaction?.attachments ? jobTransaction.attachments.filter(e => e.fromRecipient && e.isActive) : []}
                   />
                 </Field>
               }
@@ -507,7 +614,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
                   {...register("comment")}
                   placeholder="Type here..."
                   className="resize-none"
-                  disabled={!hasAnyPermission || jobTransaction.onHold}
+                  disabled={isFormDisabled}
                 />
               </div>
             </>
@@ -515,18 +622,21 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
 
         </div>
 
-        {!(isClosed || isCancelled || isHeld) &&
-          <div className="w-full border-t px-4 py-4">
-            <Button type="submit" size="lg" className="w-full" disabled={isPending || !hasAnyPermission || isClosed || isCancelled || isHeld || jobTransaction.onHold}>
+
+        {!(isClosed || isCancelled || isHeld) && (
+          <div className="w-full border-t px-4 py-4 space-y-2">
+            <Button type="submit" size="lg" className="w-full" disabled={isFormDisabled}>
               {isPending ? (<Loader2 className="mr-2 h-4 w-4 animate-spin" />) :
-                isHoldChecked ? "Hold" :
-                  isCancelChecked ? "Cancel" :
-                    showUpdateArea ? "Accept and save" :
-                      "Save Changes"
+                // isHoldChecked ? "Hold" :
+                //   isCancelChecked ? "Cancel" :
+                //     (isAccepted && isForClosingChecked) ? "Request For Closing" :
+                //       (isForClosing && isForClosingChecked) ? "Close Transaction" :
+                //         showUpdateArea ? "Accept and Save" :
+                          "Submit"
               }
             </Button>
           </div>
-        }
+        )}
 
       </form>
     </div>
