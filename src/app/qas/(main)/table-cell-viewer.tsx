@@ -91,6 +91,11 @@ export default function TableCellViewer({ item, className }: Props) {
               <Input id="approvedDate" defaultValue={item.approvedOn?.toDateString() ?? ""} readOnly />
             </div>
 
+            <div className="flex flex-col gap-3">
+              <Label htmlFor="approvedDate">Date Closed</Label>
+              <Input id="approvedDate" defaultValue={item.closedOn?.toDateString() ?? ""} readOnly />
+            </div>
+
           </form>
         </div>
 

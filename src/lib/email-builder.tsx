@@ -8,6 +8,11 @@ interface ApprovalEmailProps {
   projectName: string;
 }
 
+interface EmailProps {
+  job: TransactionEmailPayload
+  comment?: string
+}
+
 const genlink = (series: string) => {
   const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
   const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl
@@ -15,7 +20,7 @@ const genlink = (series: string) => {
 }
 
 // Compliance Secretariat to Superisor: Open
-const SupervisorVerificationRequest = ({ job }: { job: TransactionEmailPayload }) => (
+const SupervisorVerificationRequest = ({ job }: EmailProps) => (
   <html>
     <body>
       <div style={{ backgroundColor: '#ffffff', margin: '1rem' }}>
@@ -70,7 +75,7 @@ const SupervisorVerificationRequest = ({ job }: { job: TransactionEmailPayload }
 )
 
 // Supervisor to Alternate Compliance Officer: Open
-const OfficerApprovalRequest = ({ job }: { job: TransactionEmailPayload }) => (
+const OfficerApprovalRequest = ({ job, comment }: EmailProps) => (
   <html>
     <body>
       <div style={{ backgroundColor: '#ffffff', margin: '1rem' }}>
@@ -110,7 +115,7 @@ const OfficerApprovalRequest = ({ job }: { job: TransactionEmailPayload }) => (
             </tr>
             <tr>
               <td style={{ border: '1px solid #e5e7eb', padding: '0.25rem', verticalAlign: 'top' }}>Last comment by supervisor</td>
-              <td style={{ border: '1px solid #e5e7eb', padding: '0.25rem', verticalAlign: 'top' }}>{ }</td>
+              <td style={{ border: '1px solid #e5e7eb', padding: '0.25rem', verticalAlign: 'top' }}>{comment}</td>
             </tr>
           </tbody>
         </table>
@@ -129,7 +134,7 @@ const OfficerApprovalRequest = ({ job }: { job: TransactionEmailPayload }) => (
 )
 
 // Alternate Compliance Officer: Open
-const FindingsApproved = ({ job }: { job: TransactionEmailPayload }) => (
+const FindingsApproved = ({ job, comment }: EmailProps) => (
   <html>
     <body>
       <div style={{ backgroundColor: '#ffffff', margin: '1rem' }}>
@@ -169,7 +174,7 @@ const FindingsApproved = ({ job }: { job: TransactionEmailPayload }) => (
             </tr>
             <tr>
               <td style={{ border: '1px solid #e5e7eb', padding: '0.25rem', verticalAlign: 'top' }}>Last comment by supervisor</td>
-              <td style={{ border: '1px solid #e5e7eb', padding: '0.25rem', verticalAlign: 'top' }}>{ }</td>
+              <td style={{ border: '1px solid #e5e7eb', padding: '0.25rem', verticalAlign: 'top' }}>{comment}</td>
             </tr>
           </tbody>
         </table>
@@ -188,7 +193,7 @@ const FindingsApproved = ({ job }: { job: TransactionEmailPayload }) => (
 )
 
 // Alternate Compliance Officer to Recipient: Open
-const RecipientApprovalRequest = ({ job }: { job: TransactionEmailPayload }) => (
+const RecipientApprovalRequest = ({ job, comment }: EmailProps) => (
   <html>
     <body>
       <div style={{ backgroundColor: '#ffffff', margin: '1rem' }}>
@@ -226,6 +231,10 @@ const RecipientApprovalRequest = ({ job }: { job: TransactionEmailPayload }) => 
               <td style={{ border: '1px solid #e5e7eb', padding: '0.25rem', verticalAlign: 'top' }}>Details of finding</td>
               <td style={{ border: '1px solid #e5e7eb', padding: '0.25rem', verticalAlign: 'top' }}>{job.problemCriteria}</td>
             </tr>
+            <tr>
+              <td style={{ border: '1px solid #e5e7eb', padding: '0.25rem', verticalAlign: 'top' }}>Last comment by compliance officer</td>
+              <td style={{ border: '1px solid #e5e7eb', padding: '0.25rem', verticalAlign: 'top' }}>{comment}</td>
+            </tr>
           </tbody>
         </table>
         <br />
@@ -243,7 +252,7 @@ const RecipientApprovalRequest = ({ job }: { job: TransactionEmailPayload }) => 
 )
 
 // Recipient to Compliance Secretariat: Accepted
-const SecretariatApprovalRequest = ({ job }: { job: TransactionEmailPayload }) => (
+const SecretariatApprovalRequest = ({ job, comment }: EmailProps) => (
   <html>
     <body>
       <div style={{ backgroundColor: '#ffffff', margin: '1rem' }}>
@@ -306,7 +315,7 @@ const SecretariatApprovalRequest = ({ job }: { job: TransactionEmailPayload }) =
 )
 
 // Compliance Secretariat to Supervisor: Request Closing
-const SupervisorForClosingRequest = ({ job }: { job: TransactionEmailPayload }) => (
+const SupervisorForClosingRequest = ({ job, comment }: EmailProps) => (
   <html>
     <body>
       <div style={{ backgroundColor: '#ffffff', margin: '1rem' }}>
@@ -350,7 +359,7 @@ const SupervisorForClosingRequest = ({ job }: { job: TransactionEmailPayload }) 
             </tr>
             <tr>
               <td style={{ border: '1px solid #e5e7eb', padding: '0.25rem', verticalAlign: 'top' }}>Last comment</td>
-              <td style={{ border: '1px solid #e5e7eb', padding: '0.25rem', verticalAlign: 'top' }}>{ }</td>
+              <td style={{ border: '1px solid #e5e7eb', padding: '0.25rem', verticalAlign: 'top' }}>{comment}</td>
             </tr>
           </tbody>
         </table>
@@ -369,7 +378,7 @@ const SupervisorForClosingRequest = ({ job }: { job: TransactionEmailPayload }) 
 )
 
 // Supervisor: Closed
-const OfficerForClosingApproved = ({ job }: { job: TransactionEmailPayload }) => (
+const OfficerForClosingApproved = ({ job, comment }: EmailProps) => (
   <html>
     <body>
       <div style={{ backgroundColor: '#ffffff', margin: '1rem' }}>
@@ -431,7 +440,7 @@ const OfficerForClosingApproved = ({ job }: { job: TransactionEmailPayload }) =>
   </html>
 )
 
-const NewlyCreatedTemplate = ({ job }: { job: TransactionEmailPayload }) => (
+const NewlyCreatedTemplate = ({ job, comment }: EmailProps) => (
   <html>
     <body>
       <div style={{ backgroundColor: '#ffffff', margin: '1rem' }}>
@@ -521,11 +530,11 @@ const UserInvitationTemplate = ({ firstName, username, password }: { firstName: 
 )
 
 // 0. Newly created finding
-export async function getNewlyCreatedEmailHtml(job: TransactionEmailPayload) {
+export async function getNewlyCreatedEmailHtml(job: TransactionEmailPayload, comment: string) {
   return {
     subject: `[QAS Compliancec Office] QA Entry Created ${job.id}`,
     recipient: job.complianceSecretariat.emailAddress || "rlwalog@dmcihomes.com",
-    template: await render(<NewlyCreatedTemplate job={job} />)
+    template: await render(<NewlyCreatedTemplate job={job} comment={comment} />)
   }
 }
 
@@ -540,12 +549,12 @@ export async function getSupervisorVerificationRequestEmailHtml(job: Transaction
 }
 
 // 2. Approval request for compliance officer
-export async function getOfficerApprovalRequestEmailHtml(job: TransactionEmailPayload) {
+export async function getOfficerApprovalRequestEmailHtml(job: TransactionEmailPayload, comment: string) {
   return {
     subject: `[QAS Compliance Office] ${job.project.name}, QA Entry for Update ${job.id}`,
     recipient: job.complianceOfficer.emailAddress || "rlwalog@dmcihomes.com",
     cc: job.complianceSecretariat.emailAddress || "",
-    template: await render(<OfficerApprovalRequest job={job} />)
+    template: await render(<OfficerApprovalRequest job={job} comment={comment} />)
   }
 }
 
@@ -560,40 +569,40 @@ export async function getOfficerApprovalRequestEmailHtml(job: TransactionEmailPa
 // }
 
 // 4. Request approval to recipient
-export async function getRecipientApprovalRequestEmailHtml(job: TransactionEmailPayload) {
+export async function getRecipientApprovalRequestEmailHtml(job: TransactionEmailPayload, comment: string) {
   return {
     subject: `[QAS Compliance Office] ${job.project.name}, Approved QA Entry for Acceptance ${job.id}`,
     recipient: job.recipient?.emailAddress || "rlwalog@dmcihomes.com",
     cc: job.complianceSecretariat.emailAddress || "",
-    template: await render(<RecipientApprovalRequest job={job} />)
+    template: await render(<RecipientApprovalRequest job={job} comment={comment} />)
   }
 }
 
 // 5. Request approval to compliance secretariat
-export async function getSecretariatApprovalRequestEmailHtml(job: TransactionEmailPayload) {
+export async function getSecretariatApprovalRequestEmailHtml(job: TransactionEmailPayload, comment: string) {
   return {
     subject: `[QAS Compliance Office] ${job.project.name}, Responded QA Entry ${job.id}`,
     recipient: job.complianceOfficer.emailAddress || "rlwalog@dmcihomes.com",
-    template: await render(<SecretariatApprovalRequest job={job} />)
+    template: await render(<SecretariatApprovalRequest job={job} comment={comment} />)
   }
 }
 
 // 6. Request supervisor approval for closing
-export async function getSupervisorForClosingRequestEmailHtml(job: TransactionEmailPayload) {
+export async function getSupervisorForClosingRequestEmailHtml(job: TransactionEmailPayload, comment: string) {
   return {
     subject: `[QAS Compliance Office] ${job.project.name}, Closing Request QA Entry ${job.id}`,
     recipient: job.supervisor.emailAddress || "rlwalog@dmcihomes.com",
-    template: await render(<SupervisorForClosingRequest job={job} />)
+    template: await render(<SupervisorForClosingRequest job={job} comment={comment} />)
   }
 }
 
 // 7. Supervisor Closed
-export async function getOfficerForClosingApprovedEmailHtml(job: TransactionEmailPayload) {
+export async function getOfficerForClosingApprovedEmailHtml(job: TransactionEmailPayload, comment: string) {
   return {
     subject: `[QAS Compliance Office] ${job.project.name}, Approved Closing Approval QA Entry ${job.id}`,
     recipient: job.supervisor.emailAddress || "rlwalog@dmcihomes.com",
     cc: job.complianceSecretariat.emailAddress || "",
-    template: await render(<OfficerForClosingApproved job={job} />)
+    template: await render(<OfficerForClosingApproved job={job} comment={comment} />)
   }
 }
 

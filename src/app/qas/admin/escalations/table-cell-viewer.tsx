@@ -45,32 +45,32 @@ export default function TableCellViewer({ item, className }: Props) {
 
                   <Field>
                     <FieldLabel htmlFor="seriesno">Employee Number</FieldLabel>
-                    <Input id="seriesno" defaultValue={item.employeeNumber} disabled className="disabled:opacity-70" />
+                    <Input id="seriesno" defaultValue={item.employeeNumber} readOnly className="bg-muted/30 border-transparent shadow-none" />
                   </Field>
 
                   <Field>
                     <FieldLabel htmlFor="firstname">First Name</FieldLabel>
-                    <Input id="firstname" defaultValue={item.appSuiteEmployeeMaster.firstName} disabled className="disabled:opacity-70" />
+                    <Input id="firstname" defaultValue={item.appSuiteEmployeeMaster.firstName} readOnly className="bg-muted/30 border-transparent shadow-none" />
                   </Field>
 
                   <Field>
                     <FieldLabel htmlFor="lastname">Last Name</FieldLabel>
-                    <Input id="lastname" defaultValue={item.appSuiteEmployeeMaster.lastName} disabled className="disabled:opacity-70" />
+                    <Input id="lastname" defaultValue={item.appSuiteEmployeeMaster.lastName} readOnly className="bg-muted/30 border-transparent shadow-none" />
                   </Field>
 
                   <Field>
                     <FieldLabel htmlFor="username">Username</FieldLabel>
-                    <Input id="username" defaultValue={item.username} disabled className="disabled:opacity-70" />
+                    <Input id="username" defaultValue={item.username} readOnly className="bg-muted/30 border-transparent shadow-none" />
                   </Field>
 
                   <Field>
                     <FieldLabel htmlFor="email">Email</FieldLabel>
-                    <Input id="email" defaultValue={item.emailAddress || "--"} disabled className="disabled:opacity-70" />
+                    <Input id="email" defaultValue={item.emailAddress || "--"} readOnly className="bg-muted/30 border-transparent shadow-none" />
                   </Field>
 
                   <Field>
                     <FieldLabel htmlFor="company">Company</FieldLabel>
-                    <Input id="company" defaultValue={item.company.name || "--"} disabled className="disabled:opacity-70" />
+                    <Input id="company" defaultValue={item.company.name || "--"} readOnly className="bg-muted/30 border-transparent shadow-none" />
                   </Field>
 
                   {/* <Field>
@@ -80,7 +80,7 @@ export default function TableCellViewer({ item, className }: Props) {
 
                   <Field>
                     <FieldLabel htmlFor="status">Status</FieldLabel>
-                    <Input id="status" defaultValue={item.isActive ? "Active" : "Inactive"} disabled className="disabled:opacity-70" />
+                    <Input id="status" defaultValue={item.isActive ? "Active" : "Inactive"} readOnly className="bg-muted/30 border-transparent shadow-none" />
                   </Field>
 
                 </FieldGroup>

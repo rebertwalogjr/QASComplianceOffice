@@ -314,6 +314,8 @@ model AuditReport {
   companyId         Int
   auditEngagementId Int
   projectId         Int
+  effectiveYear     Int?
+  effectiveMonth    Int?
   isClosed          Boolean          @default(false) @db.Bit
   isActive          Boolean          @default(true) @db.Bit
   createdBy         Int

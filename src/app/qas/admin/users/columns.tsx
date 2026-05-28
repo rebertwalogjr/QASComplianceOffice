@@ -7,13 +7,14 @@ import { ArrowDownAZ, ArrowDownZA, ArrowDown01, AlertTriangle  } from "lucide-re
 import TableCellViewer from "./table-cell-viewer"
 import { User } from "../../../../../generated/prisma/client"
 import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { UserBasicIncludePayload } from "@/server-actions/user"
 
 export const columns: ColumnDef<User>[] = [
   {
     accessorKey: "employeeNumber",
     header: "Employee Id",
     cell: ({ row }) => {
-      return <TableCellViewer item={row.original as User} />
+      return <TableCellViewer item={row.original as UserBasicIncludePayload} />
     }
   },
   {

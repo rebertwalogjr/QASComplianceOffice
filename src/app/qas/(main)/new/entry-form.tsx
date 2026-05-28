@@ -157,7 +157,9 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
   }, [selectedProjectId, options])
 
   const filteredReports = useMemo(() => {
-    return options.reports?.filter(r => r.auditEngagementId.toString() === selectedEngagementId)
+    const year = new Date().getFullYear()
+    const month = (new Date().getUTCMonth() + 1)
+    return options.reports?.filter(r => r.auditEngagementId.toString() === selectedEngagementId && r.effectiveYear === year && r.effectiveMonth === month)
   }, [selectedEngagementId, options.reports])
 
   const activeRecipient = useMemo(() => {

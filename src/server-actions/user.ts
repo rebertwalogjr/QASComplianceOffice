@@ -10,13 +10,10 @@ import { triggerDatabaseMail } from "@/lib/mail-service";
 import { getUserInvitationEmailHtml } from "@/lib/email-builder";
 import { generateRandomPassword } from "@/lib/utils";
 
-export async function getUsers() {
+export async function getUsers(): Promise<{ data: UserBasicIncludePayload[] | null, error: any }> {
   return await dbQuery(
     prisma.user.findMany({
-      include: {
-        appSuiteEmployeeMaster: true,
-        company: true
-      },
+      include: userBasicInclude,
       orderBy: { createdOn: "desc" }
     })
   )
@@ -158,7 +155,7 @@ export async function createUser(formData: any) {
   )
 
   if (newUser) {
-    const emailHtml = await getUserInvitationEmailHtml({newUser, password: genPassword})
+    const emailHtml = await getUserInvitationEmailHtml({ newUser, password: genPassword })
     triggerDatabaseMail({
       to: emailHtml.recipient,
       subject: emailHtml.subject,
@@ -413,10 +410,25 @@ const userBasicSelect = {
   }
 } satisfies Prisma.UserSelect;
 
+const userBasicInclude = {
+  appSuiteEmployeeMaster: true,
+  company: true,
+  userRoles: {
+    select: {
+      isActive: true,
+      role: true
+    }
+  },
+}
+
 export type UserInfoPayload = Prisma.UserGetPayload<{
   include: typeof userInfoInclude
 }>
 
 export type UserBasicPayload = Prisma.UserGetPayload<{
   select: typeof userBasicSelect
+}>
+
+export type UserBasicIncludePayload = Prisma.UserGetPayload<{
+  include: typeof userBasicInclude
 }>

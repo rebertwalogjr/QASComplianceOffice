@@ -90,6 +90,8 @@ export default function CreateDrawer({ companies, projects, auditEngagements }: 
     formData.append("companyId", values.companyId)
     formData.append("projectId", values.projectId)
     formData.append("auditEngagementId", values.engagementId)
+    formData.append("effectiveYear", new Date().getFullYear().toString())
+    formData.append("effectiveMonth", (new Date().getUTCMonth() + 1).toString())
 
     const response = await createAuditReport(formData)
 

@@ -58,11 +58,12 @@ export default function TableCellViewer({ item, className }: Props) {
   useEffect(() => {
     if (selectedProjectId) {
       const year = new Date().getFullYear().toString()
+      const month = (new Date().getUTCMonth() + 1).toString()
       const company = activeCompanies?.find(c => c.id.toString() === selectedCompanyId)
       const project = activeProjects?.find(p => p.id.toString() === selectedProjectId)
 
       if (company && project) {
-        const generatedName = `${company.code}-${project.code}-${year}`
+        const generatedName = `${company.code}-${project.code}-${year}-${month}`
         setValue("name", generatedName, { shouldValidate: true })
       }
     } else {

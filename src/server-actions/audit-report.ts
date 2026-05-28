@@ -24,6 +24,8 @@ export async function createAuditReport(formData: FormData) {
   const projectId = Number(formData.get("projectId"));
   const auditEngagementId = Number(formData.get("auditEngagementId"));
   const companyId = Number(formData.get("companyId"));
+  const effectiveYear = Number(formData.get("effectiveYear"))
+  const effectiveMonth = Number(formData.get("effectiveMonth"))
   const currentUserId = await getUserId();
 
   if (!currentUserId) {
@@ -38,6 +40,8 @@ export async function createAuditReport(formData: FormData) {
         auditEngagementId,
         companyId,
         createdBy: currentUserId,
+        effectiveYear,
+        effectiveMonth
       },
     })
   )
@@ -88,5 +92,5 @@ export async function getActiveAuditReport() : Promise<{ data: ActiveAuditReport
 }
 
 export type ActiveAuditReportPayload = Prisma.AuditReportGetPayload<{
-  select: { id: true, name: true, companyId: true, projectId: true, auditEngagementId: true }
+  select: { id: true, name: true, companyId: true, projectId: true, auditEngagementId: true, effectiveYear: true, effectiveMonth: true }
 }>

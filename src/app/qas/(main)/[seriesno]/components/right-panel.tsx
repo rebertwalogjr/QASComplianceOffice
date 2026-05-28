@@ -102,14 +102,9 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
       }).optional(),
 
       // Global
-      comment: z.string().optional(),
+      comment: z.string().min(1, "Please provide a comment."),
     }).superRefine((data, ctx) => {
-      const requiresUpdateValidation = permissions.isStateApproved && permissions.canAccept && !isFormDisabled //data.isVerified && data.isApproved && !data.isHold && !data.isCancel
-      console.log("Requires Validation: ", requiresUpdateValidation)
-      console.log("isVerified: ", data.isVerified)
-      console.log("isApproved: ", data.isApproved)
-      console.log("!isHold: ", !data.isHold)
-      console.log("!isCancel: ", !data.isCancel)
+      const requiresUpdateValidation = permissions.isStateApproved && permissions.canAccept && !isFormDisabled
 
       if (requiresUpdateValidation) {
         if (!data.correctiveAction || data.correctiveAction.trim() === "") {
@@ -174,36 +169,42 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
           }
         }
       }
+
+      // Holding date validation
       if (data.isHold) {
-        if (!data.holdRange?.start || !data.holdRange?.end) {
+        if (!data.holdRange?.start) {
           ctx.addIssue({
             code: "custom",
-            message: "Start and End dates are required for on-hold status",
+            message: "Start date is require for holding",
+            path: ["holdRange"]
+          })
+        }
+        if (!data.holdRange?.end) {
+          ctx.addIssue({
+            code: "custom",
+            message: "End date is require for holding",
+            path: ["holdRange"]
+          })
+        }
+        if (data.holdRange?.start && data.holdRange?.end && data.holdRange.start > data.holdRange.end) {
+          ctx.addIssue({
+            code: "custom",
+            message: "End date cannot be earlier than start date.",
             path: ["holdRange"],
-          });
+          })
         }
       }
-      if (data.isHold) {
-        if (data.holdRange?.start && data.holdRange?.end) {
-          if (data.holdRange.start > data.holdRange.end) {
-            ctx.addIssue({
-              code: "custom",
-              message: "End date cannot be earlier than start date",
-              path: ["holdRange"],
-            });
-          }
-        }
-      }
+
     })
-  }, [])
+  }, [permissions])
 
   type JobTransactionFormValues = z.infer<typeof joTransactionSchema>
 
   const { register, handleSubmit, control, watch, resetField, setValue, formState: { errors }, clearErrors } = useForm<JobTransactionFormValues>({
     resolver: zodResolver(joTransactionSchema),
     defaultValues: {
-      isVerified: !!jobTransaction.verifiedBy,
-      isApproved: !!jobTransaction.approvedBy,
+      isVerified: !!jobTransaction.verifiedBy || !!jobTransaction.verifiedOn,
+      isApproved: !!jobTransaction.approvedBy || !!jobTransaction.approvedOn,
       isForAcceptance: (permissions.canAccept || isAccepted || isForClosing || isClosed) && !!jobTransaction.approvedBy && jobTransaction.jobStatus === "open",
       isForClosing: jobTransaction.jobStatus === "for closing",
       isToClose: !!jobTransaction.closedOn,
@@ -225,16 +226,16 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
   const isCancelChecked = watch("isCancel")
   const isVerifiedChecked = watch("isVerified")
   const isApprovedChecked = watch("isApproved")
-  const isForAcceptance = watch("isForAcceptance")
   const isForClosingChecked = watch("isForClosing")
   const isToCloseChecked = watch("isToClose")
+  const holdRangeValue = watch("holdRange")
 
   const showUpdateArea = !isHoldChecked && !isCancelChecked && (permissions.canAccept || isAccepted || isForClosing || isClosed)
-  const isCommentDisabled = isClosed || isCancelled || isHeld || (!permissions.canCancel && !permissions.canVerify)
 
   const isFormDisabled = useMemo(() => {
     if (isPending) return true
     if (isClosed || isCancelled || isHeld) return true
+
     // RULE 1: New ticket validation
     if (permissions.isStateNew) {
       const changesMade = (permissions.canCancel && isCancelChecked) || (permissions.canVerify && isVerifiedChecked)
@@ -248,14 +249,17 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
     // RULE 3: Acceptance criteria validation
     if (permissions.isStateApproved) {
       if (!permissions.canAccept) return true
-      if (!isHoldChecked) {
+      if (isHoldChecked) {
+        if (!holdRangeValue) return true
+        const start = holdRangeValue.start
+        const end = holdRangeValue.end
+        const hasValidDates = start instanceof Date && end instanceof Date
+        const isValidRange = hasValidDates && start.getTime() <= end.getTime()
+        if (!isValidRange) return true
+      } else {
         const hasActions = !!watch("correctiveAction")?.trim() && !!watch("preventiveAction")?.trim()
         const hasDates = !!watch("corrCommitmentDate") && !!watch("prevCommitmentDate")
         if (!hasActions || !hasDates) return true
-      } else {
-        const hasDates = !watch("holdRange.start") && !watch("holdRange.end")
-        console.log("hasDates: ", hasDates)
-        if (!hasDates) return true
       }
     }
     // RULE 4: Action check configurations
@@ -269,22 +273,24 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
       if (!permissions.canClose) return true
     }
     return false
-  }, [permissions, isPending, isAccepted, isForClosing, isCancelChecked, isVerifiedChecked, isApprovedChecked, isHoldChecked, isApprovedChecked, isForClosingChecked, isToCloseChecked, watch("correctiveAction"), watch("preventiveAction"), watch("corrCommitmentDate"), watch("prevCommitmentDate"), watch("holdRange.start"), watch("holdRange.end")])
+  }, [permissions, isPending, isAccepted, isForClosing, isCancelChecked, isVerifiedChecked, isApprovedChecked, isHoldChecked, isApprovedChecked, isForClosingChecked, isToCloseChecked, watch("correctiveAction"), watch("preventiveAction"), watch("corrCommitmentDate"), watch("prevCommitmentDate"), watch("holdRange.start"), watch("holdRange.end"), watch("comment"), holdRangeValue])
 
   useEffect(() => {
     // Clear validation errors for Update Area when moving to hold
     if (isHoldChecked || isCancelChecked) {
       clearErrors(["correctiveAction", "preventiveAction", "corrCommitmentDate", "prevCommitmentDate"])
-      resetField("isVerified")
-      resetField("isApproved")
     }
     if (isHoldChecked) {
       resetField("isCancel")
     }
+    if (!isHoldChecked) {
+      setValue("holdRange", { start: undefined, end: undefined }, { shouldValidate: true })
+      clearErrors("holdRange")
+    }
     if (isCancelChecked) {
       resetField("isHold")
     }
-  }, [isHoldChecked, isCancelChecked, clearErrors])
+  }, [isHoldChecked, isCancelChecked, clearErrors, resetField, setValue])
 
   useEffect(() => {
     if (!jobTransaction.onHold) {
@@ -343,10 +349,6 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
     setIsPending(false)
   }
 
-  // const isFormDisabled = isPending || !hasAnyPermission || isClosed || isCancelled || isHeld || (!isHoldChecked && jobTransaction.onHold)
-
-  console.log("Form Validation Errors: ", errors)
-
   return (
     <div className="bg-muted py-2 px-2 border-l h-full">
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col h-full bg-background rounded-md border shadow-2xl">
@@ -402,7 +404,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
             )}
 
             {/* FOR CLOSING CHECKBOX */}
-            {(isAccepted || isForClosing || !isClosed) && (
+            {(isAccepted || isForClosing) && (
               <Field>
                 <div className="flex items-center gap-3">
                   <Controller
@@ -515,7 +517,6 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
           )}
 
           {showUpdateArea &&
-            // {isForAcceptance && !isHoldChecked && !isCancelChecked &&
             <FieldGroup className="gap-3 animate-in fade-in slide-in-from-top-2 duration-500">
               <Separator />
 
@@ -616,6 +617,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
                   className="resize-none"
                   disabled={isFormDisabled}
                 />
+                {errors.comment && <FieldError>Comment is required.</FieldError>}
               </div>
             </>
           }
@@ -626,14 +628,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
         {!(isClosed || isCancelled || isHeld) && (
           <div className="w-full border-t px-4 py-4 space-y-2">
             <Button type="submit" size="lg" className="w-full" disabled={isFormDisabled}>
-              {isPending ? (<Loader2 className="mr-2 h-4 w-4 animate-spin" />) :
-                // isHoldChecked ? "Hold" :
-                //   isCancelChecked ? "Cancel" :
-                //     (isAccepted && isForClosingChecked) ? "Request For Closing" :
-                //       (isForClosing && isForClosingChecked) ? "Close Transaction" :
-                //         showUpdateArea ? "Accept and Save" :
-                          "Submit"
-              }
+              {isPending ? (<Loader2 className="mr-2 h-4 w-4 animate-spin" />) : "Submit"}
             </Button>
           </div>
         )}

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import * as XLSX from "xlsx"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -9,6 +9,8 @@ import { BaseFilterOption, FilterOptionsPayload } from "@/server-actions/common"
 import FilterSelect from "@/components/filter-select"
 import { getExportData, TransactionExportPayload } from "@/server-actions/export"
 import { toast } from "sonner"
+import { Undo2Icon } from "lucide-react"
+import { Field, FieldError } from "@/components/ui/field"
 
 export default function ExportFilterContainer({ options }: { options: FilterOptionsPayload }) {
   const [loading, setLoading] = useState(false)
@@ -18,10 +20,60 @@ export default function ExportFilterContainer({ options }: { options: FilterOpti
     status: [],
     findings: [],
     categories: [],
+    createdFrom: "",
+    createdUntil: "",
   })
 
   const handleFieldChange = (name: string, value: string | null) => {
     setFilters((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const filterValidation = useMemo(() => {
+    const fromStr = filters.createdFrom
+    const untilStr = filters.createdUntil
+
+    const hasFrom = !!fromStr
+    const hasUntil = !!untilStr
+
+    const hasCompany = !!filters.company
+    const hasStatus = filters.status?.length > 0
+    const hasProjects = filters.projects?.length > 0
+    const hasFindings = filters.findings?.length > 0
+    const hasCategories = filters.categories?.length > 0
+    const hasDates = hasFrom || hasUntil
+
+    const isAnyFilterActive = hasCompany || hasStatus || hasProjects || hasFindings || hasCategories || hasDates
+
+    if (!isAnyFilterActive) {
+      return { isValid: false, error: "Please select at least one filter before exporting data." }
+    }
+
+    // If neither date has a value, it is completely valid (optional)
+    if (!hasFrom && !hasUntil) {
+      return { isValid: true, error: "" }
+    }
+
+    // If one has a value but the other is empty, they are invalid
+    if (hasFrom && !hasUntil) {
+      return { isValid: false, error: "Please provide and end date." }
+    }
+    if (!hasFrom && hasUntil) {
+      return { isValid: false, error: "Please provide and start date." }
+    }
+
+    // Convert string inputs ("YYYY-MM-DD") safely to midnight dates for precise validation
+    const fromDate = new Date(fromStr)
+    const untilDate = new Date(untilStr)
+
+    if (fromDate.getTime() > untilDate.getTime()) {
+      return { isValid: false, error: "End date must be greater than or equal to the start date." }
+    }
+
+    return { isValid: true, error: "" }
+  }, [filters])
+
+  const handleResetDate = () => {
+    setFilters({ ...filters, createdFrom: "", createdUntil: "" })
   }
 
   const handleExport = async () => {
@@ -42,11 +94,32 @@ export default function ExportFilterContainer({ options }: { options: FilterOpti
 
     const excelData = data.map((item: TransactionExportPayload) => ({
       "Series Id": item.id,
-      "Status": item.jobStatus,
+      "Audit Report No.": item.auditReport.name,
+      "Compliance Secretariat": item.complianceSecretariat.appSuiteEmployeeMaster.fullName,
+      "Date Created": item.createdOn,
       "Company": item.company.name,
-      "Project": item.project.name,
-      "Type of finding": item.typeOfFinding.name,
-      "Category": item.findingCategory.name
+      "Project / Department": item.project.name,
+      "Audit Engagement": item.auditEngagement.name,
+      "Type of Findings": item.typeOfFinding.name,
+      "Findings Category": item.findingCategory.name,
+      "Audit Rating": item.auditRating.name,
+      "Details of Findings": item.problemFindings,
+      "Responsible Person": item.responsiblePerson,
+      "Responsible Department": item.responsibleDepartment,
+      "Project Mngr. / Dept. Head": item.projectManagerDepartmentHead,
+      "Date and Time Issued": item.issuedOn,
+      "Target Close Out Date": item.targetDate,
+      "Actual Close Date": item.closedOn,
+      "Date Approved": item.approvedOn,
+      "Actual Aging": "wala pa to",
+      "Status": item.jobStatus,
+      "Recurring Per Process": item.recurringPerProcess ? "yes" : "no",
+      "Recurring Per Person": item.recurringPerPerson ? "yes" : "no",
+      "Issued To": item.recipient?.appSuiteEmployeeMaster.fullName,
+      "Corrective Action": item.correctiveAction,
+      "Corrective Commitment Date": item.correctiveCommitmentDate,
+      "Preventive Action": item.preventiveAction,
+      "Preventive Commitment Date": item.preventiveCommitmentDate,
     }))
 
     const worksheet = XLSX.utils.json_to_sheet(excelData)
@@ -71,6 +144,8 @@ export default function ExportFilterContainer({ options }: { options: FilterOpti
     { id: "on-hold", name: "On-Hold" },
     { id: "cancelled", name: "Cancelled" },
   ]
+
+  const isButtonDisabled = loading || !filterValidation.isValid
 
   return (
     <div className="flex flex-col gap-6 p-6 w-2xl border rounded-2xl">
@@ -116,14 +191,23 @@ export default function ExportFilterContainer({ options }: { options: FilterOpti
       />
 
       <div className="flex flex-col gap-2">
-        <label className="text-sm font-medium">Created Date Range</label>
+        <div className="flex items-center justify-between">
+          <label className="text-sm font-medium">Created Date Range</label>
+          <Button variant="ghost" size="xs" onClick={handleResetDate}><Undo2Icon size="2" /></Button>
+        </div>
         <div className="flex gap-2">
-          <Input type="date" onChange={(e) => setFilters({ ...filters, createdFrom: e.target.value })} />
-          <Input type="date" onChange={(e) => setFilters({ ...filters, createdUntil: e.target.value })} />
+          <Input type="date" value={filters.createdFrom} onChange={(e) => setFilters({ ...filters, createdFrom: e.target.value })} />
+          <Input type="date" value={filters.createdUntil} onChange={(e) => setFilters({ ...filters, createdUntil: e.target.value })} />
         </div>
       </div>
 
-      <Button onClick={handleExport} className="md:col-span-3 mt-4" disabled={loading}>
+      {!filterValidation.isValid && filterValidation.error &&
+        <Field>
+          <FieldError>{filterValidation.error}</FieldError>
+        </Field>
+      }
+      
+      <Button onClick={handleExport} className="md:col-span-3 mt-4" disabled={isButtonDisabled}>
         {loading ? "Generating Excel..." : "Download Excel (.xlsx)"}
       </Button>
     </div>

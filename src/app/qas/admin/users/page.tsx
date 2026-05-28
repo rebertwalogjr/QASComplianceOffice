@@ -3,21 +3,15 @@ import { columns } from "./columns";
 import { Label } from "@radix-ui/react-label";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, Plus, PlusCircle } from "lucide-react";
-import AddUser from "./add-user";
 import Link from "next/link";
-import { get } from "http";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { getUsers } from "@/server-actions/user";
-import { getCompanies } from "@/server-actions/company";
 
 
 export default async function UsersPage() {
 
-  const [usersRes, companyRes] = await Promise.all([getUsers(), getCompanies()])
-
+  const usersRes = await getUsers()
   const users = usersRes.data ?? []
-  const companies = companyRes.data ?? []
-
   const error = usersRes.error
 
   return (

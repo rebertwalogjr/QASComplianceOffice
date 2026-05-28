@@ -400,7 +400,7 @@ export async function jobTransactionClientUpdate(formData: FormData) {
     switch (type) {
       case "verify":
         // Send email to compliance officer for approval
-        const emailHtml1 = await getOfficerApprovalRequestEmailHtml(newJob)
+        const emailHtml1 = await getOfficerApprovalRequestEmailHtml(newJob, comment)
         triggerDatabaseMail({
           to: emailHtml1.recipient,
           subject: emailHtml1.subject,
@@ -411,7 +411,7 @@ export async function jobTransactionClientUpdate(formData: FormData) {
         break;
       case "approve":
         // Send email to recipient
-        const emailHtml2 = await getRecipientApprovalRequestEmailHtml(newJob)
+        const emailHtml2 = await getRecipientApprovalRequestEmailHtml(newJob, comment)
         triggerDatabaseMail({
           to: emailHtml2.recipient,
           subject: emailHtml2.subject,
@@ -421,7 +421,7 @@ export async function jobTransactionClientUpdate(formData: FormData) {
         break;
       case "accept":
         // Send email to secretariat
-        const emailHtml3 = await getSecretariatApprovalRequestEmailHtml(newJob)
+        const emailHtml3 = await getSecretariatApprovalRequestEmailHtml(newJob, comment)
         triggerDatabaseMail({
           to: emailHtml3.recipient,
           subject: emailHtml3.subject,
@@ -430,7 +430,7 @@ export async function jobTransactionClientUpdate(formData: FormData) {
         break;
       case "for closing":
         // send email to supervisor
-        const emailHtml4 = await getSupervisorForClosingRequestEmailHtml(newJob)
+        const emailHtml4 = await getSupervisorForClosingRequestEmailHtml(newJob, comment)
         triggerDatabaseMail({
           to: emailHtml4.recipient,
           subject: emailHtml4.subject,
@@ -439,7 +439,7 @@ export async function jobTransactionClientUpdate(formData: FormData) {
         break;
       case "close":
         // send email to compliance secretariat
-        const emailHtml5 = await getOfficerForClosingApprovedEmailHtml(newJob)
+        const emailHtml5 = await getOfficerForClosingApprovedEmailHtml(newJob, comment)
         triggerDatabaseMail({
           to: emailHtml5.recipient,
           subject: emailHtml5.subject,
@@ -482,6 +482,7 @@ const transactionBasicSelect = {
   verifiedOn: true,
   approver: userSelect,
   approvedOn: true,
+  closedOn: true,
   creator: userSelect,
   createdOn: true,
   company: { select: { name: true } },
@@ -516,6 +517,7 @@ const transactionInfoInclude = {
   verifier: userSelect,
   approver: userSelect,
   creator: userSelect,
+  auditTrails: true
 } satisfies Prisma.JobTransactionInclude
 
 const transactionEmailSelect = {

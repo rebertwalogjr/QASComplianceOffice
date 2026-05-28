@@ -6,12 +6,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile"
 import Link from "next/link"
-import { X } from "lucide-react"
+import { LockIcon, X } from "lucide-react"
 import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field"
-import { User } from "../../../../../generated/prisma/client"
+import { UserBasicIncludePayload } from "@/server-actions/user"
+import { Item, ItemContent, ItemMedia, ItemTitle } from "@/components/ui/item"
+import { Badge } from "@/components/ui/badge"
 
 interface Props {
-  item: any
+  item: UserBasicIncludePayload
   className?: string
 }
 
@@ -47,42 +49,49 @@ export default function TableCellViewer({ item, className }: Props) {
 
                   <Field>
                     <FieldLabel htmlFor="seriesno">Employee Number</FieldLabel>
-                    <Input id="seriesno" defaultValue={item.employeeNumber} disabled className="disabled:opacity-70" />
+                    <Input id="seriesno" defaultValue={item.employeeNumber} readOnly className="bg-muted/30 border-transparent shadow-none" />
                   </Field>
 
                   <Field>
                     <FieldLabel htmlFor="firstname">First Name</FieldLabel>
-                    <Input id="firstname" defaultValue={item.appSuiteEmployeeMaster.firstName} disabled className="disabled:opacity-70" />
+                    <Input id="firstname" defaultValue={item.appSuiteEmployeeMaster.firstName} readOnly className="bg-muted/30 border-transparent shadow-none" />
                   </Field>
 
                   <Field>
                     <FieldLabel htmlFor="lastname">Last Name</FieldLabel>
-                    <Input id="lastname" defaultValue={item.appSuiteEmployeeMaster.lastName} disabled className="disabled:opacity-70" />
+                    <Input id="lastname" defaultValue={item.appSuiteEmployeeMaster.lastName} readOnly className="bg-muted/30 border-transparent shadow-none" />
                   </Field>
 
                   <Field>
                     <FieldLabel htmlFor="username">Username</FieldLabel>
-                    <Input id="username" defaultValue={item.username} disabled className="disabled:opacity-70" />
+                    <Input id="username" defaultValue={item.username} readOnly className="bg-muted/30 border-transparent shadow-none" />
                   </Field>
 
                   <Field>
                     <FieldLabel htmlFor="email">Email</FieldLabel>
-                    <Input id="email" defaultValue={item.emailAddress || "--"} disabled className="disabled:opacity-70" />
+                    <Input id="email" defaultValue={item.emailAddress || "--"} readOnly className="bg-muted/30 border-transparent shadow-none" />
                   </Field>
 
                   <Field>
                     <FieldLabel htmlFor="company">Company</FieldLabel>
-                    <Input id="company" defaultValue={item.company.name || "--"} disabled className="disabled:opacity-70" />
+                    <Input id="company" defaultValue={item.company?.name || "--"} readOnly className="bg-muted/30 border-transparent shadow-none" />
                   </Field>
 
-                  {/* <Field>
+                  <Field>
                     <FieldLabel htmlFor="accesslevel">Access Level</FieldLabel>
-                    <Input id="accesslevel" defaultValue={item.accessId || "--"} disabled className="disabled:opacity-70" />
-                  </Field> */}
+                    {/* <Input id="accesslevel" defaultValue={item.accessId || "--"} disabled className="disabled:opacity-70" /> */}
+                    <div className="flex flex-wrap justify-start gap-2 bg-muted/30 p-2 rounded-md border-transparent shadow-none">
+                      {item.userRoles.filter((i) => i.isActive).map((r) => (
+                        <Badge key={r.role.id} variant="outline">
+                          {r.role.name}
+                        </Badge>
+                      ))}
+                    </div>
+                  </Field>
 
                   <Field>
                     <FieldLabel htmlFor="status">Status</FieldLabel>
-                    <Input id="status" defaultValue={item.isActive ? "Active" : "Inactive"} disabled className="disabled:opacity-70" />
+                    <Input id="status" defaultValue={item.isActive ? "Active" : "Inactive"} readOnly className="bg-muted/30 border-transparent shadow-none" />
                   </Field>
 
                 </FieldGroup>
