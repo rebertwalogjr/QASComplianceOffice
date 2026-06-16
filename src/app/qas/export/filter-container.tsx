@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { MultiFilterSelect } from "@/components/multi-filter-select"
 import { BaseFilterOption, FilterOptionsPayload } from "@/server-actions/common"
 import FilterSelect from "@/components/filter-select"
-import { getExportData, TransactionExportPayload } from "@/server-actions/export"
+import { getExportData, getExportDatav2, jobTransactionViewSelect, TransactionExportPayload } from "@/server-actions/export"
 import { toast } from "sonner"
 import { Undo2Icon } from "lucide-react"
 import { Field, FieldError } from "@/components/ui/field"
@@ -78,7 +78,8 @@ export default function ExportFilterContainer({ options }: { options: FilterOpti
 
   const handleExport = async () => {
     setLoading(true)
-    const { data, error } = await getExportData(filters)
+    // const { data, error } = await getExportData(filters)
+    const { data, error } = await getExportDatav2(filters)
 
     if (error) {
       toast.error(error)
@@ -91,31 +92,32 @@ export default function ExportFilterContainer({ options }: { options: FilterOpti
       setLoading(false)
       return
     }
+    
 
-    const excelData = data.map((item: TransactionExportPayload) => ({
-      "Series Id": item.id,
-      "Audit Report No.": item.auditReport.name,
-      "Compliance Secretariat": item.complianceSecretariat.appSuiteEmployeeMaster.fullName,
-      "Date Created": item.createdOn,
-      "Company": item.company.name,
-      "Project / Department": item.project.name,
-      "Audit Engagement": item.auditEngagement.name,
-      "Type of Findings": item.typeOfFinding.name,
-      "Findings Category": item.findingCategory.name,
-      "Audit Rating": item.auditRating.name,
+    const excelData = data.map((item: jobTransactionViewSelect) => ({
+      "Series Id": item.jobTransactionID,
+      "Audit Report No.": item.auditReportNumber,
+      "Compliance Secretariat": item.complianceSecretariat,
+      "Company": item.company,
+      "Project / Department": item.project,
+      "Audit Engagement": item.auditEngagement,
+      "Type of Findings": item.typeOfFinding,
+      "Findings Category": item.findingCategory,
+      "Audit Rating": item.auditRating,
       "Details of Findings": item.problemFindings,
       "Responsible Person": item.responsiblePerson,
       "Responsible Department": item.responsibleDepartment,
       "Project Mngr. / Dept. Head": item.projectManagerDepartmentHead,
-      "Date and Time Issued": item.issuedOn,
+      "Date Issued": item.createdOn,
       "Target Close Out Date": item.targetDate,
       "Actual Close Date": item.closedOn,
       "Date Approved": item.approvedOn,
-      "Actual Aging": "wala pa to",
+      "Actual Aging": item.agingDays,
       "Status": item.jobStatus,
       "Recurring Per Process": item.recurringPerProcess ? "yes" : "no",
       "Recurring Per Person": item.recurringPerPerson ? "yes" : "no",
-      "Issued To": item.recipient?.appSuiteEmployeeMaster.fullName,
+      "Cancel Reason": item.cancelReason,
+      "Issued To": item.recipient,
       "Corrective Action": item.correctiveAction,
       "Corrective Commitment Date": item.correctiveCommitmentDate,
       "Preventive Action": item.preventiveAction,

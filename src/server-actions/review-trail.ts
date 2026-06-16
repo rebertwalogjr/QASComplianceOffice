@@ -38,13 +38,14 @@ export async function getReviewTrailByTransactionId(jobTransactionId: number) : 
   return await dbQuery(
     prisma.reviewTrail.findMany({
       where:{ jobTransactionId },
-      include: { creator: userSelect }
+      include: ReviewTrailInclude
     })
   )
 }
 
 const ReviewTrailInclude = {
   creator: userSelect,
+  jobTransaction: { select: { recipient: userSelect, supervisor: userSelect, complianceOfficer: userSelect } }
 } satisfies Prisma.ReviewTrailInclude
 
 export type ReviewTrailPayload = Prisma.ReviewTrailGetPayload<{

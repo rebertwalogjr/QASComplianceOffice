@@ -46,6 +46,63 @@ export async function getExportData(filters: any): Promise<{ data: TransactionEx
   return { data, error }
 }
 
+export async function getExportDatav2(filters: any): Promise<{ data: jobTransactionViewSelect[] | null, error: any }> {
+  const conditions: Prisma.Sql[] = []
+
+  if (filters.status?.length) {
+    conditions.push(Prisma.sql`jobStatus IN (${Prisma.join(filters.status)})`)
+  }
+
+  if (filters.company) {
+    conditions.push(Prisma.sql`companyId = ${Number(filters.company)}`)
+  }
+
+  if (filters.projects?.length) {
+    conditions.push(Prisma.sql`projectId IN (${Prisma.join(filters.projects.map(Number))})`)
+  }
+
+  if (filters.findings?.length) {
+    conditions.push(Prisma.sql`typeOfFindingId IN (${Prisma.join(filters.findings.map(Number))})`)
+  }
+
+  if (filters.categories?.length) {
+    conditions.push(Prisma.sql`findingCategoryId IN (${Prisma.join(filters.categories.map(Number))})`)
+  }
+
+  if (filters.createdFrom) {
+    const fromDate = new Date(filters.createdFrom)
+    fromDate.setHours(0, 0, 0, 0)
+    conditions.push(Prisma.sql`createdOn >= ${fromDate}`)
+  }
+
+  if (filters.createdUntil) {
+    const untilDate = new Date(filters.createdUntil)
+    untilDate.setHours(23, 59, 59, 999)
+    conditions.push(Prisma.sql`createdOn <= ${untilDate}`)
+  }
+
+  const whereClause = conditions.length
+  ? Prisma.sql`WHERE ${Prisma.join(conditions, ' AND ')}`
+  : Prisma.empty
+
+  const { data, error } = await dbQuery(
+    prisma.$queryRaw<jobTransactionViewSelect[]>`
+      SELECT * FROM v_jobTransactionSelect 
+      ${whereClause}
+    `
+  )
+
+  // const finalQuery = conditions.length > 0
+  //   ? Prisma.sql`SELECT * FROM v_jobTransactionSelect WHERE ${Prisma.join(conditions, ' AND ')}`
+  //   : Prisma.sql`SELECT * FROM v_jobTransactionSelect`
+
+  // const { data, error } = await dbQuery(
+  //   prisma.$queryRaw<jobTransactionViewSelect[]>(finalQuery)
+  // )
+
+  return { data, error }
+}
+
 const transactionInfoInclude = {
   company: { select: { name: true } },
   project: { select: { name: true } },
@@ -71,3 +128,34 @@ const transactionInfoInclude = {
 export type TransactionExportPayload = Prisma.JobTransactionGetPayload<{
   include: typeof transactionInfoInclude
 }>
+
+export interface jobTransactionViewSelect {
+  jobTransactionID: string
+  auditReportNumber: string
+  complianceSecretariat: string
+  company: string
+  project: string
+  auditEngagement: string
+  typeOfFinding: string
+  findingCategory: string
+  auditRating: string
+  problemFindings: string
+  responsibleDepartment: string
+  responsiblePerson: string
+  projectManagerDepartmentHead: string
+  issuedOn: Date
+  createdOn: Date
+  targetDate: Date
+  closedOn: Date
+  approvedOn: Date
+  agingDays: number
+  jobStatus: string
+  recurringPerProcess: boolean
+  recurringPerPerson: boolean
+  cancelReason: string
+  recipient: string
+  correctiveAction: string
+  correctiveCommitmentDate: Date
+  preventiveAction: string
+  preventiveCommitmentDate: Date
+}

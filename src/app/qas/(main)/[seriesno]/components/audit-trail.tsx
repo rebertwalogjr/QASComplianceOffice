@@ -27,11 +27,14 @@ export default function AuditTrail({ data, jobTransaction }: { data: AuditTrailP
     if (verifiedOn && !approvedOn) {
       return "Waiting for compliance officer approval";
     }
-    if (verifiedOn && approvedOn && status !== "accepted") {
+    if (verifiedOn && approvedOn && status === "open") {
       return "Waiting for acceptance";
     }
     if (status === "accepted") {
       return "Accepted, waiting for closing";
+    }
+    if (status === 'for closing') {
+      return "Waiting for closing approval"
     }
     return null;
   }

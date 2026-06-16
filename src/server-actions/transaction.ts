@@ -306,8 +306,6 @@ export async function jobTransactionClientUpdate(formData: FormData) {
     fileNames = fs.readdirSync(tempDirPath)
   }
 
-  console.log("corrCommitmentDateValue: " + formData.get("corrCommitmentDate") as string)
-
   switch (type) {
     case "verify":
       rawData = { verifiedBy: creatorId, verifiedOn: new Date(), jobStatus: "open", onHold: false }
@@ -407,7 +405,6 @@ export async function jobTransactionClientUpdate(formData: FormData) {
           cc: emailHtml1.cc,
           body: emailHtml1.template
         }).catch(err => console.error("Background Email Error:", err))
-        console.log("Verified na ni Supervisor")
         break;
       case "approve":
         // Send email to recipient

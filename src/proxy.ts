@@ -55,7 +55,7 @@ export default withAuth(
 
 export const config = {
   matcher: [
-    "/qas/:path",
+    "/qas/:path*",
     "/activate",
     "/qas/admin/:path*",
     "/",

@@ -112,7 +112,6 @@ export default function UpdateForm({ options }: { options: EntryFormProps }) {
   })
 
   const [sessionId, setSessionId] = useState<string>("")
-  const [isLoadingAttachments, setIsLoadingAttachments] = useState(false)
   const [attachments, setAttachments] = useState<Attachment[]>([])
 
   const selectedCompanyId = watch("companyId")
@@ -242,59 +241,17 @@ export default function UpdateForm({ options }: { options: EntryFormProps }) {
 
                   <Field>
                     <FieldLabel>Compliance Secretariat</FieldLabel>
-                    <Input value={`${options.session?.user.name} (${options.session?.user.employeeNumber})`} readOnly />
+                    <Input value={`${options.session?.user.name} (${options.session?.user.employeeNumber})`} disabled />
                   </Field>
 
                   <Field>
                     <FieldLabel>Company</FieldLabel>
-                    <Controller
-                      name="companyId"
-                      control={control}
-                      render={({ field }) => (
-                        <Select
-                          value={field.value}
-                          onValueChange={field.onChange}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select company..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {options.companies?.map((company) => (
-                              <SelectItem key={company.id} value={company.id.toString()}>
-                                {company.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
-                    />
-                    {errors.companyId && <p className="text-xs text-destructive mt-1">{errors.companyId.message}</p>}
+                    <Input value={options.initialData?.company.name} disabled />
                   </Field>
 
                   <Field>
                     <FieldLabel>Project</FieldLabel>
-                    <Controller
-                      name="projectId"
-                      control={control}
-                      render={({ field }) => (
-                        <Select
-                          value={field.value}
-                          onValueChange={field.onChange}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select project..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {filtered.projects?.map((project) => (
-                              <SelectItem key={project.id} value={project.id.toString()}>
-                                {project.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
-                    />
-                    {errors.projectId && <p className="text-xs text-destructive mt-1">{errors.projectId.message}</p>}
+                    <Input value={options.initialData?.project.name} disabled />
                   </Field>
 
                   <Field>
@@ -351,54 +308,12 @@ export default function UpdateForm({ options }: { options: EntryFormProps }) {
 
                   <Field>
                     <FieldLabel>Compliance Officer</FieldLabel>
-                    <Controller
-                      name="complianceOfficerId"
-                      control={control}
-                      render={({ field }) => (
-                        <Select
-                          value={field.value}
-                          onValueChange={field.onChange}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select compliance officer..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {filtered.officers?.map((p) => (
-                              <SelectItem key={p.id} value={p.id.toString()} >
-                                {p.appSuiteEmployeeMaster.fullName}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
-                    />
-                    {errors.complianceOfficerId && <p className="text-xs text-destructive mt-1">{errors.complianceOfficerId.message}</p>}
+                    <Input value={options.initialData?.complianceOfficer.appSuiteEmployeeMaster.fullName} disabled />
                   </Field>
 
                   <Field>
                     <FieldLabel>Supervisor</FieldLabel>
-                    <Controller
-                      name="supervisorId"
-                      control={control}
-                      render={({ field }) => (
-                        <Select
-                          value={field.value}
-                          onValueChange={field.onChange}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select supervisor..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {filtered.supervisors?.map((p) => (
-                              <SelectItem key={p.id} value={p.id.toString()} >
-                                {p.appSuiteEmployeeMaster.fullName}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
-                    />
-                    {errors.supervisorId && <p className="text-xs text-destructive mt-1">{errors.supervisorId.message}</p>}
+                    <Input value={options.initialData?.supervisor.appSuiteEmployeeMaster.fullName} disabled />
                   </Field>
 
                 </FieldGroup>

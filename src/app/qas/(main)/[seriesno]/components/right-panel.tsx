@@ -104,9 +104,9 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
       // Global
       comment: z.string().min(1, "Please provide a comment."),
     }).superRefine((data, ctx) => {
-      const requiresUpdateValidation = permissions.isStateApproved && permissions.canAccept && !isFormDisabled
+      const isAcceptanceStage = permissions.isStateApproved && permissions.canAccept
 
-      if (requiresUpdateValidation) {
+      if (isAcceptanceStage && !data.isHold && !data.isCancel) {
         if (!data.correctiveAction || data.correctiveAction.trim() === "") {
           ctx.addIssue({
             code: "custom",
@@ -137,36 +137,34 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
         }
       }
 
-      if (!data.isHold && !data.isCancel) {
-        if (!!jobTransaction.approvedBy || permissions.canAccept) {
-          if (!data.correctiveAction || data.correctiveAction.trim() === "") {
-            ctx.addIssue({
-              code: "custom",
-              message: "Corrective action is required to proceed.",
-              path: ["correctiveAction"],
-            });
-          }
-          if (!data.preventiveAction || data.preventiveAction.trim() === "") {
-            ctx.addIssue({
-              code: "custom",
-              message: "Preventive action is required to proceed.",
-              path: ["preventiveAction"],
-            });
-          }
-          if (!data.corrCommitmentDate) {
-            ctx.addIssue({
-              code: "custom",
-              message: "Please select a commitment date.",
-              path: ["corrCommitmentDate"],
-            });
-          }
-          if (!data.prevCommitmentDate) {
-            ctx.addIssue({
-              code: "custom",
-              message: "Please select a commitment date.",
-              path: ["prevCommitmentDate"],
-            });
-          }
+      if (!data.isHold && !data.isCancel && !!jobTransaction.approvedBy && !isAcceptanceStage) {
+        if (!data.correctiveAction || data.correctiveAction.trim() === "") {
+          ctx.addIssue({
+            code: "custom",
+            message: "Corrective action is required to proceed.",
+            path: ["correctiveAction"],
+          });
+        }
+        if (!data.preventiveAction || data.preventiveAction.trim() === "") {
+          ctx.addIssue({
+            code: "custom",
+            message: "Preventive action is required to proceed.",
+            path: ["preventiveAction"],
+          });
+        }
+        if (!data.corrCommitmentDate) {
+          ctx.addIssue({
+            code: "custom",
+            message: "Please select a commitment date.",
+            path: ["corrCommitmentDate"],
+          });
+        }
+        if (!data.prevCommitmentDate) {
+          ctx.addIssue({
+            code: "custom",
+            message: "Please select a commitment date.",
+            path: ["prevCommitmentDate"],
+          });
         }
       }
 
@@ -327,6 +325,13 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
     formData.append("preventiveAction", data.preventiveAction || "")
     formData.append("comment", data.comment || "")
 
+    if (data.corrCommitmentDate) {
+      formData.append("corrCommitmentDate", data.corrCommitmentDate.toISOString())
+    }
+    if (data.prevCommitmentDate) {
+      formData.append("prevCommitmentDate", data.prevCommitmentDate.toISOString())
+    }
+
     if (data.isHold && data.holdRange) {
       if (data.holdRange.start) {
         formData.append("holdFrom", data.holdRange?.start?.toISOString() ?? "")
@@ -359,166 +364,173 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
 
         <div className="flex flex-col gap-4 px-4 py-4 h-full overflow-auto">
 
-          <Label className="text-muted-foreground text-xs uppercase font-bold">Entry Actions</Label>
 
-          <FieldGroup className="gap-3">
-            {/* VERIFICATION CHECKBOX */}
-            <Field>
-              <div className="flex items-center gap-3">
-                <Controller
-                  control={control}
-                  name="isVerified"
-                  render={({ field }) => (
-                    <Checkbox
-                      id="isVerified"
-                      {...register("isVerified")}
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                      disabled={!permissions.isStateNew || isHoldChecked || !permissions.canVerify || isCancelChecked} />
-                  )}
-                />
-                <FieldLabel htmlFor="isVerified">{jobTransaction.verifiedBy ? "Verified" : "Verify"}</FieldLabel>
-              </div>
-            </Field>
+          {!isClosed &&
+            <>
+              <Label className="text-muted-foreground text-xs uppercase font-bold">Entry Actions</Label>
 
-            {/* APPROVAL CHECKBOX */}
-            {!permissions.isStateNew && (
-              <Field>
-                <div className="flex items-center gap-3">
-                  <Controller
-                    control={control}
-                    name="isApproved"
-                    render={({ field }) => (
-                      <Checkbox
-                        id="isApproved"
-                        {...register("isApproved")}
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        disabled={!permissions.isStateVerified || isHoldChecked || !permissions.canApprove}
-                      />
-                    )}
-                  />
-                  <FieldLabel htmlFor="isApproved">{jobTransaction.approvedBy ? "Approved" : "Approve"}</FieldLabel>
-                </div>
-              </Field>
-            )}
-
-            {/* FOR CLOSING CHECKBOX */}
-            {(isAccepted || isForClosing) && (
-              <Field>
-                <div className="flex items-center gap-3">
-                  <Controller
-                    control={control}
-                    name="isForClosing"
-                    render={({ field }) => (
-                      <Checkbox
-                        id="isForClosing"
-                        {...register("isForClosing")}
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        disabled={!isAccepted || isHoldChecked || !permissions.canAskForClosing}
-                      />
-                    )}
-                  />
-                  <FieldLabel htmlFor="isForClosing">For Closing</FieldLabel>
-                </div>
-              </Field>
-            )}
-
-            {/* CLOSING CHECKBOX */}
-            {(isForClosing || isClosed) && (
-              <Field>
-                <div className="flex items-center gap-3">
-                  <Controller
-                    control={control}
-                    name="isToClose"
-                    render={({ field }) => (
-                      <Checkbox
-                        id="isToClose"
-                        {...register("isToClose")}
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        disabled={!permissions.canClose}
-                      />
-                    )}
-                  />
-                  <FieldLabel htmlFor="isToClose">{isForClosing ? "Close" : "Closed"}</FieldLabel>
-                </div>
-              </Field>
-            )}
-
-            {/* CANCEL CHECKBOX */}
-            {(permissions.isStateNew && permissions.canCancel || isCancelled) && (
-              <Field>
-                <div className="flex items-center gap-3">
-                  <Controller
-                    control={control}
-                    name="isCancel"
-                    render={({ field }) => (
-                      <Checkbox
-                        id="isCancel"
-                        {...register("isCancel")}
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        disabled={isHoldChecked || !permissions.canCancel || isCancelled || isVerifiedChecked}
-                      />
-                    )}
-                  />
-                  <FieldLabel htmlFor="isCancel">{isCancelled ? "Cancelled" : "Cancel"}</FieldLabel>
-                </div>
-              </Field>
-            )}
-
-          </FieldGroup>
-
-          {/* HOLDING AREA */}
-          {/* {(permissions.isStateApproved && permissions.canAccept) || isHeld && ( */}
-          {(showUpdateArea || isHeld || isHoldChecked) && !(isAccepted || isForClosing || isClosed) && (
-            <FieldGroup className="gap-3">
-              <Field>
-                <div className="flex items-center gap-3">
-                  <Controller
-                    control={control}
-                    name="isHold"
-                    render={({ field }) => (
-                      <Checkbox
-                        id="isHold"
-                        {...register("isHold")}
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        disabled={jobTransaction.onHold}
-                      />
-                    )}
-                  />
-                  <Label>{jobTransaction.onHold ? "On-Hold" : "Request for hold"}</Label>
-                </div>
-              </Field>
-
-              {isHoldChecked &&
-                <FieldGroup className="flex gap-3 px-4 py-2 animate-in fade-in slide-in-from-top-2 duration-500">
-                  <Field>
+              <FieldGroup className="gap-3">
+                {/* VERIFICATION CHECKBOX */}
+                <Field>
+                  <div className="flex items-center gap-3">
                     <Controller
                       control={control}
-                      name="holdRange"
+                      name="isVerified"
                       render={({ field }) => (
-                        <DateRangePicker
-                          defaultStart={field.value?.start ?? null}
-                          defaultEnd={field.value?.end ?? null}
-                          onChange={field.onChange}
-                          readonly={jobTransaction.onHold}
-                        />
+                        <Checkbox
+                          id="isVerified"
+                          {...register("isVerified")}
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                          disabled={!permissions.isStateNew || isHoldChecked || !permissions.canVerify || isCancelChecked} />
                       )}
                     />
+                    <FieldLabel htmlFor="isVerified">{jobTransaction.verifiedBy ? "Verified" : "Verify"}</FieldLabel>
+                  </div>
+                </Field>
+
+                {/* APPROVAL CHECKBOX */}
+                {!permissions.isStateNew && (
+                  <Field>
+                    <div className="flex items-center gap-3">
+                      <Controller
+                        control={control}
+                        name="isApproved"
+                        render={({ field }) => (
+                          <Checkbox
+                            id="isApproved"
+                            {...register("isApproved")}
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            disabled={!permissions.isStateVerified || isHoldChecked || !permissions.canApprove}
+                          />
+                        )}
+                      />
+                      <FieldLabel htmlFor="isApproved">{jobTransaction.approvedBy ? "Approved" : "Approve"}</FieldLabel>
+                    </div>
                   </Field>
-                  {errors.holdRange && <FieldError>{errors.holdRange.message}</FieldError>}
+                )}
+
+                {/* FOR CLOSING CHECKBOX */}
+                {(isAccepted || isForClosing) && (
+                  <Field>
+                    <div className="flex items-center gap-3">
+                      <Controller
+                        control={control}
+                        name="isForClosing"
+                        render={({ field }) => (
+                          <Checkbox
+                            id="isForClosing"
+                            {...register("isForClosing")}
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            disabled={!isAccepted || isHoldChecked || !permissions.canAskForClosing}
+                          />
+                        )}
+                      />
+                      <FieldLabel htmlFor="isForClosing">For Closing</FieldLabel>
+                    </div>
+                  </Field>
+                )}
+
+                {/* CLOSING CHECKBOX */}
+                {(isForClosing || isClosed) && (
+                  <Field>
+                    <div className="flex items-center gap-3">
+                      <Controller
+                        control={control}
+                        name="isToClose"
+                        render={({ field }) => (
+                          <Checkbox
+                            id="isToClose"
+                            {...register("isToClose")}
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            disabled={!permissions.canClose}
+                          />
+                        )}
+                      />
+                      <FieldLabel htmlFor="isToClose">{isForClosing ? "Close" : "Closed"}</FieldLabel>
+                    </div>
+                  </Field>
+                )}
+
+                {/* CANCEL CHECKBOX */}
+                {(permissions.isStateNew && permissions.canCancel || isCancelled) && (
+                  <Field>
+                    <div className="flex items-center gap-3">
+                      <Controller
+                        control={control}
+                        name="isCancel"
+                        render={({ field }) => (
+                          <Checkbox
+                            id="isCancel"
+                            {...register("isCancel")}
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            disabled={isHoldChecked || !permissions.canCancel || isCancelled || isVerifiedChecked}
+                          />
+                        )}
+                      />
+                      <FieldLabel htmlFor="isCancel">{isCancelled ? "Cancelled" : "Cancel"}</FieldLabel>
+                    </div>
+                  </Field>
+                )}
+
+              </FieldGroup>
+
+
+              {/* HOLDING AREA */}
+              {(showUpdateArea || isHeld || isHoldChecked) && !(isAccepted || isForClosing || isClosed) && (
+                <FieldGroup className="gap-3">
+                  <Field>
+                    <div className="flex items-center gap-3">
+                      <Controller
+                        control={control}
+                        name="isHold"
+                        render={({ field }) => (
+                          <Checkbox
+                            id="isHold"
+                            {...register("isHold")}
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            disabled={jobTransaction.onHold}
+                          />
+                        )}
+                      />
+                      <Label>{jobTransaction.onHold ? "On-Hold" : "Request for hold"}</Label>
+                    </div>
+                  </Field>
+
+                  {isHoldChecked &&
+                    <FieldGroup className="flex gap-3 px-4 py-2 animate-in fade-in slide-in-from-top-2 duration-500">
+                      <Field>
+                        <Controller
+                          control={control}
+                          name="holdRange"
+                          render={({ field }) => (
+                            <DateRangePicker
+                              defaultStart={field.value?.start ?? null}
+                              defaultEnd={field.value?.end ?? null}
+                              onChange={field.onChange}
+                              readonly={jobTransaction.onHold}
+                            />
+                          )}
+                        />
+                      </Field>
+                      {errors.holdRange && <FieldError>{errors.holdRange.message}</FieldError>}
+                    </FieldGroup>
+                  }
                 </FieldGroup>
-              }
-            </FieldGroup>
-          )}
+              )}
+              
+              <Separator />
+
+            </>
+          }
 
           {showUpdateArea &&
             <FieldGroup className="gap-3 animate-in fade-in slide-in-from-top-2 duration-500">
-              <Separator />
 
               <Label className="text-muted-foreground text-xs uppercase font-bold">Update Area</Label>
 
@@ -608,7 +620,6 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
 
           {!(isClosed || isCancelled || isHeld) &&
             <>
-              <Separator />
               <div className="flex flex-col gap-3">
                 <Label htmlFor="comment" className="text-muted-foreground">{isHoldChecked ? "Holding Reason" : isCancelChecked ? "Cancel Reason" : "Comments / Remarks"}</Label>
                 <Textarea id="comment"

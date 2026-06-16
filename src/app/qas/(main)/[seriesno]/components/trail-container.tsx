@@ -9,6 +9,8 @@ import { Item, ItemContent } from "@/components/ui/item"
 import { Label } from "@/components/ui/label"
 import { UserHoverCard } from "@/components/user-hover-card"
 import { MessageSquareDashed } from "lucide-react"
+import { UpdateTrailPayload } from "@/server-actions/update-trail"
+import { ReviewTrailPayload } from "@/server-actions/review-trail"
 
 interface BaseTrail {
   id: number
@@ -33,7 +35,7 @@ interface BaseTrail {
 }
 
 interface TrailContainerProps<T extends BaseTrail> {
-  trails: T[]
+  trails: UpdateTrailPayload[] | ReviewTrailPayload[]
   currentUserId: number
   canWrite?: boolean
   readonly?: boolean
@@ -85,13 +87,10 @@ export default function TrailContainer<T extends BaseTrail>({ trails, currentUse
                 const isMe = trail.createdBy === currentUserId
                 return (
                   <div key={trail.id} className={cn("w-full flex", isMe ? "justify-end" : "justify-start")}>
-                    <div className="flex flex-col gap-1.5 w-[80%] lg:w-[75%]">
-                      <div className={cn("flex justify-between", isMe && "flew-row-reverse")}>
+                    <div className={cn("flex flex-col gap-1.5 mx-w-[80%] lg:max-w-[75%]", isMe ? "items-end" : "items-start")}>
+                      <div className={cn("flex justify-between gap-2", isMe && "flex-row-reverse")}>
                         <Label className="text-xs font-bold text-primary">
-                          {!isMe ?
-                            <UserHoverCard data={trail.creator.appSuiteEmployeeMaster} /> :
-                            // trail.creator.appSuiteEmployeeMaster.fullName :
-                            ""}
+                          {!isMe ? <UserHoverCard data={trail.creator.appSuiteEmployeeMaster} /> : ""}
                         </Label>
                         <span className="text-[10px] font-normal text-muted-foreground">{format(new Date(trail.createOn), "h:mm a")}</span>
                       </div>

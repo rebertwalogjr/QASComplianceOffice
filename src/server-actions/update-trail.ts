@@ -7,25 +7,40 @@ import { getUserId } from "./get-session";
 import { userSelect } from "./selectors";
 import { Prisma } from "../../generated/prisma/client";
 import { triggerWebhook } from "@/lib/webhook";
+import { triggerDatabaseMail } from "@/lib/mail-service";
+import { getUpdateTrailEmailHtml } from "@/lib/email-builder";
 
 export async function createUpdateTrail(formData: FormData) {
   const creatorId = await getUserId()
+  const jobTransactionId = Number(formData.get("jobTransactionId"))
+  const message = formData.get("message") as string
 
   if (!creatorId) {
     throw new Error("You must be logged in.")
   }
 
   const rawData = {
-    jobTransactionId: Number(formData.get("jobTransactionId")),
-    message: formData.get("message") as string,
+    jobTransactionId: jobTransactionId,
+    message: message,
     createdBy: creatorId,
   }
 
   const {data, error} = await dbQuery(
     prisma.updateTrail.create({
-      data: { ...rawData }
+      data: { ...rawData },
+      include: UpdateTrailInclude
     })
   )
+
+  // EMAIL NOTIF
+  // if (data) {
+  //   const emailHtml = await getUpdateTrailEmailHtml({data, message})
+  //   triggerDatabaseMail({
+  //     to: emailHtml.recipient,
+  //     subject: emailHtml.subject,
+  //     body: emailHtml.template
+  //   })
+  // }
 
   triggerWebhook(data)
 
@@ -38,13 +53,14 @@ export async function getUpdateTrailByTransactionId(jobTransactionId: number) : 
   return await dbQuery(
     prisma.updateTrail.findMany({
       where:{ jobTransactionId },
-      include: { creator: userSelect }
+      include: UpdateTrailInclude
     })
   )
 }
 
 const UpdateTrailInclude = {
   creator: userSelect,
+  jobTransaction: { select: { recipient: userSelect, supervisor: userSelect, complianceOfficer: userSelect } }
 } satisfies Prisma.UpdateTrailInclude
 
 export type UpdateTrailPayload = Prisma.UpdateTrailGetPayload<{

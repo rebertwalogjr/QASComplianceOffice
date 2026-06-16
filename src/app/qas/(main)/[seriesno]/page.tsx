@@ -50,10 +50,7 @@ export default async function SeriesViewer({ params }: { params: Promise<{ serie
         <>
           <div className="flex-2 min-w-0 min-h-0">
             <SeriesTitle
-              seriesno={transId.toString()}
-              creator={jobTransaction.data.creator.appSuiteEmployeeMaster.fullName}
-              createdOn={jobTransaction.data.createdOn.toDateString()}
-              canUpdate={!jobTransaction.data.verifiedBy}
+              jobTransaction={jobTransaction.data}
             />
             <div className="">
               <SeriesTabs defaultValue="details">

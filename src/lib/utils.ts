@@ -4,6 +4,7 @@ import { isToday, isYesterday, isThisWeek, format } from "date-fns"
 import { AuditTrailPayload } from "@/server-actions/audit-trail"
 import { UpdateTrailPayload } from "@/server-actions/update-trail"
 import crypto from "crypto"
+import { ReviewTrailPayload } from "@/server-actions/review-trail"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -62,8 +63,8 @@ export function groupAuditTrails(data: AuditTrailPayload[]) {
   return groups;
 }
 
-export function groupTrails(data: UpdateTrailPayload[]) {
-  const groups: Record<string, UpdateTrailPayload[]> = {};
+export function groupTrails(data: UpdateTrailPayload[] | ReviewTrailPayload[]) {
+  const groups: Record<string, UpdateTrailPayload[] | ReviewTrailPayload[]> = {};
 
   data.forEach((trail) => {
     const date = new Date(trail.createOn);
