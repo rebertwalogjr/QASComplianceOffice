@@ -22,8 +22,7 @@ export default function ReviewTrailClient({ initialTrails, jobTransaction, curre
     const isAuditor = jobTransaction.complianceSecretariatId === currentUserId
     const isSupervisor = jobTransaction.supervisorId === currentUserId
     const isOfficer = jobTransaction.complianceOfficerId === currentUserId
-    const isRecipient = jobTransaction.recipientId === currentUserId
-    return { isAuditor, isSupervisor, isOfficer, isRecipient }
+    return { isAuditor, isSupervisor, isOfficer }
   }, [initialTrails, jobTransaction, currentUserId])
 
   const hasAnyPermission = Object.values(permissions).some(p => p === true)
@@ -59,7 +58,7 @@ export default function ReviewTrailClient({ initialTrails, jobTransaction, curre
           </div>
           <h3 className="text-sm font-semibold text-muted-foreground">Access Restricted</h3>
           <p className="text-xs text-muted-foreground max-w-[200px] mt-1">
-            You do not have the required permissions to view this trail. Please contact the <strong>QAS Administrator</strong> for access.
+            You do not have the required permissions to view this trail.
           </p>
         </div>
       )

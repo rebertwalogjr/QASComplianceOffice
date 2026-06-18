@@ -1811,7 +1811,7 @@ export async function getRecipientApprovalRequestEmailHtml(job: TransactionEmail
 export async function getSecretariatApprovalRequestEmailHtml(job: TransactionEmailPayload, comment: string) {
   return {
     subject: `[QAS Compliance Office] ${job.project.name}, Responded QA Entry ${job.id}`,
-    recipient: job.complianceOfficer.emailAddress || "rlwalog@dmcihomes.com",
+    recipient: job.complianceSecretariat.emailAddress || "rlwalog@dmcihomes.com",
     template: await render(<SecretariatApprovalRequest job={job} comment={comment} />)
   }
 }
@@ -1826,11 +1826,11 @@ export async function getSupervisorForClosingRequestEmailHtml(job: TransactionEm
 }
 
 // 7. Supervisor Closed
-export async function getOfficerForClosingApprovedEmailHtml(job: TransactionEmailPayload, comment: string) {
+export async function getSupervisorForClosingApprovedEmailHtml(job: TransactionEmailPayload, comment: string) {
   return {
     subject: `[QAS Compliance Office] ${job.project.name}, Approved Closing Approval QA Entry ${job.id}`,
-    recipient: job.supervisor.emailAddress || "rlwalog@dmcihomes.com",
-    cc: job.complianceSecretariat.emailAddress || "",
+    recipient: job.complianceSecretariat.emailAddress || "rlwalog@dmcihomes.com",
+    cc: job.supervisor.emailAddress || "",
     template: await render(<OfficerForClosingApproved job={job} comment={comment} />)
   }
 }

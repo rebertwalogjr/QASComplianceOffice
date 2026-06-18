@@ -10,7 +10,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import { getUserId } from "./get-session";
 import { triggerDatabaseMail } from "@/lib/mail-service";
-import { getNewlyCreatedEmailHtml, getOfficerApprovalRequestEmailHtml, getOfficerForClosingApprovedEmailHtml, getRecipientApprovalRequestEmailHtml, getSecretariatApprovalRequestEmailHtml, getSupervisorForClosingRequestEmailHtml, getSupervisorVerificationRequestEmailHtml } from "@/lib/email-builder";
+import { getNewlyCreatedEmailHtml, getOfficerApprovalRequestEmailHtml, getRecipientApprovalRequestEmailHtml, getSecretariatApprovalRequestEmailHtml, getSupervisorForClosingApprovedEmailHtml, getSupervisorForClosingRequestEmailHtml, getSupervisorVerificationRequestEmailHtml } from "@/lib/email-builder";
 // import { NewlyCreatedTemplate } from "@/lib/email-builder";
 
 export async function createTransaction(formData: FormData) {
@@ -436,7 +436,7 @@ export async function jobTransactionClientUpdate(formData: FormData) {
         break;
       case "close":
         // send email to compliance secretariat
-        const emailHtml5 = await getOfficerForClosingApprovedEmailHtml(newJob, comment)
+        const emailHtml5 = await getSupervisorForClosingApprovedEmailHtml(newJob, comment)
         triggerDatabaseMail({
           to: emailHtml5.recipient,
           subject: emailHtml5.subject,
@@ -466,6 +466,31 @@ export async function search(params: string): Promise<{ data: TransactionBasicPa
       },
       select: transactionBasicSelect,
       take: 10,
+    })
+  )
+}
+
+export async function reOpenTransaction(id: number) {
+   const creatorId = await getUserId()
+  if (!creatorId) throw new Error("Unauthorized")
+
+  await dbQuery(
+    prisma.$transaction(async (tx) => {
+      await tx.jobTransaction.update({
+        where: { id: id },
+        data: { jobStatus: "open" }
+      })
+
+      await tx.auditTrail.create({
+        data: {
+          jobTransactionId: id,
+          jobStatus:  'open',
+          actionTaken: 're-open the series',
+          comment: "",
+          createdBy: creatorId,
+          tag: "updated"
+        }
+      })
     })
   )
 }
