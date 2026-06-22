@@ -89,6 +89,7 @@ export async function getExportDatav2(filters: any): Promise<{ data: jobTransact
     prisma.$queryRaw<jobTransactionViewSelect[]>`
       SELECT * FROM v_jobTransactionSelect 
       ${whereClause}
+      ORDER BY jobTransactionID DESC
     `
   )
 

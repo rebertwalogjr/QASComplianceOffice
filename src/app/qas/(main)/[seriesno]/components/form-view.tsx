@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { TransactionPayload } from "@/server-actions/transaction";
 import { UserHoverCard } from "@/components/user-hover-card";
+import { formatLongDate } from "@/lib/utils";
 
 const BadgeYesNo = (str: string) => {
   const val = str.toLowerCase()
@@ -85,7 +86,7 @@ export default function FormView({ data }: { data: TransactionPayload | null }) 
                 ? (
                   <div className="flex gap-2">
                     <UserHoverCard data={data?.verifier?.appSuiteEmployeeMaster} />
-                    <Label className="text-muted-foreground text-xs whitespace-nowrap"> — {data?.verifiedOn?.toDateString()}</Label>
+                    <Label className="text-muted-foreground text-xs whitespace-nowrap"> — { formatLongDate(data?.verifiedOn) }</Label>
                   </div>
                 ) : <Label>--</Label>
               }
@@ -100,7 +101,7 @@ export default function FormView({ data }: { data: TransactionPayload | null }) 
                 ? (
                   <div className="flex gap-2">
                     <UserHoverCard data={data?.approver?.appSuiteEmployeeMaster} />
-                    <Label className="text-muted-foreground text-xs whitespace-nowrap"> — {data?.approvedOn?.toDateString()}</Label>
+                    <Label className="text-muted-foreground text-xs whitespace-nowrap"> — { formatLongDate(data?.approvedOn) }</Label>
                   </div>
                 )
                 : <Label>--</Label>}
@@ -115,7 +116,7 @@ export default function FormView({ data }: { data: TransactionPayload | null }) 
                 ? (
                   <div className="flex gap-2">
                     <UserHoverCard data={data?.supervisor?.appSuiteEmployeeMaster} />
-                    <Label className="text-muted-foreground text-xs whitespace-nowrap"> — {data?.closedOn?.toDateString()}</Label>
+                    <Label className="text-muted-foreground text-xs whitespace-nowrap"> — { formatLongDate(data?.closedOn) }</Label>
                   </div>
                 )
                 : <Label>--</Label>}

@@ -1,0 +1,26 @@
+BEGIN TRY
+
+BEGIN TRAN;
+
+-- CreateTable
+CREATE TABLE [dbo].[AdminTable] (
+    [id] INT NOT NULL IDENTITY(1,1),
+    [dataGroup] NVARCHAR(1000) NOT NULL,
+    [dataContent] NVARCHAR(500) NOT NULL,
+    [isActive] BIT NOT NULL CONSTRAINT [AdminTable_isActive_df] DEFAULT 1,
+    [createdOn] DATETIME NOT NULL CONSTRAINT [AdminTable_createdOn_df] DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT [AdminTable_pkey] PRIMARY KEY CLUSTERED ([id])
+);
+
+COMMIT TRAN;
+
+END TRY
+BEGIN CATCH
+
+IF @@TRANCOUNT > 0
+BEGIN
+    ROLLBACK TRAN;
+END;
+THROW
+
+END CATCH

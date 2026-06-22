@@ -318,12 +318,17 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
     if (!actionType && data.comment) actionType = "comment_only"
 
     const formData = new FormData()
+
+    // const activeAttachmentIds = attachments.filter((f) => f.isDbRecord && !f.isMarkedForDeletion).map((f) => f.id) //optional
+    const deletedAttachmentIds = attachments.filter((f) => f.isDbRecord && f.isMarkedForDeletion).map((f) => f.id)
+
     formData.append("sessionId", sessionId)
     formData.append("seriesno", String(jobTransaction.id))
     formData.append("actionType", actionType)
     formData.append("correctiveAction", data.correctiveAction || "")
     formData.append("preventiveAction", data.preventiveAction || "")
     formData.append("comment", data.comment || "")
+    formData.append("payload", JSON.stringify({deletedAttachmentIds}))
 
     if (data.corrCommitmentDate) {
       formData.append("corrCommitmentDate", data.corrCommitmentDate.toISOString())
@@ -340,6 +345,12 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
         formData.append("holdUntil", data.holdRange?.end?.toISOString() ?? "")
       }
     }
+
+    attachments.forEach((fileItem) => {
+      if (!fileItem.isDbRecord && fileItem.file) {
+        formData.append("attachments", fileItem.file)
+      }
+    })
 
     const { error } = await jobTransactionClientUpdate(formData)
 
@@ -523,7 +534,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
                   }
                 </FieldGroup>
               )}
-              
+
               <Separator />
 
             </>
@@ -600,10 +611,14 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
               {!(isAccepted || isClosed || isForClosing) &&
                 <Field>
                   <FieldLabel className="text-muted-foreground" htmlFor="attachments">Attachments</FieldLabel>
-                  {/* <Input name="attachments" /> */}
-                  <FileUpload sessionId={sessionId} onFilesChange={setAttachments} />
+                  <FileUpload
+                    sessionId={sessionId}
+                    onFilesChange={setAttachments}
+                    initialAttachments={jobTransaction.attachments.filter(att => att.isActive && att.fromRecipient)}
+                  />
                 </Field>
               }
+
 
               {(isAccepted || isClosed || isForClosing) &&
                 <Field>

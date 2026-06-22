@@ -10,7 +10,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import { getUserId } from "./get-session";
 import { triggerDatabaseMail } from "@/lib/mail-service";
-import { getNewlyCreatedEmailHtml, getOfficerApprovalRequestEmailHtml, getRecipientApprovalRequestEmailHtml, getSecretariatApprovalRequestEmailHtml, getSupervisorForClosingApprovedEmailHtml, getSupervisorForClosingRequestEmailHtml, getSupervisorVerificationRequestEmailHtml } from "@/lib/email-builder";
+import { getNewlyCreatedEmailHtml, getOfficerApprovalRequestEmailHtml, getRecipientApprovalRequestEmailHtml, getReOpenSeriesRecipientEmailHtml, getSecretariatApprovalRequestEmailHtml, getSupervisorForClosingApprovedEmailHtml, getSupervisorForClosingRequestEmailHtml, getSupervisorVerificationRequestEmailHtml } from "@/lib/email-builder";
 // import { NewlyCreatedTemplate } from "@/lib/email-builder";
 
 export async function createTransaction(formData: FormData) {
@@ -297,6 +297,12 @@ export async function jobTransactionClientUpdate(formData: FormData) {
   const id = Number(formData.get("seriesno"))
   const type = formData.get("actionType")
   const comment = formData.get("comment") as string
+  const payload = formData.get("payload") as string
+
+  const { deletedAttachmentIds } = JSON.parse(payload)
+
+  console.log("deletedAttachmentIds: ", deletedAttachmentIds)
+
   let rawData = {}
   let actionTaken = ""
 
@@ -375,6 +381,16 @@ export async function jobTransactionClientUpdate(formData: FormData) {
           tag: "updated"
         }
       })
+
+      if (deletedAttachmentIds && deletedAttachmentIds.length > 0) {
+        await tx.attachment.updateMany({
+          where: {
+            id: { in: deletedAttachmentIds },
+            jobTransactionId: id
+          },
+          data: { isActive: false }
+        })
+      }
 
       if (type === "hold") {
         await tx.holdingHistory.create({
@@ -471,26 +487,38 @@ export async function search(params: string): Promise<{ data: TransactionBasicPa
 }
 
 export async function reOpenTransaction(id: number) {
-   const creatorId = await getUserId()
+  const creatorId = await getUserId()
   if (!creatorId) throw new Error("Unauthorized")
 
   await dbQuery(
     prisma.$transaction(async (tx) => {
-      await tx.jobTransaction.update({
+      const job = await tx.jobTransaction.update({
         where: { id: id },
-        data: { jobStatus: "open" }
+        data: { jobStatus: "open" },
+        select: transactionEmailSelect
       })
 
       await tx.auditTrail.create({
         data: {
           jobTransactionId: id,
-          jobStatus:  'open',
+          jobStatus: 'open',
           actionTaken: 're-open the series',
           comment: "",
           createdBy: creatorId,
           tag: "updated"
         }
       })
+
+      if (job) {
+        const emailHtml5 = await getReOpenSeriesRecipientEmailHtml(job)
+        triggerDatabaseMail({
+          to: emailHtml5.recipient,
+          subject: emailHtml5.subject,
+          cc: emailHtml5.cc,
+          body: emailHtml5.template
+        }).catch(err => console.error("Background Email Error:", err))
+      }
+
     })
   )
 }

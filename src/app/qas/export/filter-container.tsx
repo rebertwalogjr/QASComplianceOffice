@@ -112,7 +112,7 @@ export default function ExportFilterContainer({ options }: { options: FilterOpti
       "Target Close Out Date": item.targetDate,
       "Actual Close Date": item.closedOn,
       "Date Approved": item.approvedOn,
-      "Actual Aging": item.agingDays,
+      "Actual Aging": item.jobStatus === 'open' ? item.agingDays : "",
       "Status": item.jobStatus,
       "Recurring Per Process": item.recurringPerProcess ? "yes" : "no",
       "Recurring Per Person": item.recurringPerPerson ? "yes" : "no",
