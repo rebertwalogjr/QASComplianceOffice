@@ -166,7 +166,13 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
     return options.recipients?.find(r => r.id.toString() === selectedRecipientId);
   }, [selectedRecipientId, options.recipients]);
 
+  const notValidAttachment = useMemo(() => {
+    return (attachments.length === 0)
+  }, [attachments])
+
   const onSubmit = async (values: JobFormValues) => {
+    if(notValidAttachment) return 
+
     const formData = new FormData()
     formData.append("payload", JSON.stringify(values))
     formData.append("sessionId", sessionId)
@@ -737,6 +743,7 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
                   onFilesChange={setAttachments}
                   initialAttachments={null}
                 />
+                {notValidAttachment && <p className="text-xs text-destructive mt-1">{ `At least one attachment is required` }</p>}
               </Field>
 
             </FieldGroup>

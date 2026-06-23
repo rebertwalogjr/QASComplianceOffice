@@ -447,6 +447,7 @@ export async function jobTransactionClientUpdate(formData: FormData) {
         triggerDatabaseMail({
           to: emailHtml4.recipient,
           subject: emailHtml4.subject,
+          cc: emailHtml4.cc,
           body: emailHtml4.template
         }).catch(err => console.error("Background Email Error:", err))
         break;

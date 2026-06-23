@@ -161,7 +161,16 @@ export default function UpdateForm({ options }: { options: EntryFormProps }) {
     return options.recipients?.find(r => r.id.toString() === selectedRecipientId);
   }, [selectedRecipientId, options.recipients]);
 
+  const notValidAttachment = useMemo(() => {
+    const activeAttachmentIds = attachments.filter((f) => f.isDbRecord && !f.isMarkedForDeletion).map((f) => f.id)
+    const deletedAttachmentIds = attachments.filter((f) => f.isDbRecord && f.isMarkedForDeletion).map((f) => f.id)
+    const prevAttCount = activeAttachmentIds.length - deletedAttachmentIds.length
+    const attCount = prevAttCount + attachments.length
+    return (attCount === 0)
+  }, [attachments])
+
   const onSubmit = async (values: JobFormValues) => {
+    if(notValidAttachment) return 
 
     const formData = new FormData()
 
@@ -664,6 +673,7 @@ export default function UpdateForm({ options }: { options: EntryFormProps }) {
                   onFilesChange={setAttachments}
                   initialAttachments={options.initialData?.attachments.filter(att => att.isActive)}
                 />
+                {notValidAttachment && <p className="text-xs text-destructive mt-1">{ `At least one attachment is required` }</p>}
               </Field>
 
             </FieldGroup>

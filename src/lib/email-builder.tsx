@@ -1984,6 +1984,7 @@ export async function getSupervisorForClosingRequestEmailHtml(job: TransactionEm
   return {
     subject: `[QAS Compliance Office] ${job.project.name}, Closing Request QA Entry ${job.id}`,
     recipient: job.supervisor.emailAddress || "rlwalog@dmcihomes.com",
+    cc: job.complianceOfficer.emailAddress || "",
     template: await render(<SupervisorForClosingRequest job={job} comment={comment} />)
   }
 }

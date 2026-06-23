@@ -303,7 +303,17 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
     }
   }, [activeHolding])
 
+  const notValidAttachment = useMemo(() => {
+    const activeAttachmentIds = attachments.filter((f) => f.isDbRecord && !f.isMarkedForDeletion).map((f) => f.id)
+    const deletedAttachmentIds = attachments.filter((f) => f.isDbRecord && f.isMarkedForDeletion).map((f) => f.id)
+    const prevAttCount = activeAttachmentIds.length - deletedAttachmentIds.length
+    const attCount = prevAttCount + attachments.length
+    return (attCount === 0)
+  }, [attachments])
+
   const onSubmit = async (data: JobTransactionFormValues) => {
+    if(permissions.canAccept && notValidAttachment) return 
+
     setIsPending(true)
 
     let actionType = ""
@@ -616,6 +626,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
                     onFilesChange={setAttachments}
                     initialAttachments={jobTransaction.attachments.filter(att => att.isActive && att.fromRecipient)}
                   />
+                  {notValidAttachment && <p className="text-xs text-destructive mt-1">{ `At least one attachment is required` }</p>}
                 </Field>
               }
 
