@@ -570,7 +570,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
               </Field>
 
               <Field>
-                <FieldLabel className="text-muted-foreground">Corrective Comitment Date</FieldLabel>
+                <FieldLabel className="text-muted-foreground">Corrective Commitment Date</FieldLabel>
                 <Controller
                   control={control}
                   name="corrCommitmentDate"
@@ -601,7 +601,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
               </Field>
 
               <Field>
-                <FieldLabel className="text-muted-foreground">Preventive Comitment Date</FieldLabel>
+                <FieldLabel className="text-muted-foreground">Preventive Commitment Date</FieldLabel>
                 <Controller
                   control={control}
                   name="prevCommitmentDate"

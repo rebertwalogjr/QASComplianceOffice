@@ -60,7 +60,7 @@ export default function UpdateTrailClient({ initialTrails, jobTransaction, curre
           </div>
           <h3 className="text-sm font-semibold text-muted-foreground">Access Restricted</h3>
           <p className="text-xs text-muted-foreground max-w-[200px] mt-1">
-            You do not have the required permissions to view this trail. Please contact the <strong>QAS Administrator</strong> for access.
+            You do not have the required permissions to view this trail.
           </p>
         </div>
       )

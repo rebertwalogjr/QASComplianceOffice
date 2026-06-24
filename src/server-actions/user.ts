@@ -188,6 +188,8 @@ export async function updateUser(userId: number, formData: any) {
     currentUser = currentUserId
   } = formData
 
+  console.log('ProjectIds: ', projectIds)
+
   const { data, error } = await dbQuery(
     prisma.$transaction(async (tx) => {
       // 1. Update basic user info
@@ -264,9 +266,9 @@ export async function updateUser(userId: number, formData: any) {
             creator: { connect: { id: currentUser } }
           }
         })
-
-        return user
       }
+      
+      return user
     })
   )
   if (error) { return { data, error } }
