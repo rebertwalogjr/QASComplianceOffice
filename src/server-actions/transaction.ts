@@ -29,6 +29,19 @@ export async function createTransaction(formData: FormData) {
     select: { escalation1User: userSelect, escalation2User: userSelect, escalation3User: userSelect, escalation4User: userSelect }
   })
 
+  const auditReport = await prisma.auditReport.findFirst({
+    where: { id: Number(values.auditReportId) },
+    select: { name: true }
+  })
+
+  const auditCount = await prisma.jobTransaction.count({
+    where: { auditReportId: Number(values.auditReportId) }
+  })
+
+  const sub = auditCount + 1
+
+  const auditFindingNumber = auditReport ? auditReport.name + "-" + sub : ""
+
   const rawData = {
     companyId: Number(values.companyId),
     projectId: Number(values.projectId),
@@ -38,7 +51,7 @@ export async function createTransaction(formData: FormData) {
     complianceOfficerId: Number(values.complianceOfficerId),
     supervisorId: Number(values.supervisorId),
     auditReportId: Number(values.auditReportId),
-    auditFindingNumber: "",
+    auditFindingNumber: auditFindingNumber,
     issuedOn: values.issuedOn ? new Date(values.issuedOn as string) : null,
     targetDate: values.targetDate ? new Date(values.targetDate as string) : null,
     auditRatingId: Number(values.auditRatingId),

@@ -14,11 +14,12 @@ function isValidDate(date: Date | null | undefined): date is Date {
 
 type DatePickerProps = {
   name?: string
-  placeholder?: string,
-  disabled?: boolean,
-  defaultDate?: Date,
-  className?: string,
-  readonly?: boolean,
+  placeholder?: string
+  disabled?: boolean
+  defaultDate?: Date
+  className?: string
+  readonly?: boolean
+  disablePastDates?: boolean
   onChange?: (date: Date | undefined) => void,
 }
 
@@ -32,7 +33,7 @@ type DateRangePickerProps = {
   onChange?: (range: { start?: Date | null; end?: Date | null }) => void;
 }
 
-function DatePicker({ name, placeholder, defaultDate, disabled, className, readonly, onChange }: DatePickerProps) {
+function DatePicker({ name, placeholder, defaultDate, disabled, className, readonly, disablePastDates, onChange }: DatePickerProps) {
   const [open, setOpen] = useState(false)
   const [date, setDate] = useState<Date | undefined>(() => isValidDate(defaultDate) ? toUTCMidnight(defaultDate) : undefined)
   const [month, setMonth] = useState<Date | undefined>(() => isValidDate(defaultDate) ? defaultDate : undefined)
@@ -55,6 +56,16 @@ function DatePicker({ name, placeholder, defaultDate, disabled, className, reado
     setDate(utcDate)
     setOpen(false)
     onChange?.(utcDate)
+  }
+
+  const isDateDisabled = (calendarDate: Date) => {
+    if (!disablePastDates) return false
+    
+    // Normalize both dates to midnight local time for an accurate calendar-day comparison
+    const localToday = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+    const localCalendarDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), calendarDate.getDate())
+    
+    return localCalendarDate < localToday
   }
 
   return (
@@ -98,6 +109,7 @@ function DatePicker({ name, placeholder, defaultDate, disabled, className, reado
             onMonthChange={setMonth}
             endMonth={endMonth}
             onSelect={handleSelect}
+            disabled={isDateDisabled}
           />
 
         </PopoverContent>

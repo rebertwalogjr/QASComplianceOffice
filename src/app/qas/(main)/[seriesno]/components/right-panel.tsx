@@ -580,6 +580,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
                       onChange={field.onChange}
                       readonly={!permissions.canAccept}
                       disabled={permissions.canAccept && isHoldChecked && isCancelChecked}
+                      disablePastDates={true}
                     />
                   )}
                 />
@@ -611,6 +612,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
                       onChange={field.onChange}
                       readonly={!permissions.canAccept}
                       disabled={permissions.canAccept && isHoldChecked && isCancelChecked}
+                      disablePastDates={true}
                     />
                   )}
                 />
