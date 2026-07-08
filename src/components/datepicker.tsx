@@ -30,6 +30,7 @@ type DateRangePickerProps = {
   defaultEnd?: Date | null;
   disabled?: boolean;
   readonly?: boolean;
+  disablePastDates?: boolean
   onChange?: (range: { start?: Date | null; end?: Date | null }) => void;
 }
 
@@ -118,14 +119,15 @@ function DatePicker({ name, placeholder, defaultDate, disabled, className, reado
   )
 }
 
-
-function DateRangePicker({ startName, endName, defaultStart, defaultEnd, disabled, readonly, onChange }: DateRangePickerProps) {
+function DateRangePicker({ startName, endName, defaultStart, defaultEnd, disabled, readonly, disablePastDates, onChange }: DateRangePickerProps) {
   // Logic mirrored from DatePicker
   const [openStart, setOpenStart] = useState(false)
   const [openEnd, setOpenEnd] = useState(false)
 
   const [start, setStart] = useState<Date | undefined>(() => isValidDate(defaultStart) ? toUTCMidnight(defaultStart) : undefined)
   const [end, setEnd] = useState<Date | undefined>(() => isValidDate(defaultEnd) ? toUTCMidnight(defaultEnd) : undefined)
+
+  const today = new Date()
 
   useEffect(() => {
     if (isValidDate(defaultStart)) setStart(toUTCMidnight(defaultStart))
@@ -151,6 +153,16 @@ function DateRangePicker({ startName, endName, defaultStart, defaultEnd, disable
     onChange?.({ start, end: utcDate })
   }
 
+  const isDateDisabled = (calendarDate: Date) => {
+    if (!disablePastDates) return false
+    
+    // Normalize both dates to midnight local time for an accurate calendar-day comparison
+    const localToday = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+    const localCalendarDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), calendarDate.getDate())
+    
+    return localCalendarDate < localToday
+  }
+
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center w-full">
@@ -174,7 +186,9 @@ function DateRangePicker({ startName, endName, defaultStart, defaultEnd, disable
             <Calendar
               mode="single"
               selected={start}
+              captionLayout="dropdown"
               onSelect={handleSelectStart}
+              disabled={isDateDisabled}
             />
           </PopoverContent>
         </Popover>

@@ -247,6 +247,8 @@ export async function getTransactions(page: number = 1, pageSize: number = 10, f
   totalCount: number,
   error: any
 }> {
+  const userId = await getUserId()
+
   const skip = (page - 1) * pageSize;
   const where: any = {}
 
@@ -271,6 +273,23 @@ export async function getTransactions(page: number = 1, pageSize: number = 10, f
     where.jobStatus = { equals: filters.status };
   }
 
+  if (userId) {
+    const userIdNum = typeof userId === 'string' ? parseInt(userId) : userId;
+
+    if (!isNaN(userIdNum)) {
+      where.OR = [
+        { complianceSecretariatId: userIdNum },
+        { complianceOfficerId: userIdNum },
+        { supervisorId: userIdNum },
+        { recipientId: userIdNum },
+        { jobEscalation1: userIdNum },
+        { jobEscalation2: userIdNum },
+        { jobEscalation3: userIdNum },
+        { jobEscalation4: userIdNum }
+      ]
+    }
+  }
+
   const { data, error } = await dbQuery(
     Promise.all([
       prisma.jobTransaction.findMany({
@@ -280,7 +299,7 @@ export async function getTransactions(page: number = 1, pageSize: number = 10, f
         take: pageSize,
         orderBy: { createdOn: "desc" }
       }),
-      prisma.jobTransaction.count()
+      prisma.jobTransaction.count({ where })
     ])
   )
 
@@ -313,8 +332,6 @@ export async function jobTransactionClientUpdate(formData: FormData) {
   const payload = formData.get("payload") as string
 
   const { deletedAttachmentIds } = JSON.parse(payload)
-
-  console.log("deletedAttachmentIds: ", deletedAttachmentIds)
 
   let rawData = {}
   let actionTaken = ""

@@ -65,10 +65,16 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
     const isStateNew = isOpen && !jobTransaction.verifiedBy && !jobTransaction.approvedBy
     const isStateVerified = isOpen && !!jobTransaction.verifiedBy && !jobTransaction.approvedBy
     const isStateApproved = isOpen && !!jobTransaction.verifiedBy && !!jobTransaction.approvedBy && !isAccepted
+    const isStateAccepted = jobTransaction.jobStatus === "accepted"
+    const isStateForClosing = jobTransaction.jobStatus === "for closing"
+    const isStateClosed = jobTransaction.jobStatus === "closed"
+    const isStateHold = jobTransaction.jobStatus === "on-hold"
+    const isStateCancel = jobTransaction.jobStatus == "cancelled"
 
     return {
       isAuditor, isSupervisor, isOfficer, isRecipient,
       isOpen, isStateNew, isStateVerified, isStateApproved,
+      isStateAccepted, isStateForClosing, isStateClosed, isStateHold, isStateCancel,
       canCancel: isStateNew && hasAuditorRole && isAuditor,
       canVerify: isStateNew && hasSupervisorRole && isSupervisor,
       canApprove: isStateVerified && hasOfficerRole && isOfficer,
@@ -137,36 +143,36 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
         }
       }
 
-      if (!data.isHold && !data.isCancel && !!jobTransaction.approvedBy && !isAcceptanceStage) {
-        if (!data.correctiveAction || data.correctiveAction.trim() === "") {
-          ctx.addIssue({
-            code: "custom",
-            message: "Corrective action is required to proceed.",
-            path: ["correctiveAction"],
-          });
-        }
-        if (!data.preventiveAction || data.preventiveAction.trim() === "") {
-          ctx.addIssue({
-            code: "custom",
-            message: "Preventive action is required to proceed.",
-            path: ["preventiveAction"],
-          });
-        }
-        if (!data.corrCommitmentDate) {
-          ctx.addIssue({
-            code: "custom",
-            message: "Please select a commitment date.",
-            path: ["corrCommitmentDate"],
-          });
-        }
-        if (!data.prevCommitmentDate) {
-          ctx.addIssue({
-            code: "custom",
-            message: "Please select a commitment date.",
-            path: ["prevCommitmentDate"],
-          });
-        }
-      }
+      // if (!data.isHold && !data.isCancel && !!jobTransaction.approvedBy && !isAcceptanceStage) {
+      //   if (!data.correctiveAction || data.correctiveAction.trim() === "") {
+      //     ctx.addIssue({
+      //       code: "custom",
+      //       message: "Corrective action is required to proceed.",
+      //       path: ["correctiveAction"],
+      //     });
+      //   }
+      //   if (!data.preventiveAction || data.preventiveAction.trim() === "") {
+      //     ctx.addIssue({
+      //       code: "custom",
+      //       message: "Preventive action is required to proceed.",
+      //       path: ["preventiveAction"],
+      //     });
+      //   }
+      //   if (!data.corrCommitmentDate) {
+      //     ctx.addIssue({
+      //       code: "custom",
+      //       message: "Please select a commitment date.",
+      //       path: ["corrCommitmentDate"],
+      //     });
+      //   }
+      //   if (!data.prevCommitmentDate) {
+      //     ctx.addIssue({
+      //       code: "custom",
+      //       message: "Please select a commitment date.",
+      //       path: ["prevCommitmentDate"],
+      //     });
+      //   }
+      // }
 
       // Holding date validation
       if (data.isHold) {
@@ -229,15 +235,33 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
   const holdRangeValue = watch("holdRange")
 
   const showUpdateArea = !isHoldChecked && !isCancelChecked && (permissions.canAccept || isAccepted || isForClosing || isClosed)
+  
+  const disableCommenting = useMemo(() => {
+    // 1. Verification
+    if (permissions.canVerify && permissions.isStateNew) return false
+    // 2. Approval
+    if (permissions.canApprove && permissions.isStateVerified) return false
+    // 3. Acceptance
+    if (permissions.canAccept && permissions.isStateApproved) return false
+    // 4. For Closing
+    if (permissions.canAskForClosing && permissions.isStateAccepted) return false
+    // 5. Closing
+    if (permissions.canClose && permissions.isStateForClosing) return false
+    // 6. For Cancelling
+    if (permissions.canCancel && !isCancelChecked) return true
+
+    return true
+  }, [permissions, isVerifiedChecked, isApprovedChecked, isForClosingChecked, isToCloseChecked, isCancelChecked, isHoldChecked])
 
   const isFormDisabled = useMemo(() => {
+    const hasComment = !!watch("comment")?.trim()
     if (isPending) return true
     if (isClosed || isCancelled || isHeld) return true
 
     // RULE 1: New ticket validation
     if (permissions.isStateNew) {
       const changesMade = (permissions.canCancel && isCancelChecked) || (permissions.canVerify && isVerifiedChecked)
-      if (!changesMade) return true
+      if (!changesMade || !hasComment) return true
     }
     // RULE 2: Verified stage requirements
     if (permissions.isStateVerified) {
@@ -253,12 +277,15 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
         const end = holdRangeValue.end
         const hasValidDates = start instanceof Date && end instanceof Date
         const isValidRange = hasValidDates && start.getTime() <= end.getTime()
-        if (!isValidRange) return true
-      } else {
-        const hasActions = !!watch("correctiveAction")?.trim() && !!watch("preventiveAction")?.trim()
-        const hasDates = !!watch("corrCommitmentDate") && !!watch("prevCommitmentDate")
-        if (!hasActions || !hasDates) return true
+        if (!isValidRange || !hasComment) return true
+        return false
       }
+      if (isCancelChecked) {
+        return !hasComment
+      }
+      const hasActions = !!watch("correctiveAction")?.trim() && !!watch("preventiveAction")?.trim()
+      const hasDates = !!watch("corrCommitmentDate") && !!watch("prevCommitmentDate")
+      if (!hasActions || !hasDates || !hasComment) return true
     }
     // RULE 4: Action check configurations
     if (isAccepted) {
@@ -271,7 +298,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
       if (!permissions.canClose) return true
     }
     return false
-  }, [permissions, isPending, isAccepted, isForClosing, isCancelChecked, isVerifiedChecked, isApprovedChecked, isHoldChecked, isApprovedChecked, isForClosingChecked, isToCloseChecked, watch("correctiveAction"), watch("preventiveAction"), watch("corrCommitmentDate"), watch("prevCommitmentDate"), watch("holdRange.start"), watch("holdRange.end"), watch("comment"), holdRangeValue])
+  }, [permissions, isPending, isAccepted, isForClosing, isCancelChecked, isVerifiedChecked, isApprovedChecked, isHoldChecked, isApprovedChecked, isForClosingChecked, isToCloseChecked, holdRangeValue, watch("correctiveAction"), watch("preventiveAction"), watch("corrCommitmentDate"), watch("prevCommitmentDate"), watch("holdRange.start"), watch("holdRange.end"), watch("comment")])
 
   useEffect(() => {
     // Clear validation errors for Update Area when moving to hold
@@ -312,7 +339,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
   }, [attachments])
 
   const onSubmit = async (data: JobTransactionFormValues) => {
-    if(permissions.canAccept && notValidAttachment) return 
+    if(permissions.canAccept && notValidAttachment && !isHoldChecked) return 
 
     setIsPending(true)
 
@@ -338,7 +365,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
     formData.append("correctiveAction", data.correctiveAction || "")
     formData.append("preventiveAction", data.preventiveAction || "")
     formData.append("comment", data.comment || "")
-    formData.append("payload", JSON.stringify({deletedAttachmentIds}))
+    formData.append("payload", JSON.stringify({ deletedAttachmentIds }))
 
     if (data.corrCommitmentDate) {
       formData.append("corrCommitmentDate", data.corrCommitmentDate.toISOString())
@@ -535,6 +562,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
                               defaultEnd={field.value?.end ?? null}
                               onChange={field.onChange}
                               readonly={jobTransaction.onHold}
+                              disablePastDates={true}
                             />
                           )}
                         />
@@ -628,7 +656,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
                     onFilesChange={setAttachments}
                     initialAttachments={jobTransaction.attachments.filter(att => att.isActive && att.fromRecipient)}
                   />
-                  {notValidAttachment && <p className="text-xs text-destructive mt-1">{ `At least one attachment is required` }</p>}
+                  {notValidAttachment && <p className="text-sm text-destructive mt-1">{`At least one attachment is required`}</p>}
                 </Field>
               }
 
@@ -654,7 +682,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
                   {...register("comment")}
                   placeholder="Type here..."
                   className="resize-none"
-                  disabled={isFormDisabled}
+                  disabled={disableCommenting}
                 />
                 {errors.comment && <FieldError>Comment is required.</FieldError>}
               </div>
