@@ -125,6 +125,7 @@ model JobTransaction {
   createdOn                    DateTime         @default(now()) @db.DateTime
   modifiedBy                   Int?
   modifiedOn                   DateTime         @updatedAt @db.DateTime
+  toEscalate                   Boolean          @default(false) @db.Bit
   company                      Company          @relation(fields: [companyId], references: [id], onUpdate: NoAction)
   project                      Project          @relation(fields: [projectId], references: [id], onUpdate: NoAction)
   auditEngagement              AuditEngagement  @relation(fields: [auditEngagementId], references: [id], onUpdate: NoAction)
@@ -495,11 +496,10 @@ model EmailTemplate {
   mofifier    User?    @relation("EmailTemplateModifier", fields: [modifiedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
-
 model AdminTable {
-  id Int @id @default(autoincrement())
-  dataGroup String
-  dataContent String @db.NVarChar(500)
-  isActive Boolean  @default(true) @db.Bit
+  id          Int      @id @default(autoincrement())
+  dataGroup   String
+  dataContent String   @db.NVarChar(500)
+  isActive    Boolean  @default(true) @db.Bit
   createdOn   DateTime @default(now()) @db.DateTime
 }
