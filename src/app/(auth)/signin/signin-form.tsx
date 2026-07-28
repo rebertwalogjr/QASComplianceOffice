@@ -15,6 +15,8 @@ import { Field, FieldError, FieldGroup, FieldLabel, FieldSet } from "@/component
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Loader2 } from "lucide-react"
+import { getUserTheme } from "@/server-actions/theme"
+import { useTheme } from "next-themes"
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -28,6 +30,7 @@ export function SignInForm() {
   const [isLoading, setIsLoading] = useState(false)
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get("callbackUrl") || "/qas"
+  const { theme, setTheme } = useTheme()
 
   const {
     register,
@@ -65,15 +68,8 @@ export function SignInForm() {
       router.push(callbackUrl)
     })
 
-    // toast.success("Welcome back!", { position: "top-center" })
-
-    // router.prefetch("/qas")
-
-    // React.startTransition(() => {
-    //   router.push("/qas")
-    // })
-
-    // setIsLoading(false)
+    const theme = await getUserTheme()
+    setTheme(theme.toLowerCase())
   }
 
   return (

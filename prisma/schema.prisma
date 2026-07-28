@@ -226,10 +226,15 @@ model Group {
 model User {
   id                        Int                    @id @default(autoincrement())
   employeeNumber            String                 @unique @db.NVarChar(10)
+  firstName                 String?                @db.NVarChar(255)
+  middleName                String?                @db.NVarChar(255)
+  lastName                  String?                @db.NVarChar(255)
+  fullName                  String?                @db.NVarChar(255)
   username                  String                 @unique @db.NVarChar(100)
   password                  String                 @db.NVarChar(100)
   emailAddress              String?                @db.NVarChar(255)
   companyId                 Int?
+  department                String?                @db.NVarChar(255)
   position                  String?                @db.NVarChar(100)
   escalation1               Int?
   escalation2               Int?
@@ -243,6 +248,8 @@ model User {
   createdOn                 DateTime               @default(now()) @db.DateTime
   modifiedBy                Int?
   modifiedOn                DateTime               @updatedAt @db.DateTime
+  passwordChangedAt         DateTime?              @default(now()) @db.DateTime
+  theme                     String                 @default("system") @db.NVarChar(50)
   escalation1User           User?                  @relation("escalation1User", fields: [escalation1], references: [id], onUpdate: NoAction, onDelete: NoAction)
   escalation2User           User?                  @relation("escalation2User", fields: [escalation2], references: [id], onUpdate: NoAction, onDelete: NoAction)
   escalation3User           User?                  @relation("escalation3User", fields: [escalation3], references: [id], onUpdate: NoAction, onDelete: NoAction)

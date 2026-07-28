@@ -8,7 +8,7 @@ export const sidebarItems = {
     // { title: "Closed NCR", url: "#", icon: Grid2X2 },
     { title: "QA Entry", url: "/qas/new", icon: FilePenLine },
     { title: "Export", url: "/qas/export", icon: LucideDownload},
-    // { title: "Settings", url: "/qas/settings", icon: Settings},
+    { title: "Settings", url: "/qas/settings", icon: Settings},
   ],
 
   adminMenu: [

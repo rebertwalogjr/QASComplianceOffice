@@ -1,0 +1,23 @@
+BEGIN TRY
+
+BEGIN TRAN;
+
+-- AlterTable
+ALTER TABLE [dbo].[User] ADD [department] NVARCHAR(255),
+[firstName] NVARCHAR(255),
+[fullName] NVARCHAR(255),
+[lastName] NVARCHAR(255),
+[middleName] NVARCHAR(255);
+
+COMMIT TRAN;
+
+END TRY
+BEGIN CATCH
+
+IF @@TRANCOUNT > 0
+BEGIN
+    ROLLBACK TRAN;
+END;
+THROW
+
+END CATCH

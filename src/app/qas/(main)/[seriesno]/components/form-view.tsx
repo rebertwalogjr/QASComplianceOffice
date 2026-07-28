@@ -214,7 +214,7 @@ export default function FormView({ data }: { data: TransactionPayload | null }) 
         </CardContent>
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
-            <Label className="text-muted-foreground">Fouth Escalation</Label>
+            <Label className="text-muted-foreground">Fourth Escalation</Label>
             {data?.recipient?.escalation4User ? <UserHoverCard data={data?.jobEscalation4User?.appSuiteEmployeeMaster} /> : <Label>--</Label>}
           </div>
         </CardContent>
