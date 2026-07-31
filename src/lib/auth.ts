@@ -2,7 +2,6 @@ import Credentials from "next-auth/providers/credentials"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { AuthOptions } from "next-auth"
-import { toTitleCase } from "./utils"
 
 export const authOptions: AuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
@@ -25,16 +24,13 @@ export const authOptions: AuthOptions = {
             isActivated: true,
             isActive: true,
             employeeNumber: true,
+            firstName: true,
+            lastName: true,
+            fullName: true,
             userRoles: {
               where: { isActive: true },
               select: { role: true }
             },
-            appSuiteEmployeeMaster: {
-              select: {
-                firstName: true,
-                lastName: true,
-              }
-            }
           },
         })
 
@@ -45,14 +41,12 @@ export const authOptions: AuthOptions = {
         const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
         if (!isPasswordValid) return null
 
-        const emp = user.appSuiteEmployeeMaster
-        const firstName = toTitleCase(emp?.firstName)
-        const lastName = toTitleCase(emp?.lastName)
-
         return {
           id: user.id.toString(),
-          name: `${firstName} ${lastName}`.trim() || user.username,
+          name: user.fullName || user.username,
           username: user.username,
+          firstName: user.firstName,
+          lastName: user.lastName,
           isActivated: user.isActivated,
           employeeNumber: user.employeeNumber,
           userRoles: user.userRoles.map((ur: any) => ur.role.id)
@@ -65,16 +59,28 @@ export const authOptions: AuthOptions = {
     async jwt({ token, user, trigger, session }: any) {
       if (user) {
         token.id = user.id
+        token.name = user.name
+        token.firstName = user.firstName
+        token.lastName = user.lastName
         token.userRoles = user.userRoles
         token.isActivated = user.isActivated
         token.employeeNumber = user.employeeNumber
       }
-      if (trigger === "update" && session?.user) {
+      if (trigger === "update") {
         const dbUser = await prisma.user.findUnique({
           where: { id: Number(token.id) },
-          select: { isActivated: true, employeeNumber: true }
+          select: {
+            isActivated: true, 
+            employeeNumber: true,
+            firstName: true,
+            lastName: true,
+            fullName: true,
+          }
         })
         if (dbUser) {
+          token.name = dbUser.fullName
+          token.firstName = dbUser.firstName
+          token.lastName = dbUser.lastName
           token.isActivated = dbUser.isActivated
           token.employeeNumber = dbUser.employeeNumber
         }
@@ -84,6 +90,9 @@ export const authOptions: AuthOptions = {
     async session({ session, token }: any) {
       if (token) {
         session.user.id = token.id as string
+        session.user.name = token.name as string
+        session.user.firstName = token.firstName as string
+        session.user.lastName = token.lastName as string
         session.user.userRoles = token.userRoles as any[]
         session.user.isActivated = token.isActivated as boolean
         session.user.employeeNumber = token.employeeNumber as string

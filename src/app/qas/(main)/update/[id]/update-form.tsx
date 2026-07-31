@@ -317,12 +317,12 @@ export default function UpdateForm({ options }: { options: EntryFormProps }) {
 
                   <Field>
                     <FieldLabel>Compliance Officer</FieldLabel>
-                    <Input value={options.initialData?.complianceOfficer.appSuiteEmployeeMaster.fullName} disabled />
+                    <Input value={options.initialData?.complianceOfficer.fullName ?? ""} disabled />
                   </Field>
 
                   <Field>
                     <FieldLabel>Supervisor</FieldLabel>
-                    <Input value={options.initialData?.supervisor.appSuiteEmployeeMaster.fullName} disabled />
+                    <Input value={options.initialData?.supervisor.fullName ?? ""} disabled />
                   </Field>
 
                 </FieldGroup>
@@ -505,7 +505,7 @@ export default function UpdateForm({ options }: { options: EntryFormProps }) {
                           <SelectContent>
                             {filteredRecipientGroup.recipients?.map(r => (
                               <SelectItem key={r.id} value={r.id.toString()}>
-                                {r.appSuiteEmployeeMaster.fullName}
+                                {r.fullName}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -520,7 +520,7 @@ export default function UpdateForm({ options }: { options: EntryFormProps }) {
                     <Input
                       name="firstEscalation"
                       placeholder="N/A"
-                      value={activeRecipient?.escalation1User ? `${activeRecipient?.escalation1User?.appSuiteEmployeeMaster.fullName} (${activeRecipient?.escalation1User?.appSuiteEmployeeMaster.employeeNumber}) ` : "N/A"}
+                      value={activeRecipient?.escalation1User ? `${activeRecipient?.escalation1User?.fullName} (${activeRecipient?.escalation1User?.employeeNumber}) ` : "N/A"}
                       readOnly />
                   </Field>
 
@@ -529,7 +529,7 @@ export default function UpdateForm({ options }: { options: EntryFormProps }) {
                     <Input
                       name="secondEscalation"
                       placeholder="N/A"
-                      value={activeRecipient?.escalation2User ? `${activeRecipient?.escalation2User?.appSuiteEmployeeMaster.fullName} (${activeRecipient?.escalation2User?.appSuiteEmployeeMaster.employeeNumber}) ` : "N/A"}
+                      value={activeRecipient?.escalation2User ? `${activeRecipient?.escalation2User?.fullName} (${activeRecipient?.escalation2User?.employeeNumber}) ` : "N/A"}
                       readOnly />
                   </Field>
 
@@ -538,7 +538,7 @@ export default function UpdateForm({ options }: { options: EntryFormProps }) {
                     <Input
                       name="thirdEscalation"
                       placeholder="N/A"
-                      value={activeRecipient?.escalation3User ? `${activeRecipient?.escalation3User?.appSuiteEmployeeMaster.fullName} (${activeRecipient?.escalation3User?.appSuiteEmployeeMaster.employeeNumber}) ` : "N/A"}
+                      value={activeRecipient?.escalation3User ? `${activeRecipient?.escalation3User?.fullName} (${activeRecipient?.escalation3User?.employeeNumber}) ` : "N/A"}
                       readOnly />
                   </Field>
 
@@ -547,7 +547,7 @@ export default function UpdateForm({ options }: { options: EntryFormProps }) {
                     <Input
                       name="fourthEscalation"
                       placeholder="N/A"
-                      value={activeRecipient?.escalation4User ? `${activeRecipient?.escalation4User?.appSuiteEmployeeMaster.fullName} (${activeRecipient?.escalation4User?.appSuiteEmployeeMaster.employeeNumber}) ` : "N/A"}
+                      value={activeRecipient?.escalation4User ? `${activeRecipient?.escalation4User?.fullName} (${activeRecipient?.escalation4User?.employeeNumber}) ` : "N/A"}
                       readOnly />
                   </Field>
                 </FieldGroup>

@@ -248,7 +248,9 @@ model User {
   createdOn                 DateTime               @default(now()) @db.DateTime
   modifiedBy                Int?
   modifiedOn                DateTime               @updatedAt @db.DateTime
-  passwordChangedAt         DateTime?              @default(now()) @db.DateTime
+  passwordChangedAt         DateTime?              @db.DateTime
+  usernameChangedAt         DateTime?              @db.DateTime
+  emailChangedAt            DateTime?              @db.DateTime
   theme                     String                 @default("system") @db.NVarChar(50)
   escalation1User           User?                  @relation("escalation1User", fields: [escalation1], references: [id], onUpdate: NoAction, onDelete: NoAction)
   escalation2User           User?                  @relation("escalation2User", fields: [escalation2], references: [id], onUpdate: NoAction, onDelete: NoAction)

@@ -54,12 +54,12 @@ export default function TableCellViewer({ item, className }: Props) {
 
                   <Field>
                     <FieldLabel htmlFor="firstname">First Name</FieldLabel>
-                    <Input id="firstname" defaultValue={item.appSuiteEmployeeMaster.firstName} readOnly className="bg-muted/30 border-transparent shadow-none" />
+                    <Input id="firstname" defaultValue={item.firstName ?? ""} readOnly className="bg-muted/30 border-transparent shadow-none" />
                   </Field>
 
                   <Field>
                     <FieldLabel htmlFor="lastname">Last Name</FieldLabel>
-                    <Input id="lastname" defaultValue={item.appSuiteEmployeeMaster.lastName} readOnly className="bg-muted/30 border-transparent shadow-none" />
+                    <Input id="lastname" defaultValue={item.lastName ?? ""} readOnly className="bg-muted/30 border-transparent shadow-none" />
                   </Field>
 
                   <Field>

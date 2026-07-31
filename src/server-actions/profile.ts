@@ -23,9 +23,9 @@ export async function getUserDetails(): Promise<{ data: UserDetailsPayload | nul
 }
 
 export async function updateUserProfile(formData: FormData) {
-  const creatorId = await getUserId()
+  const userId = await getUserId()
 
-  if (!creatorId) {
+  if (!userId) {
     throw new Error("You must be logged in.")
   }
 
@@ -34,12 +34,13 @@ export async function updateUserProfile(formData: FormData) {
     middleName: formData.get("middleName") as string,
     lastName: formData.get("lastName") as string,
     employeeNumber: formData.get("employeeNumber") as string,
-    email: formData.get("email") as string,
+    department: formData.get("department") as string,
+    position: formData.get("position") as string,
     password: formData.get("password") as string,
   }
 
   const user = await prisma.user.findUnique({
-    where: { id: creatorId },
+    where: { id: userId },
     select: { password: true }
   })
 
@@ -58,48 +59,21 @@ export async function updateUserProfile(formData: FormData) {
 
   const { data, error } = await dbQuery(
     prisma.user.update({
-      where: { id: creatorId },
+      where: { id: userId },
       data: {
         firstName: rawData.firstName.trim(),
         middleName: rawData.middleName.trim(),
         lastName: rawData.lastName.trim(),
         fullName: fullName,
         employeeNumber: rawData.employeeNumber,
-        emailAddress: rawData.email,
+        department: rawData.department,
+        position: rawData.position,
       }
     })
   )
 
   return { data, error }
 }
-
-// export async function updateUserTheme(theme: string) {
-//   const creatorId = await getUserId()
-
-//   if (!creatorId) {
-//     throw new Error("You must be logged in.")
-//   }
-
-//   await prisma.user.update({
-//     where: {id: creatorId},
-//     data: {
-//       theme: theme
-//     }
-//   })
-// }
-
-// export async function getUserTheme() {
-//   const userId = await getUserId()
-
-//   if (!userId) return "system"
-
-//   const user = await prisma.user.findUnique({
-//     where: { id: userId },
-//     select: { theme: true },
-//   })
-
-//   return user?.theme ?? "system"
-// }
 
 const userDetailsSelect = {
   employeeNumber: true,
@@ -108,6 +82,9 @@ const userDetailsSelect = {
   lastName: true,
   emailAddress: true,
   theme: true,
+  position: true,
+  department: true,
+  username: true,
 }
 
 export type UserDetailsPayload = Prisma.UserGetPayload<{

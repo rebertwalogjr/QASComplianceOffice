@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { canUpdatePassword, changePassword } from "@/server-actions/password"
-import { useForm, Controller } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import z from "zod"
 

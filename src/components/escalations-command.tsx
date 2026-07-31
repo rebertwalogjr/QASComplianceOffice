@@ -1,48 +1,44 @@
-"use client";
-import { useState, useEffect } from "react";
-import { useInView } from "react-intersection-observer";
-import { Command, CommandInput, CommandList, CommandItem, CommandEmpty, CommandGroup } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Button } from "./ui/button";
-import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { getEscalationUser } from "@/server-actions/user";
+"use client"
+import { useState, useEffect } from "react"
+import { useInView } from "react-intersection-observer"
+import { Command, CommandInput, CommandList, CommandItem, CommandEmpty, CommandGroup } from "@/components/ui/command"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Button } from "./ui/button"
+import { Check, ChevronsUpDown, Loader2 } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { EscalationUserPayload, getEscalationUser } from "@/server-actions/escalations"
 
 interface EscalationCommandProps {
   onSelect: (data: any) => void
-  defaultValue?: {
-    id: number;
-    fullName: string;
-    employeeNumber: string
-  } | null
+  defaultValue?: EscalationUserPayload | null
   disabled?: boolean
 }
 
 function useDebounce(value: string, delay: number) {
-  const [debouncedValue, setDebouncedValue] = useState(value);
+  const [debouncedValue, setDebouncedValue] = useState(value)
   useEffect(() => {
-    const handler = setTimeout(() => setDebouncedValue(value), delay);
-    return () => clearTimeout(handler);
-  }, [value, delay]);
-  return debouncedValue;
+    const handler = setTimeout(() => setDebouncedValue(value), delay)
+    return () => clearTimeout(handler)
+  }, [value, delay])
+  return debouncedValue
 }
 
 export function EscalationCommand({ onSelect, defaultValue, disabled }: EscalationCommandProps) {
-  const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const [records, setRecords] = useState<any[]>([]);
-  const [selected, setSelected] = useState<any>(defaultValue || null);
-  const [loading, setLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
-  const { ref, inView } = useInView();
+  const [open, setOpen] = useState(false)
+  const [search, setSearch] = useState("")
+  const [records, setRecords] = useState<EscalationUserPayload[]>([])
+  const [selected, setSelected] = useState<EscalationUserPayload | null>(defaultValue || null)
+  const [loading, setLoading] = useState(false)
+  const [hasMore, setHasMore] = useState(true)
+  const { ref, inView } = useInView()
 
   const debouncedSearch = useDebounce(search, 500)
 
   useEffect(() => {
     if (!open) {
-      setSearch("");
+      setSearch("")
     }
-  }, [open]);
+  }, [open])
 
   useEffect(() => {
     setSelected(defaultValue || null)
@@ -51,40 +47,45 @@ export function EscalationCommand({ onSelect, defaultValue, disabled }: Escalati
   // Initial and Search fetch
   useEffect(() => {
     const fetchInitial = async () => {
-      setLoading(true);
-      const res = await getEscalationUser(debouncedSearch, 0);
-      setRecords(res.data || []);
-      setHasMore((res.data || []).length === 20);
-      setLoading(false);
-    };
-    fetchInitial();
-  }, [debouncedSearch]);
+      setLoading(true)
+      const res = await getEscalationUser(debouncedSearch, 0)
+      setRecords(res.data || [])
+      setHasMore((res.data || []).length === 20)
+      setLoading(false)
+    }
+    fetchInitial()
+  }, [debouncedSearch])
 
   // Load more when scrolling
   useEffect(() => {
     if (inView && hasMore && !loading) {
       const loadMore = async () => {
-        setLoading(true);
-        const res = await getEscalationUser(search, records.length);
-        const newData = res.data || [];
-        setRecords((prev) => [...prev, ...newData]);
-        setHasMore(newData.length === 20);
-        setLoading(false);
-      };
-      loadMore();
+        setLoading(true)
+        const res = await getEscalationUser(search, records.length)
+        const newData = res.data || []
+        setRecords((prev) => [...prev, ...newData])
+        setHasMore(newData.length === 20)
+        setLoading(false)
+      }
+      loadMore()
     }
-  }, [inView, hasMore, loading, debouncedSearch, records.length]);
+  }, [inView, hasMore, loading, debouncedSearch, records.length])
 
   const getDisplayData = (user: any) => {
     if (!user) return null
-    if (user.appSuiteEmployeeMaster) {
+    if (user.fullName && !user.lastName && !user.firstName) {
       return {
-        name: user.appSuiteEmployeeMaster.fullName,
+        name: user.fullName,
         number: user.employeeNumber
       }
     }
+    const lastName = user.lastName?.trim()
+    const firstName = user.firstName?.trim()
+    const nameParts = [lastName, firstName].filter(Boolean)
+
+    const name = nameParts.length > 0 ? nameParts.join(", ") : (user.fullName || "Unnamed User")
     return {
-      name: user.fullName,
+      name,
       number: user.employeeNumber
     }
   }
@@ -137,13 +138,12 @@ export function EscalationCommand({ onSelect, defaultValue, disabled }: Escalati
                     key={rec.employeeNumber}
                     value={rec.employeeNumber}
                     onSelect={() => {
-                      const flatData = {
+                      setSelected(rec)
+                      onSelect({
                         id: rec.id,
-                        fullName: recDisplay?.name,
-                        employeeNumber: recDisplay?.number
-                      }
-                      setSelected(flatData)
-                      onSelect(flatData)
+                        fullName: recDisplay?.name || "",
+                        employeeNumber: rec.employeeNumber
+                      })
                       setOpen(false)
                     }}
                   >
@@ -168,5 +168,5 @@ export function EscalationCommand({ onSelect, defaultValue, disabled }: Escalati
         </Command>
       </PopoverContent>
     </Popover>
-  );
+  )
 }

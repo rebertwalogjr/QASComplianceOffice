@@ -83,7 +83,7 @@ export default function TableCellViewer({ item, className }: Props) {
 
             <div className="flex flex-col gap-3">
               <Label htmlFor="details">Recipient</Label>
-              <Input id="details" defaultValue={item.recipient?.appSuiteEmployeeMaster.fullName} readOnly />
+              <Input id="details" defaultValue={item.recipient?.fullName ?? ""} readOnly />
             </div>
 
             <div className="flex flex-col gap-3">

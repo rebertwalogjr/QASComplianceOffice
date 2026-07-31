@@ -22,11 +22,11 @@ export const columns: ColumnDef<User>[] = [
     header: "Username",
   },
   {
-    accessorKey: "appSuiteEmployeeMaster.firstName",
+    accessorKey: "firstName",
     header: "Firstname",
   },
   {
-    accessorKey: "appSuiteEmployeeMaster.lastName",
+    accessorKey: "lastName",
     header: "Lastname",
   },
   {

@@ -143,37 +143,6 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
         }
       }
 
-      // if (!data.isHold && !data.isCancel && !!jobTransaction.approvedBy && !isAcceptanceStage) {
-      //   if (!data.correctiveAction || data.correctiveAction.trim() === "") {
-      //     ctx.addIssue({
-      //       code: "custom",
-      //       message: "Corrective action is required to proceed.",
-      //       path: ["correctiveAction"],
-      //     });
-      //   }
-      //   if (!data.preventiveAction || data.preventiveAction.trim() === "") {
-      //     ctx.addIssue({
-      //       code: "custom",
-      //       message: "Preventive action is required to proceed.",
-      //       path: ["preventiveAction"],
-      //     });
-      //   }
-      //   if (!data.corrCommitmentDate) {
-      //     ctx.addIssue({
-      //       code: "custom",
-      //       message: "Please select a commitment date.",
-      //       path: ["corrCommitmentDate"],
-      //     });
-      //   }
-      //   if (!data.prevCommitmentDate) {
-      //     ctx.addIssue({
-      //       code: "custom",
-      //       message: "Please select a commitment date.",
-      //       path: ["prevCommitmentDate"],
-      //     });
-      //   }
-      // }
-
       // Holding date validation
       if (data.isHold) {
         if (!data.holdRange?.start) {
@@ -248,7 +217,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
     // 5. Closing
     if (permissions.canClose && permissions.isStateForClosing) return false
     // 6. For Cancelling
-    if (permissions.canCancel && !isCancelChecked) return true
+    if (permissions.canCancel && isCancelChecked) return false
 
     return true
   }, [permissions, isVerifiedChecked, isApprovedChecked, isForClosingChecked, isToCloseChecked, isCancelChecked, isHoldChecked])

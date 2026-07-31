@@ -87,7 +87,7 @@ export default function AuditTrail({ data, jobTransaction }: { data: AuditTrailP
                       <div className="flex justify-between items-start w-full">
                         <ItemTitle className="text-sm">
                           {/* <span className="font-bold text-foreground">{t.creator.appSuiteEmployeeMaster.firstName}</span> */}
-                          <UserHoverCard data={t.creator.appSuiteEmployeeMaster} />
+                          <UserHoverCard data={t.creator} />
                           {" "}
                           <span className="font-normal tracking-wide">{t.actionTaken.toLowerCase()}</span>
                         </ItemTitle>

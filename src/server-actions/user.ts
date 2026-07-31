@@ -1,14 +1,14 @@
 "use server"
 
-import { prisma } from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
-import { dbQuery } from "@/lib/prisma-db-utils";
-import { Prisma } from "../../generated/prisma/client";
-import bcrypt from "bcryptjs";
-import { getUserId, getSession } from "./get-session";
-import { triggerDatabaseMail } from "@/lib/mail-service";
-import { getUserInvitationEmailHtml } from "@/lib/email-builder";
-import { generateRandomPassword } from "@/lib/utils";
+import { prisma } from "@/lib/prisma"
+import { revalidatePath } from "next/cache"
+import { dbQuery } from "@/lib/prisma-db-utils"
+import { Prisma } from "../../generated/prisma/client"
+import bcrypt from "bcryptjs"
+import { getUserId, getSession } from "./get-session"
+import { triggerDatabaseMail } from "@/lib/mail-service"
+import { getUserInvitationEmailHtml } from "@/lib/email-builder"
+import { generateRandomPassword } from "@/lib/utils"
 
 export async function getUsers(): Promise<{ data: UserBasicIncludePayload[] | null, error: any }> {
   return await dbQuery(
@@ -28,50 +28,8 @@ export async function getUserById(id: number): Promise<{ data: UserInfoPayload |
   )
 }
 
-export async function getEscalations() {
-  return await dbQuery(
-    prisma.user.findMany({
-      where: { isEscalation: true },
-      include: {
-        appSuiteEmployeeMaster: true,
-        company: true
-      },
-      orderBy: { createdOn: "desc" }
-    })
-  )
-}
-
-export async function getEscalationUser(search: string = "", skip: number = 0) {
-  return await dbQuery(
-    prisma.user.findMany({
-      where: {
-        isEscalation: true,
-        OR: [
-          { appSuiteEmployeeMaster: { firstName: { contains: search } } },
-          { appSuiteEmployeeMaster: { lastName: { contains: search } } },
-          { employeeNumber: { contains: search } }
-        ],
-      },
-      select: {
-        id: true,
-        employeeNumber: true,
-        appSuiteEmployeeMaster: {
-          select: {
-            firstName: true,
-            lastName: true,
-            fullName: true
-          }
-        }
-      },
-      take: 20,
-      skip: skip,
-      orderBy: { appSuiteEmployeeMaster: { lastName: 'asc' } }
-    })
-  )
-}
-
 export async function createUser(formData: any) {
-  const currentUserId = await getUserId();
+  const currentUserId = await getUserId()
 
   if (!currentUserId) {
     throw new Error("You must be logged in.")
@@ -90,6 +48,18 @@ export async function createUser(formData: any) {
     currentUser = currentUserId
   } = formData
 
+  const appSuiteUser = await prisma.appSuiteEmployeeMaster.findUnique({
+    where: { employeeNumber: employeeNumber }
+  })
+
+  if (!appSuiteUser) {
+    return { success: false, error: "User not found!" }
+  }
+
+  const trimmedMiddle = appSuiteUser.middleName?.trim()
+  const middleInitial = trimmedMiddle ? `${trimmedMiddle.charAt(0)}.` : null
+  const fullName = [appSuiteUser.firstName.trim(), middleInitial, appSuiteUser.lastName.trim()].filter(Boolean).join(' ')
+
   const genPassword = generateRandomPassword(8)
   const hashedPassword = await bcrypt.hash(genPassword, 10)
 
@@ -102,6 +72,12 @@ export async function createUser(formData: any) {
           username,
           password: hashedPassword,
           emailAddress,
+          firstName: appSuiteUser.firstName,
+          middleName: appSuiteUser.middleName,
+          lastName: appSuiteUser.lastName,
+          fullName: fullName,
+          department: appSuiteUser.department,
+          position: appSuiteUser.position,
           companyId: companyId ? Number(companyId) : null,
           isEscalation,
           createdBy: currentUser,
@@ -164,12 +140,12 @@ export async function createUser(formData: any) {
   }
 
   if (error) { return { newUser, error } }
-  revalidatePath("/qas/admin/users");
+  revalidatePath("/qas/admin/users")
   return { newUser, error }
 }
 
 export async function updateUser(userId: number, formData: any) {
-  const currentUserId = await getUserId();
+  const currentUserId = await getUserId()
 
   if (!currentUserId) {
     throw new Error("You must be logged in.")
@@ -267,12 +243,12 @@ export async function updateUser(userId: number, formData: any) {
           }
         })
       }
-      
+
       return user
     })
   )
   if (error) { return { data, error } }
-  revalidatePath("/qas/admin/users");
+  revalidatePath("/qas/admin/users")
   return { data, error }
 }
 
@@ -285,7 +261,8 @@ export async function getActiveComplianceOfficers(): Promise<{ data: UserBasicPa
           some: { roleId: 1003, isActive: true }
         }
       },
-      select: userBasicSelect
+      select: userBasicSelect,
+      orderBy: { fullName: "asc" }
     })
   )
 }
@@ -299,7 +276,8 @@ export async function getActiveSupervisors(): Promise<{ data: UserBasicPayload[]
           some: { roleId: 1002, isActive: true }
         }
       },
-      select: userBasicSelect
+      select: userBasicSelect,
+      orderBy: { fullName: "asc" }
     })
   )
 }
@@ -313,7 +291,8 @@ export async function getActiveRecipients(): Promise<{ data: UserBasicPayload[] 
           some: { roleId: 1004, isActive: true }
         }
       },
-      select: userBasicSelect
+      select: userBasicSelect,
+      orderBy: { fullName: "asc" }
     })
   )
 }
@@ -323,7 +302,7 @@ export async function activateAccount(newPassword: string) {
   const userId = session?.user.id
 
   if (!userId) {
-    return { data: null, error: "You must be logged in to activate your account." };
+    return { data: null, error: "You must be logged in to activate your account." }
   }
 
   const user = await prisma.user.findUnique({
@@ -361,7 +340,10 @@ export async function activateAccount(newPassword: string) {
 const escalationSelect = {
   select: {
     id: true,
-    appSuiteEmployeeMaster: { select: { fullName: true, employeeNumber: true } }
+    firstName: true,
+    lastName: true,
+    fullName: true,
+    employeeNumber: true,
   }
 }
 
@@ -385,10 +367,11 @@ const userInfoInclude = {
   escalation2User: escalationSelect,
   escalation3User: escalationSelect,
   escalation4User: escalationSelect,
-} satisfies Prisma.UserInclude;
+} satisfies Prisma.UserInclude
 
 const userBasicSelect = {
   id: true,
+  fullName: true,
   employeeNumber: true,
   emailAddress: true,
   username: true,
@@ -396,9 +379,9 @@ const userBasicSelect = {
   escalation2User: escalationSelect,
   escalation3User: escalationSelect,
   escalation4User: escalationSelect,
-  appSuiteEmployeeMaster: {
-    select: { fullName: true }
-  },
+  // appSuiteEmployeeMaster: {
+  //   select: { fullName: true }
+  // },
   company: {
     select: { id: true, name: true }
   },
@@ -410,7 +393,7 @@ const userBasicSelect = {
     where: { isActive: true },
     select: { projectId: true }
   }
-} satisfies Prisma.UserSelect;
+} satisfies Prisma.UserSelect
 
 const userBasicInclude = {
   appSuiteEmployeeMaster: true,

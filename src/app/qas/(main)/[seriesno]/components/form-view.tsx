@@ -33,7 +33,7 @@ export default function FormView({ data }: { data: TransactionPayload | null }) 
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Compliance Secretariat</Label>
-            <UserHoverCard data={data?.complianceSecretariat.appSuiteEmployeeMaster} />
+            <UserHoverCard data={data?.complianceSecretariat} />
           </div>
         </CardContent>
         <CardContent className="">
@@ -69,13 +69,13 @@ export default function FormView({ data }: { data: TransactionPayload | null }) 
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Supervisor</Label>
-            <UserHoverCard data={data?.supervisor?.appSuiteEmployeeMaster} />
+            <UserHoverCard data={data?.supervisor} />
           </div>
         </CardContent>
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Compliance Officer</Label>
-            <UserHoverCard data={data?.complianceOfficer?.appSuiteEmployeeMaster} />
+            <UserHoverCard data={data?.complianceOfficer} />
           </div>
         </CardContent>
         {data?.verifiedOn && (
@@ -85,7 +85,7 @@ export default function FormView({ data }: { data: TransactionPayload | null }) 
               {data?.verifier
                 ? (
                   <div className="flex gap-2">
-                    <UserHoverCard data={data?.verifier?.appSuiteEmployeeMaster} />
+                    <UserHoverCard data={data?.verifier} />
                     <Label className="text-muted-foreground text-xs whitespace-nowrap"> — { formatLongDate(data?.verifiedOn) }</Label>
                   </div>
                 ) : <Label>--</Label>
@@ -100,7 +100,7 @@ export default function FormView({ data }: { data: TransactionPayload | null }) 
               {data?.approver
                 ? (
                   <div className="flex gap-2">
-                    <UserHoverCard data={data?.approver?.appSuiteEmployeeMaster} />
+                    <UserHoverCard data={data?.approver} />
                     <Label className="text-muted-foreground text-xs whitespace-nowrap"> — { formatLongDate(data?.approvedOn) }</Label>
                   </div>
                 )
@@ -115,7 +115,7 @@ export default function FormView({ data }: { data: TransactionPayload | null }) 
               {data?.approver
                 ? (
                   <div className="flex gap-2">
-                    <UserHoverCard data={data?.supervisor?.appSuiteEmployeeMaster} />
+                    <UserHoverCard data={data?.supervisor} />
                     <Label className="text-muted-foreground text-xs whitespace-nowrap"> — { formatLongDate(data?.closedOn) }</Label>
                   </div>
                 )
@@ -191,31 +191,31 @@ export default function FormView({ data }: { data: TransactionPayload | null }) 
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Issued To</Label>
-            <UserHoverCard data={data?.recipient?.appSuiteEmployeeMaster} />
+            <UserHoverCard data={data?.recipient} />
           </div>
         </CardContent>
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">First Escalation</Label>
-            {data?.recipient?.escalation1User ? <UserHoverCard data={data?.jobEscalation1User?.appSuiteEmployeeMaster} /> : <Label>--</Label>}
+            {data?.recipient?.escalation1User ? <UserHoverCard data={data?.jobEscalation1User} /> : <Label>--</Label>}
           </div>
         </CardContent>
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Second Escalation</Label>
-            {data?.recipient?.escalation2User ? <UserHoverCard data={data?.jobEscalation2User?.appSuiteEmployeeMaster} /> : <Label>--</Label>}
+            {data?.recipient?.escalation2User ? <UserHoverCard data={data?.jobEscalation2User} /> : <Label>--</Label>}
           </div>
         </CardContent>
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Third Escalation</Label>
-            {data?.recipient?.escalation3User ? <UserHoverCard data={data?.jobEscalation3User?.appSuiteEmployeeMaster} /> : <Label>--</Label>}
+            {data?.recipient?.escalation3User ? <UserHoverCard data={data?.jobEscalation3User} /> : <Label>--</Label>}
           </div>
         </CardContent>
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
             <Label className="text-muted-foreground">Fourth Escalation</Label>
-            {data?.recipient?.escalation4User ? <UserHoverCard data={data?.jobEscalation4User?.appSuiteEmployeeMaster} /> : <Label>--</Label>}
+            {data?.recipient?.escalation4User ? <UserHoverCard data={data?.jobEscalation4User} /> : <Label>--</Label>}
           </div>
         </CardContent>
       </Card>

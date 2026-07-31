@@ -48,7 +48,7 @@ export default function CardHoldAction({ activeHolding }: { activeHolding: Holdi
             <div className="flex flex-col gap-0.5">
               <div className="flex flex-wrap items-center gap-1.5 text-sm leading-none">
                 <span className="text-muted-foreground">Currently held by</span>
-                <UserHoverCard data={activeHolding?.creator.appSuiteEmployeeMaster} />
+                <UserHoverCard data={activeHolding?.creator} />
               </div>
 
               <div className="text-xs text-orange-700 font-medium mt-1">

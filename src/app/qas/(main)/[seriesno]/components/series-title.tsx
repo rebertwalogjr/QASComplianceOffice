@@ -49,7 +49,7 @@ export default function SeriesTitle({ jobTransaction }: Props) {
           <div className="flex items-start justify-center flex-col">
             <Label className="text-md">Series #{jobTransaction.id}</Label>
             <div className="flex gap-2">
-              <Label className="text-sm">{jobTransaction.creator.appSuiteEmployeeMaster.fullName}</Label>
+              <Label className="text-sm">{jobTransaction.creator.fullName}</Label>
               <Label className="text-muted-foreground text-xs">— {jobTransaction.createdOn.toDateString()}</Label>
             </div>
           </div>

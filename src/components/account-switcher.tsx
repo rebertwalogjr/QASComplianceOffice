@@ -62,14 +62,14 @@ export function AccountSwitcher() {
 
 
             {/* SETTINGS OPTIONS */}
-            <div>
+            {/* <div>
               <DropdownMenuLabel className="text-muted-foreground text-xs">
                 Themes
               </DropdownMenuLabel>
               <ThemeToggleGroup />
-            </div>
+            </div> */}
 
-            <DropdownMenuSeparator />
+            {/* <DropdownMenuSeparator /> */}
 
             <Button variant="ghost"
               // className="w-full justify-start gap-2 px-2 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"

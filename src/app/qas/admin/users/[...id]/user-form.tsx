@@ -156,7 +156,7 @@ export default function UserUpdateForm({ initialData, companies, groups, project
                 <FieldGroup>
                   <Field>
                     <FieldLabel>Select Employee</FieldLabel>
-                    <Input value={`${initialData.appSuiteEmployeeMaster?.fullName} (${initialData?.employeeNumber})`} className="bg-muted" readOnly />
+                    <Input value={`${initialData?.fullName} (${initialData?.employeeNumber})`} className="bg-muted" readOnly />
                   </Field>
 
                   <Field>
@@ -172,7 +172,8 @@ export default function UserUpdateForm({ initialData, companies, groups, project
                     <FieldLabel htmlFor="firtname">First Name</FieldLabel>
                     <Input
                       id="firtname"
-                      value={initialData.appSuiteEmployeeMaster?.firstName}
+                      // value={initialData.appSuiteEmployeeMaster?.firstName}
+                      value={initialData.firstName ?? ""}
                       className="bg-muted"
                       readOnly />
                   </Field>
@@ -181,7 +182,8 @@ export default function UserUpdateForm({ initialData, companies, groups, project
                     <FieldLabel htmlFor="lastname">Last Name</FieldLabel>
                     <Input
                       id="lastname"
-                      value={initialData.appSuiteEmployeeMaster?.lastName}
+                      // value={initialData.appSuiteEmployeeMaster?.lastName}
+                      value={initialData.lastName ?? ""}
                       className="bg-muted"
                       readOnly />
                   </Field>
@@ -190,7 +192,8 @@ export default function UserUpdateForm({ initialData, companies, groups, project
                     <FieldLabel htmlFor="position">Position</FieldLabel>
                     <Input
                       id="position"
-                      value={initialData.appSuiteEmployeeMaster?.position ?? ""}
+                      // value={initialData.appSuiteEmployeeMaster?.position ?? ""}
+                      value={initialData.position ?? ""}
                       className="bg-muted"
                       readOnly />
                   </Field>

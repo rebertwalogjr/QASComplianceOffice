@@ -141,3 +141,9 @@ export function generateRandomPassword(length = 8) {
 
   return password
 }
+
+export function generateCode() {
+  const code = crypto.randomInt(100000, 999999).toString()
+
+  return code
+}

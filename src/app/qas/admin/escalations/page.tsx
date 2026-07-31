@@ -1,11 +1,11 @@
 import { DataTable } from "@/components/ui/data-table"
 import { columns } from "./columns"
 import { Label } from "@radix-ui/react-label"
-import { getEscalations } from "@/server-actions/user"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle, PlusCircle } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { getEscalations } from "@/server-actions/escalations"
 
 export default async function EscalationPage() {
 

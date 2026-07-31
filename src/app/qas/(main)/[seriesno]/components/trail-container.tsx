@@ -90,7 +90,7 @@ export default function TrailContainer<T extends BaseTrail>({ trails, currentUse
                     <div className={cn("flex flex-col gap-1.5 mx-w-[80%] lg:max-w-[75%]", isMe ? "items-end" : "items-start")}>
                       <div className={cn("flex justify-between gap-2", isMe && "flex-row-reverse")}>
                         <Label className="text-xs font-bold text-primary">
-                          {!isMe ? <UserHoverCard data={trail.creator.appSuiteEmployeeMaster} /> : ""}
+                          {!isMe ? <UserHoverCard data={trail.creator} /> : ""}
                         </Label>
                         <span className="text-[10px] font-normal text-muted-foreground">{format(new Date(trail.createOn), "h:mm a")}</span>
                       </div>
