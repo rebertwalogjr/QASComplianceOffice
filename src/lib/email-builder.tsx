@@ -54,7 +54,7 @@ const SupervisorVerificationRequest = ({ job }: EmailProps) => (
 
         {/* Greeting */}
         <p style={{ fontSize: '1rem', lineHeight: '1.5', color: '#1e293b', margin: '0 0 1rem 0' }}>
-          Hi <strong>{job.supervisor.appSuiteEmployeeMaster.firstName}</strong>,
+          Hi <strong>{job.supervisor.firstName}</strong>,
         </p>
 
         <p style={{ fontSize: '0.95rem', lineHeight: '1.5', color: '#475569', margin: '0 0 1.5rem 0' }}>
@@ -216,7 +216,7 @@ const OfficerApprovalRequest = ({ job, comment }: EmailProps) => (
 
         {/* Greeting */}
         <p style={{ fontSize: '1rem', lineHeight: '1.5', color: '#1e293b', margin: '0 0 1rem 0' }}>
-          Hi <strong>{job.complianceOfficer.appSuiteEmployeeMaster.firstName}</strong>,
+          Hi <strong>{job.complianceOfficer.firstName}</strong>,
         </p>
 
         <p style={{ fontSize: '0.95rem', lineHeight: '1.5', color: '#475569', margin: '0 0 1.5rem 0' }}>
@@ -400,7 +400,7 @@ const FindingsApproved = ({ job, comment }: EmailProps) => (
 
         {/* Greeting */}
         <p style={{ fontSize: '1rem', lineHeight: '1.5', color: '#1e293b', margin: '0 0 1rem 0' }}>
-          Hi <strong>{job.creator.appSuiteEmployeeMaster.firstName}</strong>,
+          Hi <strong>{job.creator.firstName}</strong>,
         </p>
 
         <p style={{ fontSize: '0.95rem', lineHeight: '1.5', color: '#475569', margin: '0 0 1.5rem 0' }}>
@@ -584,7 +584,7 @@ const RecipientApprovalRequest = ({ job, comment }: EmailProps) => (
 
         {/* Greeting */}
         <p style={{ fontSize: '1rem', lineHeight: '1.5', color: '#1e293b', margin: '0 0 1rem 0' }}>
-          Hi <strong>{job.recipient?.appSuiteEmployeeMaster.firstName}</strong>,
+          Hi <strong>{job.recipient?.firstName}</strong>,
         </p>
 
         <p style={{ fontSize: '0.95rem', lineHeight: '1.5', color: '#475569', margin: '0 0 1.5rem 0' }}>
@@ -768,7 +768,7 @@ const SecretariatApprovalRequest = ({ job, comment }: EmailProps) => (
 
         {/* Greeting */}
         <p style={{ fontSize: '1rem', lineHeight: '1.5', color: '#1e293b', margin: '0 0 1rem 0' }}>
-          Hi <strong>{job.complianceSecretariat.appSuiteEmployeeMaster.firstName}</strong>,
+          Hi <strong>{job.complianceSecretariat.firstName}</strong>,
         </p>
 
         <p style={{ fontSize: '0.95rem', lineHeight: '1.5', color: '#475569', margin: '0 0 1.5rem 0' }}>
@@ -972,7 +972,7 @@ const SupervisorForClosingRequest = ({ job, comment }: EmailProps) => (
 
         {/* Greeting */}
         <p style={{ fontSize: '1rem', lineHeight: '1.5', color: '#1e293b', margin: '0 0 1rem 0' }}>
-          Hi <strong>{job.supervisor.appSuiteEmployeeMaster.firstName}</strong>,
+          Hi <strong>{job.supervisor.firstName}</strong>,
         </p>
 
         <p style={{ fontSize: '0.95rem', lineHeight: '1.5', color: '#475569', margin: '0 0 1.5rem 0' }}>
@@ -996,7 +996,7 @@ const SupervisorForClosingRequest = ({ job, comment }: EmailProps) => (
               { label: "Type of finding", value: job.typeOfFinding.name },
               { label: "Findings category", value: job.findingCategory.name },
               { label: "Audit rating", value: job.auditRating.name },
-              { label: "Compliance Secretariat", value: job.complianceSecretariat.appSuiteEmployeeMaster.fullName }
+              { label: "Compliance Secretariat", value: job.complianceSecretariat.fullName }
             ].map((row, idx) => (
               <tr key={idx} style={{ backgroundColor: idx % 2 === 0 ? '#ffffff' : '#f8fafc' }}>
                 <td style={{
@@ -1157,7 +1157,7 @@ const OfficerForClosingApproved = ({ job, comment }: EmailProps) => (
 
         {/* Greeting */}
         <p style={{ fontSize: '1rem', lineHeight: '1.5', color: '#1e293b', margin: '0 0 1rem 0' }}>
-          Hi <strong>{job.complianceSecretariat.appSuiteEmployeeMaster.firstName}</strong>,
+          Hi <strong>{job.complianceSecretariat.firstName}</strong>,
         </p>
 
         <p style={{ fontSize: '0.95rem', lineHeight: '1.5', color: '#475569', margin: '0 0 1.5rem 0' }}>
@@ -1360,7 +1360,7 @@ const NewlyCreatedTemplate = ({ job, comment }: EmailProps) => (
 
         {/* Greeting */}
         <p style={{ fontSize: '1rem', lineHeight: '1.5', color: '#1e293b', margin: '0 0 1rem 0' }}>
-          Hi <strong>{job.creator.appSuiteEmployeeMaster.firstName}</strong>,
+          Hi <strong>{job.creator.firstName}</strong>,
         </p>
 
         <p style={{ fontSize: '0.95rem', lineHeight: '1.5', color: '#475569', margin: '0 0 1.5rem 0' }}>
@@ -1797,7 +1797,7 @@ const ReOpenSeriesRecipientNotif = ({ job }: EmailProps) => (
 
         {/* Greeting */}
         <p style={{ fontSize: '1rem', lineHeight: '1.5', color: '#1e293b', margin: '0 0 1rem 0' }}>
-          Hi <strong>{job.recipient?.appSuiteEmployeeMaster.firstName}</strong>,
+          Hi <strong>{job.recipient?.firstName}</strong>,
         </p>
 
         <p style={{ fontSize: '0.95rem', lineHeight: '1.5', color: '#475569', margin: '0 0 1.5rem 0' }}>
@@ -2009,7 +2009,7 @@ export async function getUserInvitationEmailHtml({ newUser, password }: { newUse
 }
 
 export async function getUpdateTrailEmailHtml({ data, message }: { data: UpdateTrailPayload, message: string }) {
-  const recipientName = data.jobTransaction.recipient?.appSuiteEmployeeMaster.firstName
+  const recipientName = data.jobTransaction.recipient?.firstName
   return {
     subject: `[QAS Compliance Office] New comment for ${data.jobTransactionId}`,
     recipient: 'rlwalog@dmcihomes.com',
@@ -2018,7 +2018,7 @@ export async function getUpdateTrailEmailHtml({ data, message }: { data: UpdateT
 }
 
 export async function getReviewTrailEmailHtml({ data, message }: { data: ReviewTrailPayload, message: string }) {
-  const recipientName = data.jobTransaction.recipient?.appSuiteEmployeeMaster.firstName
+  const recipientName = data.jobTransaction.recipient?.firstName
   return {
     subject: `[QAS Compliance Office] New comment for ${data.jobTransactionId}`,
     recipient: 'rlwalog@dmcihomes.com',
