@@ -216,7 +216,7 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
   if (!sessionId) return null
 
   return (
-    <form className={cn(`flex flex-col gap-4 ${isMobile ? "px-4" : "px-20"} lg:px-40`)} onSubmit={handleSubmit(onSubmit)}>
+    <form className={cn(`flex flex-col gap-4 mt-4 ${isMobile ? "px-4" : "px-20"} lg:px-40`)} onSubmit={handleSubmit(onSubmit)}>
 
       <div className="grid lg:grid-cols-2 grid-cols-1 gap-8">
 

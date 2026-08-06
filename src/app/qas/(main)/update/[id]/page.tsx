@@ -16,6 +16,8 @@ import { getActiveComplianceOfficers, getActiveRecipients, getActiveSupervisors 
 import { getSession } from "@/server-actions/get-session"
 import { getTransactionById } from "@/server-actions/transaction"
 import UpdateForm from "./update-form"
+import PageHeader from "@/components/page-header"
+import EditEntryPageHeaderContent from "./page-header-content"
 
 export default async function FindingsUpdatePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params
@@ -48,7 +50,10 @@ export default async function FindingsUpdatePage({ params }: { params: Promise<{
   const firstError = result.find(r => r.error)?.error
 
   return (
-    <div className="@container/main  py-6">
+    <div className="@container/main flex flex-1 flex-col gap-2">
+      <PageHeader>
+        <EditEntryPageHeaderContent />
+      </PageHeader>
       {firstError ? (
         <div className="mt-6 mx-4" >
           <Alert variant="destructive" className="bg-red-50 border-destructive">

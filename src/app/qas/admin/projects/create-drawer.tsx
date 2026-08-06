@@ -73,9 +73,9 @@ export default function CreateDrawer({ companies }: CreateDrawerProps) {
       }}
     >
       <DrawerTrigger asChild>
-        <Button variant="default" size="sm" className="rounded-2xl">
-          <PlusCircle className="fill-white text-primary size-4" />
-          Add Project
+        <Button variant="outline" size={isMobile ? "icon-sm" : "sm"}>
+          <PlusCircle />
+          {!isMobile ? "Add Project" : ""}
         </Button>
       </DrawerTrigger>
 

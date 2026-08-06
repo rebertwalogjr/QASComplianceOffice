@@ -2,13 +2,15 @@
 
 import { useState, useEffect } from "react"
 import { FilterIcon } from "lucide-react"
-import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "../ui/sheet"
-import { Button } from "../ui/button"
+import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "../../../../components/ui/sheet"
+import { Button } from "../../../../components/ui/button"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { BaseFilterOption, FilterOptionsPayload } from "@/server-actions/common"
-import FilterSelect from "../filter-select"
+import FilterSelect from "../../../../components/filter-select"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 export default function QASFilterSheet({ options }: { options: FilterOptionsPayload }) {
+  const isMobile = useIsMobile()
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -86,8 +88,8 @@ export default function QASFilterSheet({ options }: { options: FilterOptionsPayl
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <Button variant="outline">
-          <FilterIcon className="size-4" />Filter
+        <Button variant="outline" size={isMobile ? "icon-sm" : "sm"}>
+          <FilterIcon />{!isMobile ? "Filter" : ""}
         </Button>
       </SheetTrigger>
       {/* <SheetTrigger type="button" className="">QAS Filter</SheetTrigger> */}

@@ -13,6 +13,8 @@ import { getActiveAuditReport } from "@/server-actions/audit-report";
 
 import EntryForm from "./entry-form";
 import { getSession } from "@/server-actions/get-session";
+import PageHeader from "@/components/page-header"
+import NewEntryPageHeaderContent from "./page-header-content"
 
 export default async function NewQASForm() {
 
@@ -36,7 +38,10 @@ export default async function NewQASForm() {
   const firstError = result.find(r => r.error)?.error
 
   return (
-    <div className="@container/main py-6">
+    <div className="@container/main flex flex-1 flex-col gap-2">
+      <PageHeader>
+        <NewEntryPageHeaderContent />
+      </PageHeader>
       {firstError ? (
         <div className="mt-6 mx-4" >
           <Alert variant="destructive" className="bg-red-50 border-destructive">

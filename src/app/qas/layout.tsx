@@ -5,6 +5,7 @@ import { AppSidebar } from "@/components/app-sidebar"
 import { SiteHeader } from "@/components/site-header"
 import React, { Suspense } from "react"
 import { SidebarWrapper } from "@/components/sidebar-wrapper"
+import QASMasterListSiteHeaderContent from "./(main)/page-header-content"
 
 export default async function QasLayout({
   children,
@@ -18,7 +19,9 @@ export default async function QasLayout({
     <SidebarWrapper initialOpen={defaultOpen}>
       <AppSidebar />
       <SidebarInset>
-        <SiteHeader />
+        {/* <SiteHeader>
+          <QASMasterListSiteHeaderContent />
+          </SiteHeader> */}
         <div className="flex flex-1 flex-col">
           {children}
         </div>

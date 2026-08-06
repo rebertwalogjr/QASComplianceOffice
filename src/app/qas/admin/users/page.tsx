@@ -1,11 +1,10 @@
-import { DataTable } from "@/components/ui/data-table";
-import { columns } from "./columns";
-import { Label } from "@radix-ui/react-label";
-import { Button } from "@/components/ui/button";
-import { AlertCircle, Plus, PlusCircle } from "lucide-react";
-import Link from "next/link";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { getUsers } from "@/server-actions/user";
+import { DataTable } from "@/components/ui/data-table"
+import { columns } from "./columns"
+import { AlertCircle } from "lucide-react"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { getUsers } from "@/server-actions/user"
+import PageHeader from "@/components/page-header"
+import UserPageHeaderContent from "./page-header-content"
 
 
 export default async function UsersPage() {
@@ -16,6 +15,9 @@ export default async function UsersPage() {
 
   return (
     <div className="@container/main flex flex-col">
+      <PageHeader>
+        <UserPageHeaderContent />
+      </PageHeader>
       {error ? (
         <div className="mt-6 mx-4">
           <Alert variant="destructive" className="bg-red-50 border-destructive">
@@ -27,24 +29,12 @@ export default async function UsersPage() {
           </Alert>
         </div>
       ) : (
-        <>
-          <div className="flex flex-row px-6 pt-6 justify-between items-center">
-            <Label className="text-md font-semibold text-foreground">User Management</Label>
-            <Link href={`/qas/admin/users/new`}>
-              <Button variant="default" size="sm" className="rounded-2xl">
-                <PlusCircle className="fill-white text-primary" />
-                Add User
-              </Button>
-            </Link>
-            {/* <AddUser /> */}
-          </div>
-          <div>
-            <DataTable
-              columns={columns}
-              data={users}
-            />
-          </div>
-        </>
+        <div>
+          <DataTable
+            columns={columns}
+            data={users}
+          />
+        </div>
       )}
     </div>
   )

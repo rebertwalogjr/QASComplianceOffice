@@ -5,8 +5,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { AlertTriangle, ArrowUpDown } from "lucide-react";
 import TableCellViewer from "./table-cell-viewer";
 import StatusBadge from "@/components/status-badge";
-import PopoverStatusFilter from "./popover-status-filter";
-import { JobTransaction } from "../../../../generated/prisma/client";
+import PopoverStatusFilter from "./components/popover-status-filter";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { TransactionBasicPaylod } from "@/server-actions/transaction";
 

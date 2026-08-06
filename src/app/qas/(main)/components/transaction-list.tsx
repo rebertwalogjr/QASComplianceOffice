@@ -1,5 +1,5 @@
 import { getTransactions } from "@/server-actions/transaction"
-import { columns } from "./columns"
+import { columns } from "../columns"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
 import { TransactionTableWrapper } from "./transaction-table-wrapper"

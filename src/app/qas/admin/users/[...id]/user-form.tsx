@@ -1,9 +1,8 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { generateUserName } from "@/lib/utils"
 import { FolderLock, Group, GroupIcon, Loader2, Megaphone, User as UserIcon } from "lucide-react"
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"

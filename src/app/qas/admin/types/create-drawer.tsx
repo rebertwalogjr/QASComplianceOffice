@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { useForm, Controller } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import z from "zod"
 import { toast } from "sonner"
@@ -57,9 +57,9 @@ export default function CreateDrawer() {
       }}
     >
       <DrawerTrigger asChild>
-        <Button variant="default" size="sm" className="rounded-2xl">
-          <PlusCircle className="fill-white text-primary" />
-          Add Type
+        <Button variant="outline" size={isMobile ? "icon-sm" : "sm"}>
+          <PlusCircle />
+          {!isMobile ? "Add Type" : ""}
         </Button>
       </DrawerTrigger>
 

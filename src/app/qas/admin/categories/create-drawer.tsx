@@ -62,9 +62,9 @@ export default function CreateDrawer() {
       }}
     >
       <DrawerTrigger asChild>
-        <Button variant="default" size="sm" className="rounded-2xl">
-          <PlusCircle className="fill-white text-primary" />
-          Add Category
+        <Button variant="outline" size={isMobile ? "icon-sm" : "sm"}>
+          <PlusCircle />
+          {!isMobile ? "Add Category" : ""}
         </Button>
       </DrawerTrigger>
 

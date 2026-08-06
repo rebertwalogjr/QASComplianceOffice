@@ -150,7 +150,7 @@ export default function ExportFilterContainer({ options }: { options: FilterOpti
   const isButtonDisabled = loading || !filterValidation.isValid
 
   return (
-    <div className="flex flex-col gap-6 p-6 w-2xl border rounded-2xl">
+    <div className="flex flex-col gap-6 p-6 lg:w-2xl border rounded-2xl">
       <MultiFilterSelect
         label="Status"
         name="status"

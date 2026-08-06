@@ -71,36 +71,44 @@ export default function EmailClientUpdateSection({ email, onSuccess }: EmailClie
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col px-12 my-4 gap-4">
-      <div className="flex flex-col gap-2">
-        <Label>Email</Label>
-        <Input
-          {...register("email")}
-        />
+    <div className="px-4 mx-4 py-2">
+      <div className="text-sm border border-primary text-primary bg-primary/10 p-4 rounded-md font-medium">
+        Request System Administrator assistance to update email address.
       </div>
-      <div className="flex flex-col gap-2">
-        <Label>Enter 6 digit code sent to your email.</Label>
-        <Input
-          maxLength={6}
-          inputMode="numeric"
-          {...register("code")}
-        />
-        {errors.code && <p className="text-xs text-destructive mt-1">{errors.code.message}</p>}
-      </div>
-      <div className="flex justify-between">
-        <Button variant="outline" onClick={onHandleSendCode} disabled={!canSendCode || cooldown > 0}>
-          {cooldown > 0 ? (
-            <>Resend in {cooldown}s</>
-          ) : codeSent ? (
-            <><RefreshCcwIcon />Resend Code</>
-          ) : (
-            <>Send Code</>
-          )}
-        </Button>
-        <Button type="submit" disabled={isDisabled}>
-          {isSubmitting ? <><Loader2Icon className="size-4 animate-spin" />Processing...</> : "Update Email"}
-        </Button>
-      </div>
-    </form>
+    </div>
   )
+
+  //   return (
+  //     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col px-12 my-4 gap-4">
+  //       <div className="flex flex-col gap-2">
+  //         <Label>Email</Label>
+  //         <Input
+  //           {...register("email")}
+  //         />
+  //       </div>
+  //       <div className="flex flex-col gap-2">
+  //         <Label>Enter 6 digit code sent to your email.</Label>
+  //         <Input
+  //           maxLength={6}
+  //           inputMode="numeric"
+  //           {...register("code")}
+  //         />
+  //         {errors.code && <p className="text-xs text-destructive mt-1">{errors.code.message}</p>}
+  //       </div>
+  //       <div className="flex justify-between">
+  //         <Button variant="outline" onClick={onHandleSendCode} disabled={!canSendCode || cooldown > 0}>
+  //           {cooldown > 0 ? (
+  //             <>Resend in {cooldown}s</>
+  //           ) : codeSent ? (
+  //             <><RefreshCcwIcon />Resend Code</>
+  //           ) : (
+  //             <>Send Code</>
+  //           )}
+  //         </Button>
+  //         <Button type="submit" disabled={isDisabled}>
+  //           {isSubmitting ? <><Loader2Icon className="size-4 animate-spin" />Processing...</> : "Update Email"}
+  //         </Button>
+  //       </div>
+  //     </form>
+  //   )
 }

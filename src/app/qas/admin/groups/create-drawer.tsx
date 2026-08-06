@@ -15,7 +15,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
 import { Loader2, PlusCircle, X } from "lucide-react"
-import { Spinner } from "@/components/ui/spinner"
 import { createGroup } from "@/server-actions/group"
 import { ActiveProjectPayload } from "@/server-actions/project"
 
@@ -80,9 +79,9 @@ export default function CreateDrawer({ projects }: CreateDrawerProps) {
       }}
     >
       <DrawerTrigger asChild>
-        <Button variant="default" size="sm" className="rounded-2xl">
-          <PlusCircle className="fill-white text-primary" />
-          Add Group
+        <Button variant="outline" size={isMobile ? "icon-sm" : "sm"}>
+          <PlusCircle />
+          {!isMobile ? "Add Group" : ""}
         </Button>
       </DrawerTrigger>
 

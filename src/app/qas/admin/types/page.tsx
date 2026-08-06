@@ -1,15 +1,18 @@
-import { DataTable } from "@/components/ui/data-table";
-import { columns } from "./columns";
-import { Label } from "@radix-ui/react-label";
-import CreateDrawer from "./create-drawer";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
-import { getFindingTypes } from "@/server-actions/finding-type";
+import { DataTable } from "@/components/ui/data-table"
+import { columns } from "./columns"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { AlertCircle } from "lucide-react"
+import { getFindingTypes } from "@/server-actions/finding-type"
+import PageHeader from "@/components/page-header"
+import TypesPageHeaderContent from "./page-header-content"
 
 export default async function FindingTypePage() {
-  const { data: findingType, error } = await getFindingTypes();
+  const { data: findingType, error } = await getFindingTypes()
   return (
     <div className="@container/main flex flex-col">
+      <PageHeader>
+        <TypesPageHeaderContent />
+      </PageHeader>
       {error ? (
         <div className="mt-6 mx-4">
           <Alert variant="destructive" className="bg-red-50 border-destructive">
@@ -21,18 +24,12 @@ export default async function FindingTypePage() {
           </Alert>
         </div>
       ) : (
-        <>
-          <div className="flex flex-row px-6 pt-6 justify-between items-center">
-            <Label className="text-md font-semibold text-foreground">Finding Type</Label>
-            <CreateDrawer />
-          </div>
-          <div>
-            <DataTable
-              columns={columns}
-              data={findingType}
-            />
-          </div>
-        </>
+        <div>
+          <DataTable
+            columns={columns}
+            data={findingType}
+          />
+        </div>
       )}
     </div>
   )

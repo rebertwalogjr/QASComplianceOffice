@@ -7,6 +7,8 @@ import { getActiveRoles } from "@/server-actions/role"
 import { notFound } from "next/navigation"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
+import PageHeader from "@/components/page-header"
+import EditUserPageHeaderContent from "./page-header-content"
 
 export default async function UserPage({ params }: { params: Promise<{ id?: string[] }> }) {
   const resolvedParams = await params
@@ -33,6 +35,9 @@ export default async function UserPage({ params }: { params: Promise<{ id?: stri
 
   return (
     <div className="@container/main flex flex-col">
+      <PageHeader>
+        <EditUserPageHeaderContent data={`${userToEditRes.data.fullName} (${userToEditRes.data.employeeNumber})`} />
+      </PageHeader>
       {error ? (
         <div className="mt-6 mx-4" >
           <Alert variant="destructive" className="bg-red-50 border-destructive">

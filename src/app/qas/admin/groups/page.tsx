@@ -1,15 +1,15 @@
-import { DataTable } from "@/components/ui/data-table";
-import { columns } from "./columns";
-import { Label } from "@radix-ui/react-label";
-import CreateDrawer from "./create-drawer";
-import { LookupsProvider } from "@/context/lookups-context";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
-import { getGroups } from "@/server-actions/group";
-import { getActiveProjects, getProjects } from "@/server-actions/project";
+import { DataTable } from "@/components/ui/data-table"
+import { columns } from "./columns"
+import { LookupsProvider } from "@/context/lookups-context"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { AlertCircle } from "lucide-react"
+import { getGroups } from "@/server-actions/group"
+import { getActiveProjects, getProjects } from "@/server-actions/project"
+import PageHeader from "@/components/page-header"
+import GroupPageHeaderContent from "./page-header-content"
 
 export default async function GroupsPage() {
-  const [groupsRes, projectsRes, activeProjectsRes] = await Promise.all([getGroups(), getProjects(), getActiveProjects()]);
+  const [groupsRes, projectsRes, activeProjectsRes] = await Promise.all([getGroups(), getProjects(), getActiveProjects()])
 
   const groups = groupsRes.data ?? []
   const projects = projectsRes.data ?? []
@@ -22,6 +22,9 @@ export default async function GroupsPage() {
 
   return (
     <div className="@container/main flex flex-col">
+      <PageHeader>
+        <GroupPageHeaderContent projects={sortedProjects} />
+      </PageHeader>
       {error ? (
         <div className="mt-6 mx-4">
           <Alert variant="destructive" className="bg-red-50 border-destructive">
@@ -33,20 +36,14 @@ export default async function GroupsPage() {
           </Alert>
         </div>
       ) : (
-        <>
-          <div className="flex flex-row px-6 pt-6 justify-between items-center">
-            <Label className="text-md font-semibold text-foreground">Group Management</Label>
-            <CreateDrawer projects={sortedProjects} />
-          </div>
-          <div>
-            <LookupsProvider data={{ groups, projects, activeProjects }}>
-              <DataTable
-                columns={columns}
-                data={groups}
-              />
-            </LookupsProvider>
-          </div>
-        </>
+        <div>
+          <LookupsProvider data={{ groups, projects, activeProjects }}>
+            <DataTable
+              columns={columns}
+              data={groups}
+            />
+          </LookupsProvider>
+        </div>
       )}
 
     </div>

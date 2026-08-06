@@ -1,16 +1,16 @@
-import { DataTable } from "@/components/ui/data-table";
-import { columns } from "./columns";
-import { Label } from "@/components/ui/label";
-import CreateDrawer from "./create-drawer";
-import { LookupsProvider } from "@/context/lookups-context";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
-import { getAuditEngagements } from "@/server-actions/engagement";
-import { getActiveCompanies, getCompanies } from "@/server-actions/company";
+import { DataTable } from "@/components/ui/data-table"
+import { columns } from "./columns"
+import { LookupsProvider } from "@/context/lookups-context"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { AlertCircle } from "lucide-react"
+import { getAuditEngagements } from "@/server-actions/engagement"
+import { getActiveCompanies, getCompanies } from "@/server-actions/company"
+import PageHeader from "@/components/page-header"
+import EngagementsPageHeaderContent from "./page-header-content"
 
 export default async function AuditEngagementPage() {
 
-  const [auditEngagementRes, companiesRes, activeCompaniesRes] = await Promise.all([getAuditEngagements(), getCompanies(), getActiveCompanies()]);
+  const [auditEngagementRes, companiesRes, activeCompaniesRes] = await Promise.all([getAuditEngagements(), getCompanies(), getActiveCompanies()])
 
   const auditEngagements = auditEngagementRes.data ?? []
   const companies = companiesRes.data ?? []
@@ -19,6 +19,9 @@ export default async function AuditEngagementPage() {
 
   return (
     <div className="@container/main flex flex-col">
+      <PageHeader>
+        <EngagementsPageHeaderContent companies={activeCompanies} />
+      </PageHeader>
       {error ? (
         <div className="mt-6 mx-4">
           <Alert variant="destructive" className="bg-red-50 border-destructive">
@@ -30,20 +33,14 @@ export default async function AuditEngagementPage() {
           </Alert>
         </div>
       ) : (
-        <>
-          <div className="flex flex-row px-6 pt-6 justify-between items-center">
-            <Label className="text-md font-semibold text-foreground">Engagements</Label>
-            <CreateDrawer companies={activeCompanies} />
-          </div>
-          <div>
-            <LookupsProvider data={{ companies, activeCompanies }}>
-              <DataTable
-                columns={columns}
-                data={auditEngagements}
-              />
-            </LookupsProvider>
-          </div>
-        </>
+        <div>
+          <LookupsProvider data={{ companies, activeCompanies }}>
+            <DataTable
+              columns={columns}
+              data={auditEngagements}
+            />
+          </LookupsProvider>
+        </div>
       )}
     </div>
   )

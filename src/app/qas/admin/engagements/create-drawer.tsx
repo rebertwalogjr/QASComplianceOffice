@@ -13,7 +13,6 @@ import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { Loader2, PlusCircle, X } from "lucide-react"
-import { Spinner } from "@/components/ui/spinner"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { createAuditEngagement } from "@/server-actions/engagement"
 import { ActiveCompanyPayload } from "@/server-actions/company"
@@ -66,9 +65,9 @@ export default function CreateDrawer({ companies }: CreateDrawerProps) {
         if (!open) reset()
       }}>
       <DrawerTrigger asChild>
-        <Button variant="default" size="sm" className="rounded-2xl">
-          <PlusCircle className="fill-white text-primary" />
-          Add Engagement
+        <Button variant="outline" size={isMobile ? "icon-sm" : "sm"}>
+          <PlusCircle />
+          {!isMobile ? "Add Engagement" : ""}
         </Button>
       </DrawerTrigger>
 
