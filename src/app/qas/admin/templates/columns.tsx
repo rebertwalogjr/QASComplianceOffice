@@ -4,24 +4,20 @@ import { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ArrowDownAZ, ArrowDownZA, ArrowDown01  } from "lucide-react"
-// import TableCellViewer from "./table-cell-viewer"
+import TableCellViewer from "./table-cell-viewer"
 import { EmailTemplate } from "../../../../../generated/prisma/client"
 
 export const columns: ColumnDef<EmailTemplate>[] = [
-  // {
-  //   accessorKey: "name",
-  //   header: "Name",
-  //   cell: ({ row }) => {
-  //     return <TableCellViewer item={row.original as EmailTemplate} />
-  //   }
-  // },
   {
     accessorKey: "name",
-    header: "Name"
+    header: "Name",
+    cell: ({ row }) => {
+      return <TableCellViewer item={row.original as EmailTemplate} />
+    }
   },
   {
-    accessorKey: "description",
-    header: "Description"
+    accessorKey: "subject",
+    header: "Subject"
   },
   {
     accessorKey: "isActive",

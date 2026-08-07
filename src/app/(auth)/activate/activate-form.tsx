@@ -1,20 +1,20 @@
 "use client"
 
-import { useSession } from "next-auth/react";
+import { useSession } from "next-auth/react"
 import z from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useState } from "react";
+import { useState } from "react"
 import Image from "next/image"
 
-import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { toast } from "sonner";
-import { Field, FieldError, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { activateAccount } from "@/server-actions/user";
+import { Button } from "@/components/ui/button"
+import { Loader2 } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { toast } from "sonner"
+import { Field, FieldError, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field"
+import { Input } from "@/components/ui/input"
+import { activateAccount } from "@/server-actions/user"
 
 const activateSchema = z.object({
   npassword: z.string().min(8, "Password must be at least 8 characters long"),
@@ -117,11 +117,8 @@ export function ActivateForm() {
               <Field>
                 <Button type="submit" disabled={isLoading} tabIndex={3}>
                   {isLoading ? (
-                    <>
-                      <Loader2 className="size-4 animate-spin" />
-                      Activating...
-                    </>
-                  ) : "Activate"}
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : "Continue"}
                 </Button>
               </Field>
 

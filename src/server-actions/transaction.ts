@@ -1,16 +1,16 @@
 "use server"
 
-import { prisma } from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
-import { dbQuery } from "@/lib/prisma-db-utils";
-import { Prisma } from "../../generated/prisma/client";
-import { userSelect, recipientSelect } from "./selectors";
-import { promoteToFinal } from "@/lib/file-server";
-import fs from 'fs-extra';
-import path from 'path';
-import { getUserId } from "./get-session";
-import { triggerDatabaseMail } from "@/lib/mail-service";
-import { getNewlyCreatedEmailHtml, getOfficerApprovalRequestEmailHtml, getRecipientApprovalRequestEmailHtml, getReOpenSeriesRecipientEmailHtml, getSecretariatApprovalRequestEmailHtml, getSupervisorForClosingApprovedEmailHtml, getSupervisorForClosingRequestEmailHtml, getSupervisorVerificationRequestEmailHtml } from "@/lib/email-builder";
+import { prisma } from "@/lib/prisma"
+import { revalidatePath } from "next/cache"
+import { dbQuery } from "@/lib/prisma-db-utils"
+import { Prisma } from "../../generated/prisma/client"
+import { userSelect, recipientSelect } from "./selectors"
+import { promoteToFinal } from "@/lib/file-server"
+import fs from 'fs-extra'
+import path from 'path'
+import { getUserId } from "./get-session"
+import { triggerDatabaseMail } from "@/lib/mail-service"
+import { getNewlyCreatedEmailHtml, getOfficerApprovalRequestEmailHtml, getRecipientApprovalRequestEmailHtml, getReOpenSeriesRecipientEmailHtml, getSecretariatApprovalRequestEmailHtml, getSupervisorForClosingApprovedEmailHtml, getSupervisorForClosingRequestEmailHtml, getSupervisorVerificationRequestEmailHtml } from "@/lib/email-builder"
 // import { NewlyCreatedTemplate } from "@/lib/email-builder";
 
 export async function createTransaction(formData: FormData) {
@@ -100,22 +100,16 @@ export async function createTransaction(formData: FormData) {
           tag: "created"
         }
       })
+      // Send email notif
+      await tx.$executeRaw`
+        EXEC dbo.pr_JobTransactionSupervisorVerificationRequest
+          @JobTransactionId = ${newJob.id}`
       return newJob
     })
   )
 
   if (newJob) {
     await promoteToFinal(sessionId, newJob.id)
-    // -- EMAIL NOTIFICATION START
-    // Send email to verifier
-    const emailHtml = await getSupervisorVerificationRequestEmailHtml(newJob)
-    triggerDatabaseMail({
-      to: emailHtml.recipient,
-      cc: emailHtml.cc,
-      subject: emailHtml.subject,
-      body: emailHtml.template
-    }).catch(err => console.error("Background Email Error:", err))
-    // -- EMAIL NOTIFICATION END
   }
   return { data: newJob, error }
 }
@@ -241,7 +235,7 @@ export async function getTransactions(page: number = 1, pageSize: number = 10, f
 }> {
   const userId = await getUserId()
 
-  const skip = (page - 1) * pageSize;
+  const skip = (page - 1) * pageSize
   const where: any = {}
 
   const addIntFilter = (key: string, value: string | undefined) => {
@@ -262,11 +256,11 @@ export async function getTransactions(page: number = 1, pageSize: number = 10, f
   // addIntFilter('assignedTo', filters.assignedTo)
 
   if (filters.status) {
-    where.jobStatus = { equals: filters.status };
+    where.jobStatus = { equals: filters.status }
   }
 
   if (userId) {
-    const userIdNum = typeof userId === 'string' ? parseInt(userId) : userId;
+    const userIdNum = typeof userId === 'string' ? parseInt(userId) : userId
 
     if (!isNaN(userIdNum)) {
       where.OR = [
@@ -327,6 +321,7 @@ export async function jobTransactionClientUpdate(formData: FormData) {
 
   let rawData = {}
   let actionTaken = ""
+  let procToDo = ""
 
   const tempDirPath = path.join(process.env.FILE_SERVER_PATH!, 'Temporary', sessionId)
   let fileNames: string[] = []
@@ -338,10 +333,12 @@ export async function jobTransactionClientUpdate(formData: FormData) {
     case "verify":
       rawData = { verifiedBy: creatorId, verifiedOn: new Date(), jobStatus: "open", onHold: false }
       actionTaken = "verified this series"
+      procToDo = "dbo.pr_JobTransactionOfficerApprovalRequest"
       break
     case "approve":
       rawData = { approvedBy: creatorId, approvedOn: new Date(), jobStatus: "open", onHold: false }
       actionTaken = "approved this series"
+      procToDo = "dbo.pr_JobTransactionRecipientApprovalRequest"
       break
     case "accept":
       rawData = {
@@ -352,22 +349,27 @@ export async function jobTransactionClientUpdate(formData: FormData) {
         jobStatus: 'accepted', onHold: false
       }
       actionTaken = "accepted this series"
+      procToDo = "dbo.pr_JobTransactionSecretariatApprovalRequest"
       break
     case "for closing":
       rawData = { jobStatus: "for closing", onHold: false }
       actionTaken = "requesting to close the series"
+      procToDo = "dbo.pr_JobTransactionForClosingRequest"
       break
     case "close":
       rawData = { jobStatus: "closed", closedOn: new Date(), onHold: false }
       actionTaken = "closed the series"
+      procToDo = "dbo.pr_JobTransactionClosingApproved"
       break
     case "hold":
       rawData = { jobStatus: "on-hold", onHold: true }
       actionTaken = "hold the series"
+      procToDo = "dbo.pr_JobTransactionHoldingNotification"
       break
     case "cancel":
       rawData = { jobStatus: "cancelled", cancelledOn: new Date() }
       actionTaken = "cancelled the series"
+      procToDo = ""
     default:
       actionTaken = "added a comment"
   }
@@ -425,69 +427,20 @@ export async function jobTransactionClientUpdate(formData: FormData) {
         })
       }
 
+      if (procToDo !== "") {
+        await tx.$executeRaw`
+        EXEC ${procToDo}
+          @JobTransactionId = ${job.id}`
+      }
+
       return job
     })
   )
 
   if (newJob) {
     await promoteToFinal(sessionId, newJob.id)
-
-    // -- EMAIL NOTIFICATION START
-    switch (type) {
-      case "verify":
-        // Send email to compliance officer for approval
-        const emailHtml1 = await getOfficerApprovalRequestEmailHtml(newJob, comment)
-        triggerDatabaseMail({
-          to: emailHtml1.recipient,
-          subject: emailHtml1.subject,
-          cc: emailHtml1.cc,
-          body: emailHtml1.template
-        }).catch(err => console.error("Background Email Error:", err))
-        break;
-      case "approve":
-        // Send email to recipient
-        const emailHtml2 = await getRecipientApprovalRequestEmailHtml(newJob, comment)
-        triggerDatabaseMail({
-          to: emailHtml2.recipient,
-          subject: emailHtml2.subject,
-          cc: emailHtml2.cc,
-          body: emailHtml2.template
-        }).catch(err => console.error("Background Email Error:", err))
-        break;
-      case "accept":
-        // Send email to secretariat
-        const emailHtml3 = await getSecretariatApprovalRequestEmailHtml(newJob, comment)
-        triggerDatabaseMail({
-          to: emailHtml3.recipient,
-          subject: emailHtml3.subject,
-          body: emailHtml3.template
-        }).catch(err => console.error("Background Email Error:", err))
-        break;
-      case "for closing":
-        // send email to supervisor
-        const emailHtml4 = await getSupervisorForClosingRequestEmailHtml(newJob, comment)
-        triggerDatabaseMail({
-          to: emailHtml4.recipient,
-          subject: emailHtml4.subject,
-          cc: emailHtml4.cc,
-          body: emailHtml4.template
-        }).catch(err => console.error("Background Email Error:", err))
-        break;
-      case "close":
-        // send email to compliance secretariat
-        const emailHtml5 = await getSupervisorForClosingApprovedEmailHtml(newJob, comment)
-        triggerDatabaseMail({
-          to: emailHtml5.recipient,
-          subject: emailHtml5.subject,
-          cc: emailHtml5.cc,
-          body: emailHtml5.template
-        }).catch(err => console.error("Background Email Error:", err))
-        break;
-    }
-    // -- EMAIL NOTIFICATION END
-  }
-
-  revalidatePath(`/qas/${newJob.id}`)
+    revalidatePath(`/qas/${newJob.id}`)
+  }  
   return { data: newJob, error }
 }
 

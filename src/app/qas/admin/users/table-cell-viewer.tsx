@@ -3,7 +3,7 @@ import { Separator } from "@/components/ui/separator"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
+import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer"
 import { useIsMobile } from "@/hooks/use-mobile"
 import Link from "next/link"
 import { LockIcon, X } from "lucide-react"
@@ -11,6 +11,7 @@ import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field"
 import { UserBasicIncludePayload } from "@/server-actions/user"
 import { Item, ItemContent, ItemMedia, ItemTitle } from "@/components/ui/item"
 import { Badge } from "@/components/ui/badge"
+import ResetAccountDialog from "./reset-account-dialog"
 
 interface Props {
   item: UserBasicIncludePayload
@@ -18,7 +19,7 @@ interface Props {
 }
 
 export default function TableCellViewer({ item, className }: Props) {
-  const isMobile = useIsMobile();
+  const isMobile = useIsMobile()
 
   return (
     <Drawer direction={isMobile ? "bottom" : "right"}>
@@ -104,6 +105,12 @@ export default function TableCellViewer({ item, className }: Props) {
           <Button asChild>
             <Link href={`/qas/admin/users/${item.id}`}>Update</Link>
           </Button>
+          <ResetAccountDialog
+            id={item.id}
+            employeeNumber={item.employeeNumber}
+            email={item.emailAddress ?? ""}
+            fullName={item.fullName ?? ""}
+          />
           <DrawerClose asChild>
             <Button variant="outline">Close</Button>
           </DrawerClose>

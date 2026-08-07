@@ -59,6 +59,6 @@ export const config = {
     "/activate",
     "/qas/admin/:path*",
     "/",
-    "/((?!api/auth|_next/static|_next/image|favicon.ico|DMCILogo.png|signin).*)",
+    "/((?!api/auth|_next/static|_next/image|favicon.ico|DMCILogo.png|signin|forgotpassword).*)",
   ]
 }

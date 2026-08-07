@@ -104,9 +104,9 @@ export function SignInForm() {
               <Field>
                 <div className="flex justify-between">
                   <FieldLabel htmlFor="password">Password</FieldLabel>
-                  <Button variant="link" className="font-normal h-auto p-0" tabIndex={4} >
+                  {/* <Button variant="link" className="font-normal h-auto p-0" tabIndex={4} >
                     Forgot your password?
-                  </Button>
+                  </Button> */}
                 </div>
                 <Input id="password" type="password" placeholder="********" {...register("password")} disabled={isLoading} tabIndex={2} />
                 {errors.password && (
