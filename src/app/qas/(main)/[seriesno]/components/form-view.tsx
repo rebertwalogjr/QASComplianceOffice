@@ -1,12 +1,13 @@
-import { File, Group, LucideBadgeInfo, MegaphoneIcon, TextSelection } from "lucide-react";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import AttachmentViewer from "@/components/series/attachments-viewer";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { TransactionPayload } from "@/server-actions/transaction";
-import { UserHoverCard } from "@/components/user-hover-card";
-import { formatLongDate } from "@/lib/utils";
+import { File, Group, LucideBadgeInfo, MegaphoneIcon, TextSelection } from "lucide-react"
+import { Textarea } from "@/components/ui/textarea"
+import { Badge } from "@/components/ui/badge"
+import AttachmentViewer from "@/components/series/attachments-viewer"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Label } from "@/components/ui/label"
+import { TransactionPayload } from "@/server-actions/transaction"
+import { UserHoverCard } from "@/components/user-hover-card"
+import { formatLongDate } from "@/lib/utils"
+import ButtonGenerateAuditReportNumber from "./btn-generate"
 
 const BadgeYesNo = (str: string) => {
   const val = str.toLowerCase()
@@ -86,7 +87,7 @@ export default function FormView({ data }: { data: TransactionPayload | null }) 
                 ? (
                   <div className="flex gap-2">
                     <UserHoverCard data={data?.verifier} />
-                    <Label className="text-muted-foreground text-xs whitespace-nowrap"> — { formatLongDate(data?.verifiedOn) }</Label>
+                    <Label className="text-muted-foreground text-xs whitespace-nowrap"> — {formatLongDate(data?.verifiedOn)}</Label>
                   </div>
                 ) : <Label>--</Label>
               }
@@ -101,7 +102,7 @@ export default function FormView({ data }: { data: TransactionPayload | null }) 
                 ? (
                   <div className="flex gap-2">
                     <UserHoverCard data={data?.approver} />
-                    <Label className="text-muted-foreground text-xs whitespace-nowrap"> — { formatLongDate(data?.approvedOn) }</Label>
+                    <Label className="text-muted-foreground text-xs whitespace-nowrap"> — {formatLongDate(data?.approvedOn)}</Label>
                   </div>
                 )
                 : <Label>--</Label>}
@@ -116,7 +117,7 @@ export default function FormView({ data }: { data: TransactionPayload | null }) 
                 ? (
                   <div className="flex gap-2">
                     <UserHoverCard data={data?.supervisor} />
-                    <Label className="text-muted-foreground text-xs whitespace-nowrap"> — { formatLongDate(data?.closedOn) }</Label>
+                    <Label className="text-muted-foreground text-xs whitespace-nowrap"> — {formatLongDate(data?.closedOn)}</Label>
                   </div>
                 )
                 : <Label>--</Label>}
@@ -148,9 +149,12 @@ export default function FormView({ data }: { data: TransactionPayload | null }) 
           </div>
         </CardContent>
         <CardContent className="">
-          <div className="grid md:grid-cols-3 gap-2 items-start">
+          <div className="grid md:grid-cols-3 gap-2 items-center">
             <Label className="text-muted-foreground">Audit Finding No.</Label>
-            <Label className="col-span-2">{data?.auditFindingNumber ?? "--"}</Label>
+            {!data?.auditFindingNumber.trim() ?
+              <ButtonGenerateAuditReportNumber jobTransactionId={data?.id} /> :
+              <Label className="col-span-2">{data?.auditFindingNumber ?? "--"}</Label>
+            }
           </div>
         </CardContent>
         <CardContent className="">

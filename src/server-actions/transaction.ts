@@ -9,9 +9,6 @@ import { promoteToFinal } from "@/lib/file-server"
 import fs from 'fs-extra'
 import path from 'path'
 import { getUserId } from "./get-session"
-import { triggerDatabaseMail } from "@/lib/mail-service"
-import { getNewlyCreatedEmailHtml, getOfficerApprovalRequestEmailHtml, getRecipientApprovalRequestEmailHtml, getReOpenSeriesRecipientEmailHtml, getSecretariatApprovalRequestEmailHtml, getSupervisorForClosingApprovedEmailHtml, getSupervisorForClosingRequestEmailHtml, getSupervisorVerificationRequestEmailHtml } from "@/lib/email-builder"
-// import { NewlyCreatedTemplate } from "@/lib/email-builder";
 
 export async function createTransaction(formData: FormData) {
   const creatorId = await getUserId()
@@ -88,8 +85,7 @@ export async function createTransaction(formData: FormData) {
       // Generate audit finding number
       await tx.$executeRaw`
         EXEC dbo.pr_GenerateAuditFindingNumber
-          @JobTransactionId = ${newJob.id},
-          @AuditReportId = ${newJob.auditReport.id}`
+          @JobTransactionId = ${newJob.id}`
       // Create the audit trail
       await tx.auditTrail.create({
         data: {
@@ -214,16 +210,6 @@ export async function updateTransaction(formData: FormData) {
 
   if (modJob) {
     await promoteToFinal(sessionId, modJob.id)
-    // -- EMAIL NOTIFICATION START
-    // Send email to verifier
-    // const emailHtml = await getSupervisorVerificationRequestEmailHtml(modJob)
-    // triggerDatabaseMail({
-    //   to: emailHtml.recipient,
-    //   cc: emailHtml.cc,
-    //   subject: emailHtml.subject,
-    //   body: emailHtml.template
-    // }).catch(err => console.error("Background Email Error:", err))
-    // -- EMAIL NOTIFICATION END
   }
   return { data: modJob, error }
 }
@@ -491,6 +477,20 @@ export async function reOpenTransaction(id: number) {
 
     })
   )
+}
+
+export async function generateAuditFindingNumber(id: number) {
+  const {data: count, error} = await dbQuery(
+    prisma.$executeRaw`
+    EXEC pr_GenerateAuditFindingNumber
+      @JobTransactionId = ${id}`
+  )
+  if (!error) {
+    revalidatePath(`/qas/${id}`)
+    return { success: true, message: 'Generated Successfully!' }
+  } else {
+    return { success: false, message: error } 
+  }
 }
 
 const transactionBasicSelect = {

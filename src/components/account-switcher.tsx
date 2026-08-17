@@ -1,14 +1,12 @@
 "use client"
 
-import * as React from "react"
 import { useSession } from "next-auth/react"
 import { signOut } from "next-auth/react"
 
-import { ChevronsUpDown, LogOut, Plus, User } from "lucide-react"
-import { DropdownMenu, DropdownMenuContent,  DropdownMenuLabel, DropdownMenuSeparator,  DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { ChevronsUpDown, LogOut, User } from "lucide-react"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import {  SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar, } from '@/components/ui/sidebar'
 import { Button } from "./ui/button"
-import { ThemeToggleGroup } from "./theme-toggle-group"
 
 export function AccountSwitcher() {
   const { isMobile } = useSidebar()
@@ -44,35 +42,7 @@ export function AccountSwitcher() {
             sideOffset={4}
           >
 
-            {/* <DropdownMenuLabel className="text-muted-foreground text-xs">
-              Accounts
-            </DropdownMenuLabel> */}
-            {/* {accounts.map((account, index) => (
-              <DropdownMenuItem
-                key={account.title}
-                onClick={() => setActiveTeam(account)}
-                className="gap-2 p-2"
-              >
-                <div className="flex size-6 items-center justify-center rounded-md border">
-                  <account.logo className="size-3.5 shrink-0" />
-                </div>
-                {account.title}
-              </DropdownMenuItem>
-            ))} */}
-
-
-            {/* SETTINGS OPTIONS */}
-            {/* <div>
-              <DropdownMenuLabel className="text-muted-foreground text-xs">
-                Themes
-              </DropdownMenuLabel>
-              <ThemeToggleGroup />
-            </div> */}
-
-            {/* <DropdownMenuSeparator /> */}
-
             <Button variant="ghost"
-              // className="w-full justify-start gap-2 px-2 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
               onClick={() => signOut({ callbackUrl: "/signin" })}
               >
               <LogOut className="size-4" />
