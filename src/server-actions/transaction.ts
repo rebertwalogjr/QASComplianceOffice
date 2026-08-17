@@ -440,7 +440,7 @@ export async function jobTransactionClientUpdate(formData: FormData) {
   if (newJob) {
     await promoteToFinal(sessionId, newJob.id)
     revalidatePath(`/qas/${newJob.id}`)
-  }  
+  }
   return { data: newJob, error }
 }
 
@@ -471,7 +471,7 @@ export async function reOpenTransaction(id: number) {
       const job = await tx.jobTransaction.update({
         where: { id: id },
         data: { jobStatus: "open" },
-        select: transactionEmailSelect
+        select: { id: true }
       })
 
       await tx.auditTrail.create({
@@ -485,15 +485,9 @@ export async function reOpenTransaction(id: number) {
         }
       })
 
-      if (job) {
-        const emailHtml5 = await getReOpenSeriesRecipientEmailHtml(job)
-        triggerDatabaseMail({
-          to: emailHtml5.recipient,
-          subject: emailHtml5.subject,
-          cc: emailHtml5.cc,
-          body: emailHtml5.template
-        }).catch(err => console.error("Background Email Error:", err))
-      }
+      await tx.$executeRaw`
+        EXEC pr_JobTransactionReOpenSeries
+          @JobTransactionId = ${job.id}`
 
     })
   )
