@@ -1,0 +1,9 @@
+model ReviewTrail {
+  id               Int            @id @default(autoincrement())
+  jobTransactionId Int
+  message          String         @db.NVarChar(Max)
+  createdBy        Int
+  createOn         DateTime       @default(now()) @db.DateTime
+  jobTransaction   JobTransaction @relation(fields: [jobTransactionId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  creator          User           @relation("ReviewTrailCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+}

@@ -1,0 +1,12 @@
+model AuditTrail {
+  id               Int            @id @default(autoincrement())
+  jobTransactionId Int
+  jobStatus        String
+  actionTaken      String
+  tag              String?
+  comment          String?        @db.NVarChar(Max)
+  createdBy        Int
+  createdOn        DateTime       @default(now()) @db.DateTime
+  jobTransaction   JobTransaction @relation(fields: [jobTransactionId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  creator          User           @relation("AuditTrailCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+}

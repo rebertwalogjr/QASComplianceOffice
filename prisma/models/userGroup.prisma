@@ -1,0 +1,15 @@
+model UserGroup {
+  userId     Int
+  groupId    Int
+  isActive   Boolean  @default(true) @db.Bit
+  createdBy  Int
+  createdOn  DateTime @default(now()) @db.DateTime
+  modifiedBy Int?
+  modifiedOn DateTime @updatedAt @db.DateTime
+  user       User     @relation(fields: [userId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  group      Group    @relation(fields: [groupId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  creator    User     @relation("UserGroupCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  modifier   User?    @relation("UserGroupModifier", fields: [modifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+
+  @@id([userId, groupId])
+}

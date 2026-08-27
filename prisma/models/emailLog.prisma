@@ -1,0 +1,9 @@
+model EmailLog {
+  id               Int      @id @default(autoincrement())
+  recipientAddress String   @db.NVarChar(Max)
+  subject          String   @db.NVarChar(Max)
+  content          String   @db.NVarChar(Max)
+  carbonCopy       String   @db.NVarChar(Max)
+  sentOn           DateTime @default(now()) @db.DateTime
+  isValid          Boolean  @db.Bit
+}

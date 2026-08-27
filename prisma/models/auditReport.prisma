@@ -1,0 +1,21 @@
+model AuditReport {
+  id                Int              @id @default(autoincrement())
+  name              String           @unique @db.NVarChar(100)
+  companyId         Int
+  auditEngagementId Int
+  projectId         Int
+  effectiveYear     Int?
+  effectiveMonth    Int?
+  isClosed          Boolean          @default(false) @db.Bit
+  isActive          Boolean          @default(true) @db.Bit
+  createdBy         Int
+  createdOn         DateTime         @default(now()) @db.DateTime
+  modifiedBy        Int?
+  modifiedOn        DateTime         @updatedAt @db.DateTime
+  company           Company          @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+  auditEngagement   AuditEngagement  @relation(fields: [auditEngagementId], references: [id], onUpdate: NoAction)
+  project           Project          @relation(fields: [projectId], references: [id], onUpdate: NoAction)
+  creator           User             @relation("AuditReportCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  modifier          User?            @relation("AuditReportModifier", fields: [modifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  jobTransactions   JobTransaction[]
+}

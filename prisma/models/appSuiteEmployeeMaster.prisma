@@ -1,0 +1,14 @@
+model AppSuiteEmployeeMaster {
+  employeeNumber String    @id @db.NVarChar(10)
+  lastName       String    @db.NVarChar(255)
+  firstName      String    @db.NVarChar(255)
+  middleName     String?   @db.NVarChar(255)
+  fullName       String    @db.NVarChar(255)
+  emailAddress   String?   @db.NVarChar(255)
+  department     String?   @db.NVarChar(255)
+  position       String?   @db.NVarChar(255)
+  isActive       Boolean   @default(true) @db.Bit
+  addedOn        DateTime  @default(now()) @db.DateTime
+  inactiveOn     DateTime? @db.DateTime
+  users          User[]
+}

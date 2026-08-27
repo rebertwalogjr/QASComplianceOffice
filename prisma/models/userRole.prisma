@@ -1,0 +1,15 @@
+model UserRole {
+  userId     Int
+  roleId     Int
+  isActive   Boolean  @default(true) @db.Bit
+  createdBy  Int
+  createdOn  DateTime @default(now()) @db.DateTime
+  modifiedBy Int?
+  modifiedOn DateTime @updatedAt @db.DateTime
+  user       User     @relation(fields: [userId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  role       Role     @relation(fields: [roleId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  creator    User     @relation("UserAccessCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  modifier   User?    @relation("UserAccessModifier", fields: [modifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+
+  @@id([userId, roleId])
+}

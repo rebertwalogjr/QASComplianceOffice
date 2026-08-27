@@ -1,0 +1,94 @@
+model User {
+  id                        Int                    @id @default(autoincrement())
+  employeeNumber            String                 @unique @db.NVarChar(10)
+  firstName                 String?                @db.NVarChar(255)
+  middleName                String?                @db.NVarChar(255)
+  lastName                  String?                @db.NVarChar(255)
+  fullName                  String?                @db.NVarChar(255)
+  username                  String                 @unique @db.NVarChar(100)
+  password                  String                 @db.NVarChar(100)
+  emailAddress              String?                @db.NVarChar(255)
+  companyId                 Int?
+  department                String?                @db.NVarChar(255)
+  position                  String?                @db.NVarChar(100)
+  escalation1               Int?
+  escalation2               Int?
+  escalation3               Int?
+  escalation4               Int?
+  receiveNotifications      Boolean                @default(false) @db.Bit
+  isEscalation              Boolean                @default(false) @db.Bit
+  isActive                  Boolean                @default(true) @db.Bit
+  isActivated               Boolean                @default(false) @db.Bit
+  createdBy                 Int?
+  createdOn                 DateTime               @default(now()) @db.DateTime
+  modifiedBy                Int?
+  modifiedOn                DateTime               @updatedAt @db.DateTime
+  passwordChangedAt         DateTime?              @db.DateTime
+  usernameChangedAt         DateTime?              @db.DateTime
+  emailChangedAt            DateTime?              @db.DateTime
+  theme                     String                 @default("system") @db.NVarChar(50)
+  escalation1User           User?                  @relation("escalation1User", fields: [escalation1], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  escalation2User           User?                  @relation("escalation2User", fields: [escalation2], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  escalation3User           User?                  @relation("escalation3User", fields: [escalation3], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  escalation4User           User?                  @relation("escalation4User", fields: [escalation4], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  creator                   User?                  @relation("UserCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  modifier                  User?                  @relation("UserModifier", fields: [modifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  appSuiteEmployeeMaster    AppSuiteEmployeeMaster @relation(fields: [employeeNumber], references: [employeeNumber])
+  company                   Company?               @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+  auditEngagementCreator    AuditEngagement[]      @relation("EngagementCreator")
+  auditEngagementModifier   AuditEngagement[]      @relation("EngagementModifier")
+  companyCreator            Company[]              @relation("CompanyCreator")
+  companyModifier           Company[]              @relation("CompanyModifier")
+  findingCategoriesCreator  FindingCategory[]      @relation("CategoryCreator")
+  findingCategoriesModifier FindingCategory[]      @relation("CategoryModifier")
+  jobTransactionsCreator    JobTransaction[]       @relation("JobTransactionCreator")
+  jobTransactionsModifier   JobTransaction[]       @relation("JobTransactionModifier")
+  projectCreator            Project[]              @relation("ProjectCreator")
+  projectModifier           Project[]              @relation("ProjectModifier")
+  typeOfFindingsCreator     TypeOfFinding[]        @relation("TypeOfFindingCreator")
+  typeOfFindingsModifier    TypeOfFinding[]        @relation("TypeOfFindingModifier")
+  attachmentsCreator        Attachment[]           @relation("AttachmentCreator")
+  attachmentsModifier       Attachment[]           @relation("AttachmentModifier")
+  groupCreator              Group[]                @relation("GroupCreator")
+  groupModifier             Group[]                @relation("GroupModifier")
+  userCreator               User[]                 @relation("UserCreator")
+  userModifier              User[]                 @relation("UserModifier")
+  auditReportCreator        AuditReport[]          @relation("AuditReportCreator")
+  auditReportModifier       AuditReport[]          @relation("AuditReportModifier")
+  auditRatingCreator        AuditRating[]          @relation("AuditRatingCreator")
+  auditRatingModifier       AuditRating[]          @relation("AuditRatingModifier")
+  jobTransactionRecipient   JobTransaction[]       @relation("JobTransactionRecipient")
+  escalation1_user          User[]                 @relation("escalation1User")
+  escalation2_user          User[]                 @relation("escalation2User")
+  escalation3_user          User[]                 @relation("escalation3User")
+  escalation4_user          User[]                 @relation("escalation4User")
+  complianceSecretariat     JobTransaction[]       @relation("ComplianceSecretariat")
+  complianceOfficer         JobTransaction[]       @relation("ComplianceOfficer")
+  supervisor                JobTransaction[]       @relation("Supervisor")
+  jobTransactionVerifier    JobTransaction[]       @relation("JobTransactionVerifier")
+  jobTransactionApprover    JobTransaction[]       @relation("JobTransactionApprover")
+  holidayCreator            Holiday[]              @relation("HolidayCreator")
+  holidayModifier           Holiday[]              @relation("HolidayModifier")
+  accessLevelCreator        Role[]                 @relation("AccessLevelCreator")
+  accessLevelModifier       Role[]                 @relation("AccessLevelModifier")
+  userAccessCreator         UserRole[]             @relation("UserAccessCreator")
+  userAccessModifier        UserRole[]             @relation("UserAccessModifier")
+  userGroupCreator          UserGroup[]            @relation("UserGroupCreator")
+  userGroupModifier         UserGroup[]            @relation("UserGroupModifier")
+  userRoles                 UserRole[]
+  userGroups                UserGroup[]
+  userProjectCreator        UserProject[]          @relation("UserProjectCreator")
+  userProjectModifier       UserProject[]          @relation("UserProjectModifier")
+  userProjects              UserProject[]
+  auditTrails               AuditTrail[]           @relation("AuditTrailCreator")
+  jobEscalation1User        JobTransaction[]       @relation("jobEscalation1User")
+  jobEscalation2User        JobTransaction[]       @relation("jobEscalation2User")
+  jobEscalation3User        JobTransaction[]       @relation("jobEscalation3User")
+  jobEscalation4User        JobTransaction[]       @relation("jobEscalation4User")
+  holdingHistoryCreator     HoldingHistory[]       @relation("HoldingCreator")
+  holdingHistoryEnder       HoldingHistory[]       @relation("HoldingEnder")
+  updateTrails              UpdateTrail[]          @relation("UpdateTrailCreator")
+  reviewTrails              ReviewTrail[]          @relation("ReviewTrailCreator")
+  emailTemplatesCreator     EmailTemplate[]        @relation("EmailTemplateCreator")
+  emailTemplatesModifier    EmailTemplate[]        @relation("EmailTemplateModifier")
+}

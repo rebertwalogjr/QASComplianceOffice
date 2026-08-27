@@ -1,0 +1,18 @@
+model Company {
+  id              Int               @id @default(autoincrement())
+  name            String            @unique @db.NVarChar(255)
+  code            String            @unique @db.NVarChar(15)
+  isActive        Boolean           @default(true) @db.Bit
+  createdBy       Int
+  createdOn       DateTime          @default(now()) @db.DateTime
+  modifiedBy      Int?
+  modifiedOn      DateTime          @updatedAt @db.DateTime
+  creator         User              @relation("CompanyCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  modifier        User?             @relation("CompanyModifier", fields: [modifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  auditEngagement AuditEngagement[]
+  project         Project[]
+  users           User[]
+  jobTransaction  JobTransaction[]
+  auditReport     AuditReport[]
+  auditRating     AuditRating[]
+}

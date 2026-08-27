@@ -1,0 +1,19 @@
+model Project {
+  id             Int              @id @default(autoincrement())
+  name           String           @unique @db.NVarChar(100)
+  code           String           @unique @db.NVarChar(10)
+  companyId      Int
+  remarks        String?          @db.NVarChar(255)
+  isActive       Boolean          @default(true) @db.Bit
+  createdBy      Int
+  createdOn      DateTime         @default(now()) @db.DateTime
+  modifiedBy     Int?
+  modifiedOn     DateTime         @updatedAt @db.DateTime
+  company        Company          @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+  creator        User             @relation("ProjectCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  modifier       User?            @relation("ProjectModifier", fields: [modifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  groupList      Group[]
+  jobTransaction JobTransaction[]
+  auditReport    AuditReport[]
+  userProjects   UserProject[]
+}

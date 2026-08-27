@@ -1,0 +1,13 @@
+model Holiday {
+  id         Int      @id @default(autoincrement())
+  name       String   @db.NVarChar(255)
+  type       String   @db.NVarChar(25)
+  date       DateTime @unique @db.DateTime
+  isActive   Boolean  @default(true) @db.Bit
+  createdBy  Int
+  createdOn  DateTime @default(now()) @db.DateTime
+  modifiedBy Int?
+  modifiedOn DateTime @updatedAt @db.DateTime
+  creator    User     @relation("HolidayCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  modifier   User?    @relation("HolidayModifier", fields: [modifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+}

@@ -1,0 +1,12 @@
+model Role {
+  id         Int        @id @default(autoincrement())
+  name       String     @unique @db.NVarChar(100)
+  isActive   Boolean    @default(true) @db.Bit
+  createdBy  Int
+  createdOn  DateTime   @default(now()) @db.DateTime
+  modifiedBy Int?
+  modifiedOn DateTime   @updatedAt @db.DateTime
+  creator    User       @relation("AccessLevelCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  modifier   User?      @relation("AccessLevelModifier", fields: [modifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  userRoles  UserRole[]
+}

@@ -1,0 +1,14 @@
+model EmailTemplate {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  subject     String   @db.NVarChar(500)
+  content     String   @db.NVarChar(Max)
+  description String   @db.NVarChar(500)
+  isActive    Boolean  @default(true) @db.Bit
+  createdBy   Int
+  createdOn   DateTime @default(now()) @db.DateTime
+  modifiedBy  Int?
+  modifiedOn  DateTime @updatedAt
+  creator     User     @relation("EmailTemplateCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  mofifier    User?    @relation("EmailTemplateModifier", fields: [modifiedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}

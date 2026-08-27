@@ -1,0 +1,12 @@
+model FindingCategory {
+  id             Int              @id @default(autoincrement())
+  name           String           @unique @db.NVarChar(50)
+  isActive       Boolean          @default(true) @db.Bit
+  createdBy      Int
+  createdOn      DateTime         @default(now()) @db.DateTime
+  modifiedBy     Int?
+  modifiedOn     DateTime         @updatedAt @db.DateTime
+  creator        User             @relation("CategoryCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  modifier       User?            @relation("CategoryModifier", fields: [modifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  jobTransaction JobTransaction[]
+}

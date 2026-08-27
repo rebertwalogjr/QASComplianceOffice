@@ -1,0 +1,16 @@
+model AuditRating {
+  id              Int              @id @default(autoincrement())
+  name            String           @db.NVarChar(50)
+  companyId       Int
+  isActive        Boolean          @default(true) @db.Bit
+  createdBy       Int
+  createdOn       DateTime         @default(now()) @db.DateTime
+  modifiedBy      Int?
+  modifiedOn      DateTime         @updatedAt @db.DateTime
+  company         Company          @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+  creator         User             @relation("AuditRatingCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  modifier        User?            @relation("AuditRatingModifier", fields: [modifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  jobTransactions JobTransaction[]
+
+  @@unique([name, companyId])
+}

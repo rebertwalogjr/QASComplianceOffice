@@ -1,0 +1,19 @@
+model Group {
+  id              Int              @id @default(autoincrement())
+  name            String           @unique @db.NVarChar(100)
+  code            String           @unique @db.NVarChar(10)
+  projectId       Int
+  inCharge        String           @db.NVarChar(100)
+  emailAddress    String           @db.NVarChar(255)
+  remarks         String?          @db.NVarChar(255)
+  isActive        Boolean          @default(true) @db.Bit
+  createdBy       Int
+  createdOn       DateTime         @default(now()) @db.DateTime
+  modifiedBy      Int?
+  modifiedOn      DateTime         @updatedAt @db.DateTime
+  project         Project          @relation(fields: [projectId], references: [id], onUpdate: NoAction)
+  creator         User             @relation("GroupCreator", fields: [createdBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  modifier        User?            @relation("GroupModifier", fields: [modifiedBy], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  jobTransactions JobTransaction[]
+  userGroups      UserGroup[]
+}
