@@ -7,7 +7,7 @@ model User {
   fullName                  String?                @db.NVarChar(255)
   username                  String                 @unique @db.NVarChar(100)
   password                  String                 @db.NVarChar(100)
-  emailAddress              String?                @db.NVarChar(255)
+  emailAddress              String                 @unique @db.NVarChar(255)
   companyId                 Int?
   department                String?                @db.NVarChar(255)
   position                  String?                @db.NVarChar(100)
@@ -69,8 +69,6 @@ model User {
   jobTransactionApprover    JobTransaction[]       @relation("JobTransactionApprover")
   holidayCreator            Holiday[]              @relation("HolidayCreator")
   holidayModifier           Holiday[]              @relation("HolidayModifier")
-  accessLevelCreator        Role[]                 @relation("AccessLevelCreator")
-  accessLevelModifier       Role[]                 @relation("AccessLevelModifier")
   userAccessCreator         UserRole[]             @relation("UserAccessCreator")
   userAccessModifier        UserRole[]             @relation("UserAccessModifier")
   userGroupCreator          UserGroup[]            @relation("UserGroupCreator")
