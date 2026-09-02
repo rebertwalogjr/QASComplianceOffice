@@ -5,9 +5,6 @@ trigger:
       - main
 
 variables:
-  - group: 'qasco-app-variable'
-  - name: buildConfiguration
-    value: 'Release'
   - name: nodeVersion
     value: '22'
   - name: appName
@@ -64,19 +61,8 @@ stages:
           displayName: 'Create environment template'
 
         - script: |
-            echo $(Build.SourceBranchName) > $(Build.ArtifactStagingDirectory)/standalone/BUILD_BRANCH.txt
-            echo $(Build.BuildId) >> $(Build.ArtifactStagingDirectory)/standalone/BUILD_BRANCH.txt
-            echo $(Build.SourceVersion) >> $(Build.ArtifactStagingDirectory)/standalone/BUILD_BRANCH.txt
-          displayName: 'Store build metadata'
-
-        # - task: ArchiveFiles@2
-        #   inputs:
-        #     rootFolderOrFile: '$(Build.BinariesDirectory)'
-        #     includeRootFolder: false
-        #     archiveType: 'zip'
-        #     archiveFile: '$(Build.ArtifactStagingDirectory)/$(appName)-$(Build.BuildId).zip'
-        #     replaceExistingArchive: true
-        #   displayName: 'Create build artifact'
+            echo $(Build.SourceBranchName) > $(Build.ArtifactStagingDirectory)/standalone/BRANCH.txt
+          displayName: 'Store branch info'
 
         - task: PublishBuildArtifacts@1
           inputs:
@@ -85,66 +71,349 @@ stages:
             publishLocation: 'Container'
           displayName: 'Publish build artifact'
 
-  - stage: Deploy_Dev
-    displayName: 'Deploy to Development'
+  - stage: Deploy_UAT
+    displayName: 'Deploy to UAT'
     dependsOn: Build
     condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/dev'))
+    variables:
+      - group: 'qasco-uat-variables'
     jobs:
-      - deployment: DeployToDev
-        displayName: 'Deploy to Dev Windows Server'
-        # environment: 'DEV'
+      - deployment: DeployToUAT
+        displayName: 'Deploy to UAT Windows Server'
+        environment: 'uat'
         strategy:
           runOnce:
             deploy:
               steps:
-                - template: deploy-steps.yml
-                  parameters:
-                    Environment: 'Development'
-                    EnvironmentShort: 'dev'
-                    AppName: $(appName)
-                    ServerVariable: 'DevServer'
-                    PathVariable: 'DevPath'
-                    UserVariable: 'DevUser'
-                    PasswordVariable: 'DevPassword'
-                    Port: 3001
-                    HealthCheckUrl: 'http://localhost:3001/api/health'
-                # - task: DownloadBuildArtifacts@1
-                #   inputs:
-                #     buildType: 'current'
-                #     downloadType: 'single'
-                #     artifactName: 'drop'
-                #     downloadPath: '$(System.ArtifactsDirectory)'
-                #   displayName: 'Download build artifacts'
+                # Download artifacts
+                - task: DownloadBuildArtifacts@0
+                  inputs:
+                    buildType: 'current'
+                    downloadType: 'single'
+                    artifactName: 'nextjs-app'
+                    downloadPath: '$(System.ArtifactsDirectory)'
+                  displayName: 'Download build artifact'
 
-  - stage: Deploy_Prod
+                # Create UAT .env file
+                - task: PowerShell@2
+                  displayName: 'Create UAT .env file'
+                  inputs:
+                    targetType: 'inline'
+                    script: |
+                      $envFile = "$(System.ArtifactsDirectory)/nextjs-app/.env.uat"
+                      Copy-Item "$(System.ArtifactsDirectory)/nextjs-app/.env.template" $envFile
+                      Add-Content $envFile "`n# UAT Environment Variables"
+                      Add-Content $envFile "DATABASE_URL=$(DATABASE_URL)"
+                      Add-Content $envFile "DB_HOST=$(DB_HOST)"
+                      Add-Content $envFile "DB_NAME=$(DB_NAME)"
+                      Add-Content $envFile "DB_PASSWORD=$(DB_PASSWORD)"
+                      Add-Content $envFile "DB_PORT=$(DB_PORT)"
+                      Add-Content $envFile "DB_USER=$(DB_USER)"
+                      Add-Content $envFile "FILE_SERVER_PATH=$(FILE_SERVER_PATH)"
+                      Add-Content $envFile "NEXTAUTH_SECRET=$(NEXTAUTH_SECRET)"
+                      Add-Content $envFile "NEXTAUTH_URL=$(NEXTAUTH_URL)"
+                      Write-Host "Created .env.uat file for UAT environment"
+
+                # Deploy to UAT Server
+                - task: PowerShell@2
+                  displayName: 'Deploy to UAT Windows Server'
+                  inputs:
+                    targetType: 'inline'
+                    script: |
+                      $Server = '$(Server)'
+                      $User = '$(User)'
+                      $Password = '$(Password)'
+                      $DeploymentPath = '$(Path)'
+                      $AppName = '$(appName)
+                      $Environment = 'uat'
+                      $Port = $(Port)
+                      
+                      Write-Host "Deploying to UAT Server: $Server"
+
+                      # Create session
+                      $securePass = ConvertTo-SecureString $Password -AsPlainText -Force
+                      $cred = New-Object System.Management.Automation.PSCredential($User, $securePass)
+                      $session = New-PSSession -ComputerName $Server -Credential $cred -ErrorAction Stop
+
+                      try {
+                        # Stop PM@
+                        Invoke-Command -Session $session -ScriptBlock {
+                          param($AppName)
+                          pm2 delete $AppName 2>$null
+                        } -ArgumentList $AppName
+
+                        # Copy files
+                        $AppPath = "$DeploymentPath\$AppName"
+                        Invoke-Command -Session $session -ScriptBlock {
+                          param($AppPath)
+                          New-Item -ItemType Directory -Path $AppPath -Force | Out-Null
+                        } -ArgumentList $AppPath
+
+                        Copy-Item -Path "$(System.ArtifactsDirectory)/nextjs-app/*" -Destination $AppPath -ToSession $session -Recurse -Force
+
+                        # Install dependencies
+                        Invoke-Command -Session $session -ScriptBlock {
+                          param($AppPath)
+                          Set-Location $AppPath
+                          npm ci --production --no-fund --no-audit
+                        } -ArgumentList $AppPath
+
+                        # Create ecosystem config
+                        Invoke-Command -Session $session -ScriptBlock {
+                          param($AppPath, $AppName, $Environment, $Port)
+                          Set-Location $AppPath
+                      
+                        $config = @"
+                          module.exports = {
+                            apps: [{
+                            name: '$AppName-$Environment',
+                            script: 'node_modules/next/dist/bin/next',
+                            args: 'start',
+                            env_$Environment: {
+                              NODE_ENV: 'production',
+                              PORT: $Port
+                            },
+                            watch: false,
+                            autorestart: true,
+                            max_memory_restart: '1G',
+                            error_file: '$AppPath/logs/pm2-error.log',
+                            out_file: '$AppPath/logs/pm2-out.log',
+                            instances: 'max',
+                            exec_mode: 'cluster'
+                            }]
+                          }
+                          "@
+                        
+                        New-Item -ItemType Directory -Path "$AppPath\logs" -Force | Out-Null
+                            Set-Content -Path "$AppPath\ecosystem.config.js" -Value $config
+                            } -ArgumentList $AppPath, $AppName, $Environment, $Port
+                  
+                            # Start PM2
+                        Invoke-Command -Session $session -ScriptBlock {
+                          param($AppPath, $AppName, $Environment)
+                          Set-Location $AppPath
+                          pm2 start ecosystem.config.js --env $Environment
+                          pm2 save
+                          pm2 list
+                        } -ArgumentList $AppPath, $AppName, $Environment
+                      
+                      } finally {
+                        Remove-PSSession $session
+                      }
+
+                      Write-Host "UAT Deployment completed!"
+
+                # Health Check
+                - task: PowerShell@2
+                  displayName: 'Verify UAT deployment'
+                  inputs:
+                    targetType: 'inline'
+                    script: |
+                      $Server = '$(Server)'
+                      $Port = $(Port)
+                      $maxAttempts = 12
+                      $attempt = 1
+                      $success = $false
+
+                      while ($attempt -le $maxAttempts -and -not $success) {
+                        try {
+                          $response = Invoke-WebRequest -Uri "http://$Server`:$Port/api/health" -UseBasicParsing -TimeoutSec 10
+                          if ($response.StatusCode -eq 200) {
+                            Write-Host "Health check passed!"
+                            $success = $true
+                          }
+                        } catch {
+                          Write-Host "Attempt $attempt failed: $($_.Exception.Message)"
+                        }
+                        if (-not $success) {
+                          Start-Sleep -Seconds 5
+                          $attempt++
+                        }
+                      }
+                
+                      if (-not $success) {
+                        throw "Deployment verification failed"
+                      }
+
+
+  - stage: Deploy_Production
     displayName: 'Deploy to Production'
     dependsOn: Build
     condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    variables:
+      - group: 'qasco-prod-variables'
     jobs:
       - deployment: DeployToProd
         displayName: 'Deploy to Prod Windows Server'
-        environment: 'PROD'
+        environment: 'production'
         strategy:
           runOnce:
             deploy:
               steps:
-                - template: deploy-steps.yml
-                  parameters:
-                    Environment: 'Production'
-                    EnvironmentShort: 'prod'
-                    AppName: $(appName)
-                    ServerVariable: 'ProdServer'
-                    PathVariable: 'ProdPath'
-                    UserVariable: 'ProdUser'
-                    PasswordVariable: 'ProdPassword'
-                    Port: 3000
-                    HealthCheckUrl: 'http://localhost:3000/api/health'
-                # - task: DownloadBuildArtifacts@1
-                #   inputs:
-                #     buildType: 'current'
-                #     downloadType: 'single'
-                #     artifactName: 'drop'
-                #     downloadPath: '$(System.ArtifactsDirectory)'
-                #   displayName: 'Download build artifacts'
+                # Download artifacts
+                - task: DownloadBuildArtifacts@0
+                  inputs:
+                    buildType: 'current'
+                    downloadType: 'single'
+                    artifactName: 'nextjs-app'
+                    downloadPath: '$(System.ArtifactsDirectory)'
+                  displayName: 'Download build artifact'
 
+                # Create Production .env file
+                - task: PowerShell@2
+                  displayName: 'Create Production .env file'
+                  inputs:
+                    targetType: 'inline'
+                    script: |
+                      $envFile = "$(System.ArtifactsDirectory)/nextjs-app/.env.prod"
+                      Copy-Item "$(System.ArtifactsDirectory)/nextjs-app/.env.template" $envFile
+                      Add-Content $envFile "`n# UAT Environment Variables"
+                      Add-Content $envFile "DATABASE_URL=$(DATABASE_URL)"
+                      Add-Content $envFile "DB_HOST=$(DB_HOST)"
+                      Add-Content $envFile "DB_NAME=$(DB_NAME)"
+                      Add-Content $envFile "DB_PASSWORD=$(DB_PASSWORD)"
+                      Add-Content $envFile "DB_PORT=$(DB_PORT)"
+                      Add-Content $envFile "DB_USER=$(DB_USER)"
+                      Add-Content $envFile "FILE_SERVER_PATH=$(FILE_SERVER_PATH)"
+                      Add-Content $envFile "NEXTAUTH_SECRET=$(NEXTAUTH_SECRET)"
+                      Add-Content $envFile "NEXTAUTH_URL=$(NEXTAUTH_URL)"
+                      Write-Host "Created .env.prod file for UAT environment"
+
+                # Deploy to UAT Server
+                - task: PowerShell@2
+                  displayName: 'Deploy to Production Windows Server'
+                  inputs:
+                    targetType: 'inline'
+                    script: |
+                      $Server = '$(Server)'
+                      $User = '$(User)'
+                      $Password = '$(Password)'
+                      $DeploymentPath = '$(Path)'
+                      $AppName = '$(appName)
+                      $Environment = 'uat'
+                      $Port = $(Port)
+                      
+                      Write-Host "Deploying to Production Server: $Server"
+                      Write-Host "WARNING: This is PRODUCTION deployment!"
+
+                      # Confirm production deployment
+                      $confirmation = Read-Host "Type 'DEPLOY PROD' to confirm production deployment"
+                      if ($confirmation -ne "DEPLOY PROD") {
+                        throw "Production deployment cancelled by user"
+                      }
+
+                      # Create session
+                      $securePass = ConvertTo-SecureString $Password -AsPlainText -Force
+                      $cred = New-Object System.Management.Automation.PSCredential($User, $securePass)
+                      $session = New-PSSession -ComputerName $Server -Credential $cred -ErrorAction Stop
+
+                      try {
+                        # Create backup
+                        $AppPath = "$DeploymentPath\$AppName"
+                        Invoke-Command -Session $session -ScriptBlock {
+                          param($AppPath)
+                          if (Test-Path $AppPath) {
+                            $BackupPath = "$AppPath\..\backups\$AppName-$(Get-Date -Format 'yyyyMMdd-HHmmss')"
+                            New-Item -ItemType Directory -Path $BackupPath -Force | Out-Null
+                            Copy-Item -Path "$AppPath\*" -Destination $BackupPath -Recurse -Force
+                            Write-Host "Backup created at: $BackupPath"
+                          }
+                        } -ArgumentList $AppPath
+
+                        # Stop PM@
+                        Invoke-Command -Session $session -ScriptBlock {
+                          param($AppName)
+                          pm2 delete $AppName 2>$null
+                        } -ArgumentList $AppName
+
+                        # Copy files
+                        $AppPath = "$DeploymentPath\$AppName"
+                        Invoke-Command -Session $session -ScriptBlock {
+                          param($AppPath)
+                          New-Item -ItemType Directory -Path $AppPath -Force | Out-Null
+                        } -ArgumentList $AppPath
+
+                        Copy-Item -Path "$(System.ArtifactsDirectory)/nextjs-app/*" -Destination $AppPath -ToSession $session -Recurse -Force
+
+                        # Install dependencies
+                        Invoke-Command -Session $session -ScriptBlock {
+                          param($AppPath)
+                          Set-Location $AppPath
+                          npm ci --production --no-fund --no-audit
+                        } -ArgumentList $AppPath
+
+                        # Create ecosystem config
+                        Invoke-Command -Session $session -ScriptBlock {
+                          param($AppPath, $AppName, $Environment, $Port)
+                          Set-Location $AppPath
+                      
+                        $config = @"
+                          module.exports = {
+                            apps: [{
+                            name: '$AppName-$Environment',
+                            script: 'node_modules/next/dist/bin/next',
+                            args: 'start',
+                            env_$Environment: {
+                              NODE_ENV: 'production',
+                              PORT: $Port
+                            },
+                            watch: false,
+                            autorestart: true,
+                            max_memory_restart: '1G',
+                            error_file: '$AppPath/logs/pm2-error.log',
+                            out_file: '$AppPath/logs/pm2-out.log',
+                            instances: 'max',
+                            exec_mode: 'cluster'
+                            }]
+                          }
+                          "@
+                        
+                        New-Item -ItemType Directory -Path "$AppPath\logs" -Force | Out-Null
+                            Set-Content -Path "$AppPath\ecosystem.config.js" -Value $config
+                            } -ArgumentList $AppPath, $AppName, $Environment, $Port
+                  
+                        # Start PM2
+                        Invoke-Command -Session $session -ScriptBlock {
+                          param($AppPath, $AppName, $Environment)
+                          Set-Location $AppPath
+                          pm2 start ecosystem.config.js --env $Environment
+                          pm2 save
+                          pm2 list
+                        } -ArgumentList $AppPath, $AppName, $Environment
+                      
+                      } finally {
+                        Remove-PSSession $session
+                      }
+
+                      Write-Host "Production Deployment completed!"
+
+                - task: PowerShell@2
+                  displayName: 'Verify Production deployment'
+                  inputs:
+                    targetType: 'inline'
+                    script: |
+                      $Server = '$(Server)'
+                      $Port = $(Port)
+                      $maxAttempts = 15
+                      $attempt = 1
+                      $success = $false
+
+                      while ($attempt -le $maxAttempts -and -not $success) {
+                        try {
+                          $response = Invoke-WebRequest -Uri "http://$Server`:$Port/api/health" -UseBasicParsing -TimeoutSec 10
+                          if ($response.StatusCode -eq 200) {
+                            Write-Host "Health check passed!"
+                            $success = $true
+                          }
+                        } catch {
+                          Write-Host "Attempt $attempt failed: $($_.Exception.Message)"
+                        }
+                        if (-not $success) {
+                          Start-Sleep -Seconds 5
+                          $attempt++
+                        }
+                      }
                 
+                      if (-not $success) {
+                        throw "Production deployment verification failed"
+                      }
