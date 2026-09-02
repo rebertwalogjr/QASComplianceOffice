@@ -1,0 +1,295 @@
+parameters:
+- name: Environment
+  type: string
+- name: EnvironmentShort
+  type: string
+- name: AppName
+  type: string
+- name: ServerVariable
+  type: string
+- name: PathVariable
+  type: string
+- name: UserVariable
+  type: string
+- name: PasswordVariable
+  type: string
+- name: Port
+  type: number
+- name: HealthCheckUrl
+  type: string
+
+steps:
+# 1. Download artifacts
+- task: DownloadBuildArtifacts@1
+  inputs:
+    buildType: 'current'
+    downloadType: 'single'
+    artifactName: 'nextjs-app'
+    downloadPath: '$(System.ArtifactsDirectory)'
+  displayName: 'Download build artifacts'
+
+# 2. Read branch info from artifact
+- task: PowerShell@2
+  displayName: 'Verify branch deployment'
+  inputs:
+    targetType: 'inline'
+    script: |
+      $branchFile = "$(System.ArtifactsDirectory)/nextjs-app/BUILD_BRANCH.txt"
+      if (Test-Path $branchFile) {
+        $branch = Get-Content $branchFile | Select-Object -First 1
+        Write-Host "Build was created from branch: $branch"
+        Write-Host "Current deployment target: ${{ parameters.Environment }}"
+        
+        # Verify we're deploying to the right environment
+        $expectedBranch = if ('${{ parameters.Environment }}' -eq 'Production') { 'main' } else { 'develop' }
+        if ($branch -ne $expectedBranch) {
+          Write-Host "##vso[task.logissue type=warning]Build from branch '$branch' is being deployed to ${{ parameters.Environment }} environment"
+        }
+      }
+    failOnStderr: false
+
+# 3. Create environment-specific .env file
+- task: PowerShell@2
+  displayName: 'Create .env file for ${{ parameters.Environment }}'
+  inputs:
+    targetType: 'inline'
+    script: |
+      $envFile = "$(System.ArtifactsDirectory)/nextjs-app/.env.${{ parameters.EnvironmentShort }}"
+      
+      # Copy template
+      Copy-Item "$(System.ArtifactsDirectory)/nextjs-app/.env.template" $envFile
+      
+      # Add environment-specific variables
+      Add-Content $envFile "`n# ${{ parameters.Environment }} Environment Variables"
+      Add-Content $envFile "API_URL=$($env:API_URL_${{ parameters.EnvironmentShort }})"
+      Add-Content $envFile "DATABASE_URL=$($env:DATABASE_URL_${{ parameters.EnvironmentShort }})"
+      Add-Content $envFile "NEXT_PUBLIC_API_URL=$($env:NEXT_PUBLIC_API_URL_${{ parameters.EnvironmentShort }})"
+      Add-Content $envFile "SESSION_SECRET=$($env:SESSION_SECRET_${{ parameters.EnvironmentShort }})"
+      Add-Content $envFile "PORT=${{ parameters.Port }}"
+      Add-Content $envFile "APP_ENVIRONMENT=${{ parameters.EnvironmentShort }}"
+      
+      Write-Host "Created .env.${{ parameters.EnvironmentShort }} file for ${{ parameters.Environment }}"
+    env:
+      API_URL_dev: $(API_URL_DEV)
+      API_URL_prod: $(API_URL_PROD)
+      DATABASE_URL_dev: $(DATABASE_URL_DEV)
+      DATABASE_URL_prod: $(DATABASE_URL_PROD)
+      NEXT_PUBLIC_API_URL_dev: $(NEXT_PUBLIC_API_URL_DEV)
+      NEXT_PUBLIC_API_URL_prod: $(NEXT_PUBLIC_API_URL_PROD)
+      SESSION_SECRET_dev: $(SESSION_SECRET_DEV)
+      SESSION_SECRET_prod: $(SESSION_SECRET_PROD)
+
+# 4. Deploy to Windows Server
+- task: PowerShell@2
+  displayName: 'Deploy to ${{ parameters.Environment }} Windows Server'
+  inputs:
+    targetType: 'inline'
+    script: |
+      $Server = '$($env:${{ parameters.ServerVariable }})'
+      $DeploymentUser = '$($env:${{ parameters.UserVariable }})'
+      $DeploymentPassword = '$($env:${{ parameters.PasswordVariable }})'
+      $DeploymentPath = '$($env:${{ parameters.PathVariable }})'
+      $AppName = '${{ parameters.AppName }}'
+      $AppPath = "$DeploymentPath\$AppName"
+      $ArtifactPath = "$(System.ArtifactsDirectory)/nextjs-app"
+      $Environment = '${{ parameters.EnvironmentShort }}'
+      $Port = ${{ parameters.Port }}
+      
+      Write-Host "========================================"
+      Write-Host "Deploying to ${{ parameters.Environment }} Environment"
+      Write-Host "Target Server: $Server"
+      Write-Host "Target Path: $DeploymentPath"
+      Write-Host "App Path: $AppPath"
+      Write-Host "Environment: $Environment"
+      Write-Host "Port: $Port"
+      Write-Host "========================================"
+      
+      # Create PSSession
+      $securePassword = ConvertTo-SecureString $DeploymentPassword -AsPlainText -Force
+      $credential = New-Object System.Management.Automation.PSCredential($DeploymentUser, $securePassword)
+      $session = New-PSSession -ComputerName $Server -Credential $credential -ErrorAction Stop
+      
+      try {
+        # 4a. Create backup
+        Invoke-Command -Session $session -ScriptBlock {
+          param($AppPath)
+          if (Test-Path $AppPath) {
+            $BackupPath = "$AppPath\..\backups\$AppName-$(Get-Date -Format 'yyyyMMdd-HHmmss')"
+            New-Item -ItemType Directory -Path $BackupPath -Force | Out-Null
+            Copy-Item -Path "$AppPath\*" -Destination $BackupPath -Recurse -Force
+            Write-Host "Backup created at: $BackupPath"
+          }
+        } -ArgumentList $AppPath
+        
+        # 4b. Stop PM2 process
+        Write-Host "Stopping PM2 process if running..."
+        Invoke-Command -Session $session -ScriptBlock {
+          param($AppName)
+          pm2 delete $AppName 2>$null
+        } -ArgumentList $AppName
+        
+        # 4c. Create directory and copy files
+        Invoke-Command -Session $session -ScriptBlock {
+          param($AppPath, $ArtifactPath)
+          New-Item -ItemType Directory -Path $AppPath -Force | Out-Null
+        } -ArgumentList $AppPath, $ArtifactPath
+        
+        # Copy files using Copy-Item with session
+        Copy-Item -Path "$ArtifactPath\*" -Destination $AppPath -ToSession $session -Recurse -Force
+        
+        # 4d. Install production dependencies
+        Write-Host "Installing production dependencies..."
+        Invoke-Command -Session $session -ScriptBlock {
+          param($AppPath)
+          Set-Location $AppPath
+          npm ci --production --no-fund --no-audit 2>&1
+        } -ArgumentList $AppPath
+        
+        # 4e. Create or update ecosystem.config.js
+        Invoke-Command -Session $session -ScriptBlock {
+          param($AppPath, $AppName, $Environment, $Port)
+          Set-Location $AppPath
+          
+          # Create logs directory
+          New-Item -ItemType Directory -Path "$AppPath\logs" -Force | Out-Null
+          
+          # Create ecosystem config with environment-specific settings
+          $ecosystemConfig = @"
+      module.exports = {
+        apps: [{
+          name: '$AppName-$Environment',
+          script: 'node_modules/next/dist/bin/next',
+          args: 'start',
+          env_$Environment: {
+            NODE_ENV: 'production',
+            PORT: $Port
+          },
+          watch: false,
+          autorestart: true,
+          max_memory_restart: '1G',
+          error_file: '$AppPath/logs/pm2-error.log',
+          out_file: '$AppPath/logs/pm2-out.log',
+          log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
+          merge_logs: true,
+          instances: 'max',
+          exec_mode: 'cluster',
+          kill_timeout: 5000,
+          listen_timeout: 3000,
+          wait_ready: true
+        }]
+      }
+      "@
+          Set-Content -Path "$AppPath\ecosystem.config.js" -Value $ecosystemConfig
+          
+          # Load environment variables
+          $envFile = "$AppPath\.env.$Environment"
+          if (Test-Path $envFile) {
+            Get-Content $envFile | ForEach-Object {
+              if ($_ -match '^([^=]+)=(.*)$') {
+                [Environment]::SetEnvironmentVariable($matches[1], $matches[2], 'Process')
+              }
+            }
+          }
+        } -ArgumentList $AppPath, $AppName, $Environment, $Port
+        
+        # 4f. Start PM2
+        Write-Host "Starting PM2 process..."
+        Invoke-Command -Session $session -ScriptBlock {
+          param($AppPath, $AppName, $Environment)
+          Set-Location $AppPath
+          
+          # Start the application
+          pm2 start ecosystem.config.js --env $Environment
+          pm2 save
+          
+          # Show status
+          pm2 list
+        } -ArgumentList $AppPath, $AppName, $Environment
+        
+        Write-Host "PM2 started successfully"
+        
+      } catch {
+        Write-Host "Error during deployment: $_"
+        throw
+      } finally {
+        Remove-PSSession $session
+      }
+      
+      Write-Host "Deployment to ${{ parameters.Environment }} completed!"
+    env:
+      ${{ parameters.ServerVariable }}: $(${{ parameters.ServerVariable }})
+      ${{ parameters.UserVariable }}: $(${{ parameters.UserVariable }})
+      ${{ parameters.PasswordVariable }}: $(${{ parameters.PasswordVariable }})
+      ${{ parameters.PathVariable }}: $(${{ parameters.PathVariable }})
+
+# 5. Health Check
+- task: PowerShell@2
+  displayName: 'Verify ${{ parameters.Environment }} deployment'
+  inputs:
+    targetType: 'inline'
+    script: |
+      $Server = '$($env:${{ parameters.ServerVariable }})'
+      $Port = ${{ parameters.Port }}
+      $HealthCheckUrl = '${{ parameters.HealthCheckUrl }}'
+      
+      Write-Host "Performing health check on: $Server`:$Port"
+      
+      # Wait for application to start
+      $maxAttempts = 12
+      $attempt = 1
+      $success = $false
+      
+      while ($attempt -le $maxAttempts -and -not $success) {
+        try {
+          $response = Invoke-WebRequest -Uri "http://$Server`:$Port$HealthCheckUrl" -UseBasicParsing -TimeoutSec 10
+          if ($response.StatusCode -eq 200) {
+            Write-Host "Health check passed! Status: $($response.StatusCode)"
+            $success = $true
+          } else {
+            Write-Host "Health check attempt $attempt failed. Status: $($response.StatusCode)"
+          }
+        } catch {
+          Write-Host "Health check attempt $attempt failed: $($_.Exception.Message)"
+        }
+        
+        if (-not $success) {
+          Start-Sleep -Seconds 5
+          $attempt++
+        }
+      }
+      
+      if ($success) {
+        Write-Host "##vso[task.setvariable variable=deploymentSuccess]true"
+        Write-Host "Deployment to ${{ parameters.Environment }} verified successfully!"
+      } else {
+        Write-Host "##vso[task.logissue type=error]Health check failed after $maxAttempts attempts"
+        throw "Deployment verification failed"
+      }
+    env:
+      ${{ parameters.ServerVariable }}: $(${{ parameters.ServerVariable }})
+
+# 6. Create deployment summary
+- task: PowerShell@2
+  displayName: 'Create deployment summary'
+  condition: always()
+  inputs:
+    targetType: 'inline'
+    script: |
+      $deploymentTime = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+      $commitId = "$(Build.SourceVersion)".Substring(0,7)
+      $commitMessage = "$(Build.SourceVersionMessage)"
+      
+      Write-Host "========================================"
+      Write-Host "DEPLOYMENT SUMMARY - ${{ parameters.Environment }}"
+      Write-Host "========================================"
+      Write-Host "Environment: ${{ parameters.Environment }}"
+      Write-Host "Deployment Time: $deploymentTime"
+      Write-Host "Commit: $commitId"
+      Write-Host "Message: $commitMessage"
+      Write-Host "Server: $($env:${{ parameters.ServerVariable }})"
+      Write-Host "Port: ${{ parameters.Port }}"
+      Write-Host "========================================"
+      
+      # Set deployment status variable for notifications
+      $status = if ('${{ parameters.Environment }}' -eq 'Production') { 'PRODUCTION_DEPLOYED' } else { 'DEVELOPMENT_DEPLOYED' }
+      Write-Host "##vso[task.setvariable variable=deploymentStatus]$status"
