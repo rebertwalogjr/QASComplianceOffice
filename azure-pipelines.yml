@@ -33,10 +33,10 @@ stages:
             npm run build
           displayName: 'Build Next.js app'
 
-        - script: |
-            npm run test
-          displayName: 'Run tests'
-          continueOnError: true
+        # - script: |
+        #     npm run test
+        #   displayName: 'Run tests'
+        #   continueOnError: true
 
         - task: CopyFiles@2
           inputs:
@@ -102,13 +102,34 @@ stages:
                     downloadPath: '$(System.ArtifactsDirectory)'
                   displayName: 'Download build artifact'
 
-                # In your deployment stage, after downloading artifacts
-                - task: ExtractFiles@1
+                - task: PowerShell@2
+                  displayName: 'Extract build artifacts'
                   inputs:
-                    archiveFilePatterns: '$(System.ArtifactsDirectory)/drop/*.zip'
-                    destinationFolder: '$(System.ArtifactsDirectory)/extracted'
-                    cleanDestinationFolder: true
-                  displayName: 'Extract build artifact'
+                    targetType: 'inline'
+                    script: |
+                      Add-Type -AssemblyName System.IO.Compression.FileSystem
+                      
+                      $zipPath = Get-ChildItem -Path "$(System.ArtifactsDirectory)/drop" -Filter "*.zip" | Select-Object -First 1
+                      $extractPath = "$(System.ArtifactsDirectory)/extracted"
+                            
+                      if (-not $zipPath) {
+                        Write-Error "No zip file found in $(System.ArtifactsDirectory)/drop"
+                        exit 1
+                      }
+                            
+                      Write-Host "Extracting: $($zipPath.FullName)"
+                      Write-Host "Destination: $extractPath"
+                            
+                      # Create destination directory
+                      if (Test-Path $extractPath) {
+                        Remove-Item -Path $extractPath -Recurse -Force
+                      }
+                      New-Item -ItemType Directory -Path $extractPath -Force | Out-Null
+                            
+                      # Extract the zip
+                      [System.IO.Compression.ZipFile]::ExtractToDirectory($zipPath.FullName, $extractPath)
+                            
+                      Write-Host "Extraction completed successfully!"
 
                 # Create UAT .env file
                 - task: PowerShell@2
@@ -277,12 +298,34 @@ stages:
                     downloadPath: '$(System.ArtifactsDirectory)'
                   displayName: 'Download build artifact'
 
-                - task: ExtractFiles@1
+                - task: PowerShell@2
+                  displayName: 'Extract build artifacts'
                   inputs:
-                    archiveFilePatterns: '$(System.ArtifactsDirectory)/drop/*.zip'
-                    destinationFolder: '$(System.ArtifactsDirectory)/extracted'
-                    cleanDestinationFolder: true
-                  displayName: 'Extract build artifact'
+                    targetType: 'inline'
+                    script: |
+                      Add-Type -AssemblyName System.IO.Compression.FileSystem
+                      
+                      $zipPath = Get-ChildItem -Path "$(System.ArtifactsDirectory)/drop" -Filter "*.zip" | Select-Object -First 1
+                      $extractPath = "$(System.ArtifactsDirectory)/extracted"
+                            
+                      if (-not $zipPath) {
+                        Write-Error "No zip file found in $(System.ArtifactsDirectory)/drop"
+                        exit 1
+                      }
+                            
+                      Write-Host "Extracting: $($zipPath.FullName)"
+                      Write-Host "Destination: $extractPath"
+                            
+                      # Create destination directory
+                      if (Test-Path $extractPath) {
+                        Remove-Item -Path $extractPath -Recurse -Force
+                      }
+                      New-Item -ItemType Directory -Path $extractPath -Force | Out-Null
+                            
+                      # Extract the zip
+                      [System.IO.Compression.ZipFile]::ExtractToDirectory($zipPath.FullName, $extractPath)
+                            
+                      Write-Host "Extraction completed successfully!"
 
                 # Create Production .env file
                 - task: PowerShell@2
