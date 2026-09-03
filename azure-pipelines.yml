@@ -119,169 +119,169 @@ stages:
                       hostname
 
                 # Download artifacts
-                # - task: DownloadBuildArtifacts@0
-                #   inputs:
-                #     buildType: 'current'
-                #     downloadType: 'single'
-                #     artifactName: 'drop'
-                #     downloadPath: '$(System.ArtifactsDirectory)'
-                #   displayName: 'Download build artifact'
+                - task: DownloadBuildArtifacts@0
+                  inputs:
+                    buildType: 'current'
+                    downloadType: 'single'
+                    artifactName: 'drop'
+                    downloadPath: '$(System.ArtifactsDirectory)'
+                  displayName: 'Download build artifact'
 
-                # - task: ExtractFiles@1
-                #   inputs:
-                #     archiveFilePatterns: '$(System.ArtifactsDirectory)/drop/*.zip'
-                #     destinationFolder: '$(System.ArtifactsDirectory)/extracted'
-                #     cleanDestinationFolder: true
-                #   displayName: 'Extract build artifact'
+                - task: ExtractFiles@1
+                  inputs:
+                    archiveFilePatterns: '$(System.ArtifactsDirectory)/drop/*.zip'
+                    destinationFolder: '$(System.ArtifactsDirectory)/extracted'
+                    cleanDestinationFolder: true
+                  displayName: 'Extract build artifact'
 
                 # Deploy to UAT Server
-                # - task: PowerShell@2
-                #   displayName: 'Deploy to UAT Windows Server'
-                #   inputs:
-                #     targetType: 'inline'
-                #     script: |
-                #       $Server = '$(Server)'
-                #       $User = '$(User)'
-                #       $Password = '$(Password)'
-                #       $DeploymentPath = '$(Path)'
-                #       $AppName = '$(appName)'
-                #       $Environment = 'uat'
-                #       $Port = '$(Port)'
-                #       $SourcePath = "$(System.ArtifactsDirectory)/extracted"
+                - task: PowerShell@2
+                  displayName: 'Deploy to UAT Windows Server'
+                  inputs:
+                    targetType: 'inline'
+                    script: |
+                      $Server = '$(Server)'
+                      $User = '$(User)'
+                      $Password = '$(Password)'
+                      $DeploymentPath = '$(Path)'
+                      $AppName = '$(appName)'
+                      $Environment = 'uat'
+                      $Port = '$(Port)'
+                      $SourcePath = "$(System.ArtifactsDirectory)/extracted"
                       
-                #       Write-Host "Deploying to UAT Server: $Server"
-                #       Write-Host "Source path on agent: $SourcePath"
+                      Write-Host "Deploying to UAT Server: $Server"
+                      Write-Host "Source path on agent: $SourcePath"
 
-                #       # Create session
-                #       $securePass = ConvertTo-SecureString $Password -AsPlainText -Force
-                #       $cred = New-Object System.Management.Automation.PSCredential($User, $securePass)
-                #       $session = New-PSSession -ComputerName $Server -Credential $cred -ErrorAction Stop
+                      # Create session
+                      $securePass = ConvertTo-SecureString $Password -AsPlainText -Force
+                      $cred = New-Object System.Management.Automation.PSCredential($User, $securePass)
+                      $session = New-PSSession -ComputerName $Server -Credential $cred -ErrorAction Stop
 
-                #       try {
-                #         $AppPath = "$DeploymentPath\$AppName"
+                      try {
+                        $AppPath = "$DeploymentPath\$AppName"
 
-                #         # Stop PM2
-                #         Invoke-Command -Session $session -ScriptBlock {
-                #           param($AppName)
-                #           pm2 delete $AppName 2>$null
-                #         } -ArgumentList $AppName
+                        # Stop PM2
+                        Invoke-Command -Session $session -ScriptBlock {
+                          param($AppName)
+                          pm2 delete $AppName 2>$null
+                        } -ArgumentList $AppName
 
-                #         # Create destination directory
-                #         Invoke-Command -Session $session -ScriptBlock {
-                #           param($AppPath)
-                #           New-Item -ItemType Directory -Path $AppPath -Force | Out-Null
-                #         } -ArgumentList $AppPath
+                        # Create destination directory
+                        Invoke-Command -Session $session -ScriptBlock {
+                          param($AppPath)
+                          New-Item -ItemType Directory -Path $AppPath -Force | Out-Null
+                        } -ArgumentList $AppPath
 
-                #         # Copy files to remote server
-                #         Write-Host "Copying files to $Server..."
-                #         Copy-Item -Path "$SourcePath/*" -Destination $AppPath -ToSession $session -Recurse -Force
+                        # Copy files to remote server
+                        Write-Host "Copying files to $Server..."
+                        Copy-Item -Path "$SourcePath/*" -Destination $AppPath -ToSession $session -Recurse -Force
 
-                #         # Remote work transaction on Windows Server
-                #         Invoke-Command -Session $session -ScriptBlock {
-                #           param($AppPath, $AppName, $Environment, $Port, $DB_URL, $DB_HOST, $DB_NAME, $DB_PASSWORD, $DB_PORT, $DB_USER, $FILE_PATH, $NEXTAUTH_SECRET, $NEXTAUTH_URL)
+                        # Remote work transaction on Windows Server
+                        Invoke-Command -Session $session -ScriptBlock {
+                          param($AppPath, $AppName, $Environment, $Port, $DB_URL, $DB_HOST, $DB_NAME, $DB_PASSWORD, $DB_PORT, $DB_USER, $FILE_PATH, $NEXTAUTH_SECRET, $NEXTAUTH_URL)
                         
-                #           Set-Location $AppPath
+                          Set-Location $AppPath
 
-                #           # 1. Install dependencies
-                #           Write-Host "Installing dependencies..."
-                #           npm ci --production --no-fund --no-audit
+                          # 1. Install dependencies
+                          Write-Host "Installing dependencies..."
+                          npm ci --production --no-fund --no-audit
 
-                #           # 2. Create .env file on the server
-                #           Write-Host "Creating .env.$Environment file..."
-                #           $envFile = "$AppPath\.env.$Environment"
-                #           Copy-Item "$AppPath\.env.template" $envFile
-                #           Add-Content $envFile "`n# $Environment Environment Variables"
-                #           Add-Content $envFile "DATABASE_URL=$DB_URL"
-                #           Add-Content $envFile "DB_HOST=$DB_HOST"
-                #           Add-Content $envFile "DB_NAME=$DB_NAME"
-                #           Add-Content $envFile "DB_PASSWORD=$DB_PASSWORD"
-                #           Add-Content $envFile "DB_PORT=$DB_PORT"
-                #           Add-Content $envFile "DB_USER=$DB_USER"
-                #           Add-Content $envFile "FILE_SERVER_PATH=$FILE_PATH"
-                #           Add-Content $envFile "NEXTAUTH_SECRET=$NEXTAUTH_SECRET"
-                #           Add-Content $envFile "NEXTAUTH_URL=$NEXTAUTH_URL"
-                #           Add-Content $envFile "PORT=$Port"
-                #           Add-Content $envFile "APP_ENVIRONMENT=$Environment"
-                #           Write-Host "Created .env file on server"
+                          # 2. Create .env file on the server
+                          Write-Host "Creating .env.$Environment file..."
+                          $envFile = "$AppPath\.env.$Environment"
+                          Copy-Item "$AppPath\.env.template" $envFile
+                          Add-Content $envFile "`n# $Environment Environment Variables"
+                          Add-Content $envFile "DATABASE_URL=$DB_URL"
+                          Add-Content $envFile "DB_HOST=$DB_HOST"
+                          Add-Content $envFile "DB_NAME=$DB_NAME"
+                          Add-Content $envFile "DB_PASSWORD=$DB_PASSWORD"
+                          Add-Content $envFile "DB_PORT=$DB_PORT"
+                          Add-Content $envFile "DB_USER=$DB_USER"
+                          Add-Content $envFile "FILE_SERVER_PATH=$FILE_PATH"
+                          Add-Content $envFile "NEXTAUTH_SECRET=$NEXTAUTH_SECRET"
+                          Add-Content $envFile "NEXTAUTH_URL=$NEXTAUTH_URL"
+                          Add-Content $envFile "PORT=$Port"
+                          Add-Content $envFile "APP_ENVIRONMENT=$Environment"
+                          Write-Host "Created .env file on server"
 
-                #           # 3. Stop PM2
-                #           Write-Host "Stopping PM2 process..."
-                #           pm2 delete $AppName 2>$null
+                          # 3. Stop PM2
+                          Write-Host "Stopping PM2 process..."
+                          pm2 delete $AppName 2>$null
 
-                #           # 4. Create ecosystem config
-                #           Write-Host "Creating ecosystem.config.js..."
-                #           New-Item -ItemType Directory -Path "$AppPath\logs" -Force | Out-Null
+                          # 4. Create ecosystem config
+                          Write-Host "Creating ecosystem.config.js..."
+                          New-Item -ItemType Directory -Path "$AppPath\logs" -Force | Out-Null
 
-                #           $config = @"
-                #             module.exports = {
-                #               apps: [{
-                #               name: '$AppName-$Environment',
-                #               script: 'node_modules/next/dist/bin/next',
-                #               args: 'start',
-                #               env_$Environment: {
-                #                 NODE_ENV: 'production',
-                #                 PORT: $Port
-                #               },
-                #               watch: false,
-                #               autorestart: true,
-                #               max_memory_restart: '1G',
-                #               error_file: '$AppPath/logs/pm2-error.log',
-                #               out_file: '$AppPath/logs/pm2-out.log',
-                #               instances: 'max',
-                #               exec_mode: 'cluster'
-                #               }]
-                #             }
-                #             "@
+                          $config = @"
+                            module.exports = {
+                              apps: [{
+                              name: '$AppName-$Environment',
+                              script: 'node_modules/next/dist/bin/next',
+                              args: 'start',
+                              env_$Environment: {
+                                NODE_ENV: 'production',
+                                PORT: $Port
+                              },
+                              watch: false,
+                              autorestart: true,
+                              max_memory_restart: '1G',
+                              error_file: '$AppPath/logs/pm2-error.log',
+                              out_file: '$AppPath/logs/pm2-out.log',
+                              instances: 'max',
+                              exec_mode: 'cluster'
+                              }]
+                            }
+                            "@
 
-                #           Set-Content -Path "$AppPath\ecosystem.config.js" -Value $config
+                          Set-Content -Path "$AppPath\ecosystem.config.js" -Value $config
 
-                #           # 5. Start PM2
-                #           Write-Host "Starting PM2..."
-                #           pm2 start ecosystem.config.js --env $Environment
-                #           pm2 save
-                #           pm2 list
+                          # 5. Start PM2
+                          Write-Host "Starting PM2..."
+                          pm2 start ecosystem.config.js --env $Environment
+                          pm2 save
+                          pm2 list
 
-                #         } -ArgumentList $AppPath, $AppName, $Environment, $Port, `
-                #           $(DATABASE_URL), $(DB_HOST), $(DB_NAME), $(DB_PASSWORD), $(DB_PORT), $(DB_USER), `
-                #           $(FILE_SERVER_PATH), $(NEXTAUTH_SECRET), $(NEXTAUTH_URL)
+                        } -ArgumentList $AppPath, $AppName, $Environment, $Port, `
+                          $(DATABASE_URL), $(DB_HOST), $(DB_NAME), $(DB_PASSWORD), $(DB_PORT), $(DB_USER), `
+                          $(FILE_SERVER_PATH), $(NEXTAUTH_SECRET), $(NEXTAUTH_URL)
 
-                #       } finally {
-                #         Remove-PSSession $session
-                #       }
+                      } finally {
+                        Remove-PSSession $session
+                      }
 
-                #       Write-Host "UAT Deployment completed!"
+                      Write-Host "UAT Deployment completed!"
 
-                # # Health Check
-                # - task: PowerShell@2
-                #   displayName: 'Verify UAT deployment'
-                #   inputs:
-                #     targetType: 'inline'
-                #     script: |
-                #       $Server = '$(Server)'
-                #       $Port = $(Port)
-                #       $maxAttempts = 12
-                #       $attempt = 1
-                #       $success = $false
+                # Health Check
+                - task: PowerShell@2
+                  displayName: 'Verify UAT deployment'
+                  inputs:
+                    targetType: 'inline'
+                    script: |
+                      $Server = '$(Server)'
+                      $Port = $(Port)
+                      $maxAttempts = 12
+                      $attempt = 1
+                      $success = $false
 
-                #       while ($attempt -le $maxAttempts -and -not $success) {
-                #         try {
-                #           $response = Invoke-WebRequest -Uri "http://$Server`:$Port/api/health" -UseBasicParsing -TimeoutSec 10
-                #           if ($response.StatusCode -eq 200) {
-                #             Write-Host "Health check passed!"
-                #             $success = $true
-                #           }
-                #         } catch {
-                #           Write-Host "Attempt $attempt failed: $($_.Exception.Message)"
-                #         }
-                #         if (-not $success) {
-                #           Start-Sleep -Seconds 5
-                #           $attempt++
-                #         }
-                #       }
+                      while ($attempt -le $maxAttempts -and -not $success) {
+                        try {
+                          $response = Invoke-WebRequest -Uri "http://$Server`:$Port/api/health" -UseBasicParsing -TimeoutSec 10
+                          if ($response.StatusCode -eq 200) {
+                            Write-Host "Health check passed!"
+                            $success = $true
+                          }
+                        } catch {
+                          Write-Host "Attempt $attempt failed: $($_.Exception.Message)"
+                        }
+                        if (-not $success) {
+                          Start-Sleep -Seconds 5
+                          $attempt++
+                        }
+                      }
                 
-                #       if (-not $success) {
-                #         throw "Deployment verification failed"
-                #       }
+                      if (-not $success) {
+                        throw "Deployment verification failed"
+                      }
 
 
   - stage: Deploy_Production
