@@ -98,11 +98,14 @@ stages:
           runOnce:
             deploy:
               steps:
-                - script: |
-                    Write-Host "Agent OS: $(Agent.OS)"
-                    Write-Host "Agent Name: $(Agent.Name)"
-                    hostname
+                - task: PowerShell@2
                   displayName: 'Verify Target Machine'
+                  inputs:
+                    targetType: 'inline'
+                    script: |
+                      Write-Host "Agent OS: $(Agent.OS)"
+                      Write-Host "Agent Name: $(Agent.Name)"
+                      hostname
 
                 # Download artifacts
                 # - task: DownloadBuildArtifacts@0
