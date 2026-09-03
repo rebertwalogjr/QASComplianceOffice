@@ -101,7 +101,7 @@ stages:
                     echo Agent OS: %AGENT_OS%
                     echo Agent Name: %AGENT_NAME%
                     echo ==== PATH ====
-                    echo %PATH%
+                    echo %Path%
                     echo ===== SYSTEMROOT =====
                     echo %SYSTEMROOT%
                     echo ==== PowerShell ====
