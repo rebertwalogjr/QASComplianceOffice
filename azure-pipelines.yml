@@ -96,6 +96,13 @@ stages:
           runOnce:
             deploy:
               steps:
+                - script: |
+                    echo Agent OS: %AGENT_OS%
+                    echo Agent Name: %AGENT_NAME%
+                    hostname
+                    C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -Command "$PSVersionTable"
+                  displayName: 'Verify agent'
+                  
                 - task: PowerShell@2
                   displayName: 'Verify Target Machine'
                   inputs:
