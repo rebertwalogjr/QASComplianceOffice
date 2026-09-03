@@ -102,15 +102,18 @@ stages:
                     echo Agent Name: %AGENT_NAME%
                     echo ==== PATH ====
                     echo %PATH%
+                    echo ===== SYSTEMROOT =====
+                    echo %SYSTEMROOT%
                     echo ==== PowerShell ====
                     where powershell
                     C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -Command "$PSVersionTable"
-                  displayName: 'Diagnose Agent'
+                  displayName: 'Agent Diagnostics'
 
                 - task: PowerShell@2
                   displayName: 'Verify Target Machine'
                   inputs:
                     targetType: 'inline'
+                    pwsh: true
                     script: |
                       Write-Host "Agent OS: $(Agent.OS)"
                       Write-Host "Agent Name: $(Agent.Name)"
