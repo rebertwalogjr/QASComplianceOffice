@@ -97,12 +97,16 @@ stages:
             deploy:
               steps:
                 - script: |
+                    echo ==== Agent ====
                     echo Agent OS: %AGENT_OS%
                     echo Agent Name: %AGENT_NAME%
-                    hostname
+                    echo ==== PATH ====
+                    echo %PATH%
+                    echo ==== PowerShell ====
+                    where powershell
                     C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -Command "$PSVersionTable"
-                  displayName: 'Verify agent'
-                  
+                  displayName: 'Diagnose Agent'
+
                 - task: PowerShell@2
                   displayName: 'Verify Target Machine'
                   inputs:
