@@ -102,41 +102,54 @@ stages:
                     downloadPath: '$(System.ArtifactsDirectory)'
                   displayName: 'Download build artifact'
 
-                - task: PowerShell@2
-                  displayName: 'Extract build artifacts'
+                - script: |
+                    sudo apt-get update
+                    sudo apt-get intall -y unzip
+                  displayName: 'Install unzip'
+
+                - task: ExtractFiles@1
                   inputs:
-                    targetType: 'inline'
-                    pwsh: false
-                    script: |
-                      Add-Type -AssemblyName System.IO.Compression.FileSystem
+                    archiveFilePatterns: '$(System.ArtifactsDirectory)/drop/*.zip'
+                    destinationFolder: '$(System.ArtifactsDirectory)/extracted'
+                    cleanDestinationFolder: true
+                  displayName: 'Extract build artifact'
+
+                # - task: PowerShell@2
+                #   displayName: 'Extract build artifacts'
+                #   inputs:
+                #     targetType: 'inline'
+                #     pwsh: false
+                #     script: |
+                #       Add-Type -AssemblyName System.IO.Compression.FileSystem
                       
-                      $zipPath = Get-ChildItem -Path "$(System.ArtifactsDirectory)/drop" -Filter "*.zip" | Select-Object -First 1
-                      $extractPath = "$(System.ArtifactsDirectory)/extracted"
+                #       $zipPath = Get-ChildItem -Path "$(System.ArtifactsDirectory)/drop" -Filter "*.zip" | Select-Object -First 1
+                #       $extractPath = "$(System.ArtifactsDirectory)/extracted"
                             
-                      if (-not $zipPath) {
-                        Write-Error "No zip file found in $(System.ArtifactsDirectory)/drop"
-                        exit 1
-                      }
+                #       if (-not $zipPath) {
+                #         Write-Error "No zip file found in $(System.ArtifactsDirectory)/drop"
+                #         exit 1
+                #       }
                             
-                      Write-Host "Extracting: $($zipPath.FullName)"
-                      Write-Host "Destination: $extractPath"
+                #       Write-Host "Extracting: $($zipPath.FullName)"
+                #       Write-Host "Destination: $extractPath"
                             
-                      # Create destination directory
-                      if (Test-Path $extractPath) {
-                        Remove-Item -Path $extractPath -Recurse -Force
-                      }
-                      New-Item -ItemType Directory -Path $extractPath -Force | Out-Null
+                #       # Create destination directory
+                #       if (Test-Path $extractPath) {
+                #         Remove-Item -Path $extractPath -Recurse -Force
+                #       }
+                #       New-Item -ItemType Directory -Path $extractPath -Force | Out-Null
                             
-                      # Extract the zip
-                      [System.IO.Compression.ZipFile]::ExtractToDirectory($zipPath.FullName, $extractPath)
+                #       # Extract the zip
+                #       [System.IO.Compression.ZipFile]::ExtractToDirectory($zipPath.FullName, $extractPath)
                             
-                      Write-Host "Extraction completed successfully!"
+                #       Write-Host "Extraction completed successfully!"
 
                 # Create UAT .env file
                 - task: PowerShell@2
                   displayName: 'Create UAT .env file'
                   inputs:
                     targetType: 'inline'
+                    pwsh: false
                     script: |
                       $envFile = "$(System.ArtifactsDirectory)/extracted/.env.uat"
                       Copy-Item "$(System.ArtifactsDirectory)/extracted/.env.template" $envFile
@@ -157,6 +170,7 @@ stages:
                   displayName: 'Deploy to UAT Windows Server'
                   inputs:
                     targetType: 'inline'
+                    pwsh: false
                     script: |
                       $Server = '$(Server)'
                       $User = '$(User)'
@@ -248,6 +262,7 @@ stages:
                   displayName: 'Verify UAT deployment'
                   inputs:
                     targetType: 'inline'
+                    pwsh: false
                     script: |
                       $Server = '$(Server)'
                       $Port = $(Port)
@@ -299,41 +314,54 @@ stages:
                     downloadPath: '$(System.ArtifactsDirectory)'
                   displayName: 'Download build artifact'
 
-                - task: PowerShell@2
-                  displayName: 'Extract build artifacts'
+                - script: |
+                    sudo apt-get update
+                    sudo apt-get intall -y unzip
+                  displayName: 'Install unzip'
+
+                - task: ExtractFiles@1
                   inputs:
-                    targetType: 'inline'
-                    pwsh: false
-                    script: |
-                      Add-Type -AssemblyName System.IO.Compression.FileSystem
+                    archiveFilePatterns: '$(System.ArtifactsDirectory)/drop/*.zip'
+                    destinationFolder: '$(System.ArtifactsDirectory)/extracted'
+                    cleanDestinationFolder: true
+                  displayName: 'Extract build artifact'
+
+                # - task: PowerShell@2
+                #   displayName: 'Extract build artifacts'
+                #   inputs:
+                #     targetType: 'inline'
+                #     pwsh: false
+                #     script: |
+                #       Add-Type -AssemblyName System.IO.Compression.FileSystem
                       
-                      $zipPath = Get-ChildItem -Path "$(System.ArtifactsDirectory)/drop" -Filter "*.zip" | Select-Object -First 1
-                      $extractPath = "$(System.ArtifactsDirectory)/extracted"
+                #       $zipPath = Get-ChildItem -Path "$(System.ArtifactsDirectory)/drop" -Filter "*.zip" | Select-Object -First 1
+                #       $extractPath = "$(System.ArtifactsDirectory)/extracted"
                             
-                      if (-not $zipPath) {
-                        Write-Error "No zip file found in $(System.ArtifactsDirectory)/drop"
-                        exit 1
-                      }
+                #       if (-not $zipPath) {
+                #         Write-Error "No zip file found in $(System.ArtifactsDirectory)/drop"
+                #         exit 1
+                #       }
                             
-                      Write-Host "Extracting: $($zipPath.FullName)"
-                      Write-Host "Destination: $extractPath"
+                #       Write-Host "Extracting: $($zipPath.FullName)"
+                #       Write-Host "Destination: $extractPath"
                             
-                      # Create destination directory
-                      if (Test-Path $extractPath) {
-                        Remove-Item -Path $extractPath -Recurse -Force
-                      }
-                      New-Item -ItemType Directory -Path $extractPath -Force | Out-Null
+                #       # Create destination directory
+                #       if (Test-Path $extractPath) {
+                #         Remove-Item -Path $extractPath -Recurse -Force
+                #       }
+                #       New-Item -ItemType Directory -Path $extractPath -Force | Out-Null
                             
-                      # Extract the zip
-                      [System.IO.Compression.ZipFile]::ExtractToDirectory($zipPath.FullName, $extractPath)
+                #       # Extract the zip
+                #       [System.IO.Compression.ZipFile]::ExtractToDirectory($zipPath.FullName, $extractPath)
                             
-                      Write-Host "Extraction completed successfully!"
+                #       Write-Host "Extraction completed successfully!"
 
                 # Create Production .env file
                 - task: PowerShell@2
                   displayName: 'Create Production .env file'
                   inputs:
                     targetType: 'inline'
+                    pwsh: false
                     script: |
                       $envFile = "$(System.ArtifactsDirectory)/extracted/.env.prod"
                       Copy-Item "$(System.ArtifactsDirectory)/extracted/.env.template" $envFile
@@ -354,6 +382,7 @@ stages:
                   displayName: 'Deploy to Production Windows Server'
                   inputs:
                     targetType: 'inline'
+                    pwsh: false
                     script: |
                       $Server = '$(Server)'
                       $User = '$(User)'
@@ -457,6 +486,7 @@ stages:
                   displayName: 'Verify Production deployment'
                   inputs:
                     targetType: 'inline'
+                    pwsh: false
                     script: |
                       $Server = '$(Server)'
                       $Port = $(Port)
