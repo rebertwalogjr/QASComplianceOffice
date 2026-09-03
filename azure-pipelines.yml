@@ -113,7 +113,6 @@ stages:
                   displayName: 'Verify Target Machine'
                   inputs:
                     targetType: 'inline'
-                    pwsh: true
                     script: |
                       Write-Host "Agent OS: $(Agent.OS)"
                       Write-Host "Agent Name: $(Agent.Name)"
