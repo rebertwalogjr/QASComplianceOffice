@@ -44,7 +44,6 @@ stages:
             Contents: |
               .next/**
               public/**
-              node_modules/**
               package.json
               package-lock.json
               ecosystem.config.js
@@ -64,10 +63,19 @@ stages:
             echo $(Build.SourceBranchName) > $(Build.ArtifactStagingDirectory)/standalone/BRANCH.txt
           displayName: 'Store branch info'
 
+        - task: ArchiveFiles@2
+          inputs:
+            rootFolderOrFile: '$(System.DefaultWorkingDirectory)'
+            includeRootFolder: false
+            archiveType: 'zip'
+            archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+            replaceExistingArchive: true
+          displayName: 'Compress files into a zip'
+
         - task: PublishBuildArtifacts@1
           inputs:
             PathtoPublish: '$(Build.ArtifactStagingDirectory)/standalone'
-            ArtifactName: 'nextjs-app'
+            ArtifactName: 'drop'
             publishLocation: 'Container'
           displayName: 'Publish build artifact'
 
