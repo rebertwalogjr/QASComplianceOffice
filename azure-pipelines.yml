@@ -116,6 +116,7 @@ stages:
                   displayName: 'Create UAT .env file'
                   inputs:
                     targetType: 'inline'
+                    pwsh: true
                     script: |
                       $envFile = "$(System.ArtifactsDirectory)/extracted/.env.uat"
                       Copy-Item "$(System.ArtifactsDirectory)/extracted/.env.template" $envFile
@@ -136,6 +137,7 @@ stages:
                   displayName: 'Deploy to UAT Windows Server'
                   inputs:
                     targetType: 'inline'
+                    pwsh: true
                     script: |
                       $Server = '$(Server)'
                       $User = '$(User)'
@@ -227,6 +229,7 @@ stages:
                   displayName: 'Verify UAT deployment'
                   inputs:
                     targetType: 'inline'
+                    pwsh: true
                     script: |
                       $Server = '$(Server)'
                       $Port = $(Port)
@@ -292,6 +295,7 @@ stages:
                   displayName: 'Create Production .env file'
                   inputs:
                     targetType: 'inline'
+                    pwsh: true
                     script: |
                       $envFile = "$(System.ArtifactsDirectory)/extracted/.env.prod"
                       Copy-Item "$(System.ArtifactsDirectory)/extracted/.env.template" $envFile
@@ -312,6 +316,7 @@ stages:
                   displayName: 'Deploy to Production Windows Server'
                   inputs:
                     targetType: 'inline'
+                    pwsh: true
                     script: |
                       $Server = '$(Server)'
                       $User = '$(User)'
@@ -415,6 +420,7 @@ stages:
                   displayName: 'Verify Production deployment'
                   inputs:
                     targetType: 'inline'
+                    pwsh: true
                     script: |
                       $Server = '$(Server)'
                       $Port = $(Port)
