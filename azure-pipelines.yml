@@ -88,8 +88,8 @@ stages:
     jobs:
       - deployment: DeployToUAT
         displayName: 'Deploy to UAT Windows Server'
-        pool:
-          vmImage: 'windows-latest'
+        # pool:
+        #   vmImage: 'windows-latest'
         environment: 'uat'
         strategy:
           runOnce:
@@ -270,8 +270,8 @@ stages:
     jobs:
       - deployment: DeployToProd
         displayName: 'Deploy to Prod Windows Server'
-        pool:
-          vmImage: 'windows-latest'
+        # pool:
+        #   vmImage: 'windows-latest'
         environment: 'production'
         strategy:
           runOnce:
