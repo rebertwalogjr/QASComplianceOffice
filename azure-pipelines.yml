@@ -213,8 +213,8 @@ stages:
                           New-Item -ItemType Directory -Path "$AppPath\logs" -Force | Out-Null
 
                           $config = @"
-                            module.exports = {
-                              apps: [{
+                          module.exports = {
+                            apps: [{
                               name: '$AppName-$Environment',
                               script: 'node_modules/next/dist/bin/next',
                               args: 'start',
@@ -229,8 +229,8 @@ stages:
                               out_file: '$AppPath/logs/pm2-out.log',
                               instances: 'max',
                               exec_mode: 'cluster'
-                              }]
-                            }"@
+                            }]
+                          }"@
 
                           Set-Content -Path "$AppPath\ecosystem.config.js" -Value $config
 
@@ -243,7 +243,7 @@ stages:
                         } -ArgumentList $AppPath, $AppName, $Environment, $Port, `
                           $(DATABASE_URL), $(DB_HOST), $(DB_NAME), $(DB_PASSWORD), $(DB_PORT), $(DB_USER), `
                           $(FILE_SERVER_PATH), $(NEXTAUTH_SECRET), $(NEXTAUTH_URL)
-
+                          
                       } finally {
                         Remove-PSSession $session
                       }
