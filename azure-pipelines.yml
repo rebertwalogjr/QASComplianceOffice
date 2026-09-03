@@ -65,8 +65,8 @@ stages:
 
         - task: ArchiveFiles@2
           inputs:
-            rootFolderOrFile: '$(System.DefaultWorkingDirectory)'
-            includeRootFolder: false
+            rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/standalone'
+            includeRootFolder: true
             archiveType: 'zip'
             archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
             replaceExistingArchive: true
@@ -74,7 +74,7 @@ stages:
 
         - task: PublishBuildArtifacts@1
           inputs:
-            PathtoPublish: '$(Build.ArtifactStagingDirectory)/standalone'
+            PathtoPublish: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
             ArtifactName: 'drop'
             publishLocation: 'Container'
           displayName: 'Publish build artifact'
@@ -98,9 +98,17 @@ stages:
                   inputs:
                     buildType: 'current'
                     downloadType: 'single'
-                    artifactName: 'nextjs-app'
+                    artifactName: 'drop'
                     downloadPath: '$(System.ArtifactsDirectory)'
                   displayName: 'Download build artifact'
+
+                # In your deployment stage, after downloading artifacts
+                - task: ExtractFiles@1
+                  inputs:
+                    archiveFilePatterns: '$(System.ArtifactsDirectory)/drop/*.zip'
+                    destinationFolder: '$(System.ArtifactsDirectory)/extracted'
+                    cleanDestinationFolder: true
+                  displayName: 'Extract build artifact'
 
                 # Create UAT .env file
                 - task: PowerShell@2
@@ -108,8 +116,8 @@ stages:
                   inputs:
                     targetType: 'inline'
                     script: |
-                      $envFile = "$(System.ArtifactsDirectory)/nextjs-app/.env.uat"
-                      Copy-Item "$(System.ArtifactsDirectory)/nextjs-app/.env.template" $envFile
+                      $envFile = "$(System.ArtifactsDirectory)/extracted/.env.uat"
+                      Copy-Item "$(System.ArtifactsDirectory)/extracted/.env.template" $envFile
                       Add-Content $envFile "`n# UAT Environment Variables"
                       Add-Content $envFile "DATABASE_URL=$(DATABASE_URL)"
                       Add-Content $envFile "DB_HOST=$(DB_HOST)"
@@ -132,9 +140,9 @@ stages:
                       $User = '$(User)'
                       $Password = '$(Password)'
                       $DeploymentPath = '$(Path)'
-                      $AppName = '$(appName)
+                      $AppName = '$(appName)'
                       $Environment = 'uat'
-                      $Port = $(Port)
+                      $Port = '$(Port)'
                       
                       Write-Host "Deploying to UAT Server: $Server"
 
@@ -144,7 +152,7 @@ stages:
                       $session = New-PSSession -ComputerName $Server -Credential $cred -ErrorAction Stop
 
                       try {
-                        # Stop PM@
+                        # Stop PM2
                         Invoke-Command -Session $session -ScriptBlock {
                           param($AppName)
                           pm2 delete $AppName 2>$null
@@ -152,12 +160,14 @@ stages:
 
                         # Copy files
                         $AppPath = "$DeploymentPath\$AppName"
+                        $SourcePath = "$(System.ArtifactsDirectory)/extracted"
+
                         Invoke-Command -Session $session -ScriptBlock {
                           param($AppPath)
                           New-Item -ItemType Directory -Path $AppPath -Force | Out-Null
                         } -ArgumentList $AppPath
 
-                        Copy-Item -Path "$(System.ArtifactsDirectory)/nextjs-app/*" -Destination $AppPath -ToSession $session -Recurse -Force
+                        Copy-Item -Path "$SourcePath/*" -Destination $AppPath -ToSession $session -Recurse -Force
 
                         # Install dependencies
                         Invoke-Command -Session $session -ScriptBlock {
@@ -263,9 +273,16 @@ stages:
                   inputs:
                     buildType: 'current'
                     downloadType: 'single'
-                    artifactName: 'nextjs-app'
+                    artifactName: 'drop'
                     downloadPath: '$(System.ArtifactsDirectory)'
                   displayName: 'Download build artifact'
+
+                - task: ExtractFiles@1
+                  inputs:
+                    archiveFilePatterns: '$(System.ArtifactsDirectory)/drop/*.zip'
+                    destinationFolder: '$(System.ArtifactsDirectory)/extracted'
+                    cleanDestinationFolder: true
+                  displayName: 'Extract build artifact'
 
                 # Create Production .env file
                 - task: PowerShell@2
@@ -273,9 +290,9 @@ stages:
                   inputs:
                     targetType: 'inline'
                     script: |
-                      $envFile = "$(System.ArtifactsDirectory)/nextjs-app/.env.prod"
-                      Copy-Item "$(System.ArtifactsDirectory)/nextjs-app/.env.template" $envFile
-                      Add-Content $envFile "`n# UAT Environment Variables"
+                      $envFile = "$(System.ArtifactsDirectory)/extracted/.env.prod"
+                      Copy-Item "$(System.ArtifactsDirectory)/extracted/.env.template" $envFile
+                      Add-Content $envFile "`n# Production Environment Variables"
                       Add-Content $envFile "DATABASE_URL=$(DATABASE_URL)"
                       Add-Content $envFile "DB_HOST=$(DB_HOST)"
                       Add-Content $envFile "DB_NAME=$(DB_NAME)"
@@ -285,9 +302,9 @@ stages:
                       Add-Content $envFile "FILE_SERVER_PATH=$(FILE_SERVER_PATH)"
                       Add-Content $envFile "NEXTAUTH_SECRET=$(NEXTAUTH_SECRET)"
                       Add-Content $envFile "NEXTAUTH_URL=$(NEXTAUTH_URL)"
-                      Write-Host "Created .env.prod file for UAT environment"
+                      Write-Host "Created .env.prod file for Production environment"
 
-                # Deploy to UAT Server
+                # Deploy to production Server
                 - task: PowerShell@2
                   displayName: 'Deploy to Production Windows Server'
                   inputs:
@@ -297,18 +314,12 @@ stages:
                       $User = '$(User)'
                       $Password = '$(Password)'
                       $DeploymentPath = '$(Path)'
-                      $AppName = '$(appName)
-                      $Environment = 'uat'
-                      $Port = $(Port)
+                      $AppName = '$(appName)'
+                      $Environment = 'prod'
+                      $Port = '$(Port)'
                       
                       Write-Host "Deploying to Production Server: $Server"
                       Write-Host "WARNING: This is PRODUCTION deployment!"
-
-                      # Confirm production deployment
-                      $confirmation = Read-Host "Type 'DEPLOY PROD' to confirm production deployment"
-                      if ($confirmation -ne "DEPLOY PROD") {
-                        throw "Production deployment cancelled by user"
-                      }
 
                       # Create session
                       $securePass = ConvertTo-SecureString $Password -AsPlainText -Force
@@ -328,7 +339,7 @@ stages:
                           }
                         } -ArgumentList $AppPath
 
-                        # Stop PM@
+                        # Stop PM2
                         Invoke-Command -Session $session -ScriptBlock {
                           param($AppName)
                           pm2 delete $AppName 2>$null
@@ -336,12 +347,14 @@ stages:
 
                         # Copy files
                         $AppPath = "$DeploymentPath\$AppName"
+                        $SourcePath = "$(System.ArtifactsDirectory)/extracted"
+
                         Invoke-Command -Session $session -ScriptBlock {
                           param($AppPath)
                           New-Item -ItemType Directory -Path $AppPath -Force | Out-Null
                         } -ArgumentList $AppPath
 
-                        Copy-Item -Path "$(System.ArtifactsDirectory)/nextjs-app/*" -Destination $AppPath -ToSession $session -Recurse -Force
+                        Copy-Item -Path "$SourcePath/*" -Destination $AppPath -ToSession $session -Recurse -Force
 
                         # Install dependencies
                         Invoke-Command -Session $session -ScriptBlock {
