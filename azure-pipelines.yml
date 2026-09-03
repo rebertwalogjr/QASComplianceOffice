@@ -88,8 +88,6 @@ stages:
     jobs:
       - deployment: DeployToUAT
         displayName: 'Deploy to UAT Windows Server'
-        # pool:
-        #   vmImage: 'windows-latest'
         environment:
           name: uat
           resourceName: UAT_QASCO
