@@ -230,8 +230,7 @@ stages:
                               instances: 'max',
                               exec_mode: 'cluster'
                               }]
-                            }
-                            "@
+                            }"@
 
                           Set-Content -Path "$AppPath\ecosystem.config.js" -Value $config
 
