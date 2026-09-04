@@ -164,7 +164,7 @@ stages:
                       # ------------------------------------------------
                       # Configuration
                       # ------------------------------------------------
-                      $DeploymentPath = '$(Path)'
+                      $DeploymentPath = '$(DeploymentPath)'
                       $AppName = '$(appName)'
                       $Environment = 'uat'
                       $Port = '$(Port)'
@@ -197,7 +197,20 @@ stages:
                       # ------------------------------------------------
                       Write-Host "Stopping existing PM2 application..."
 
-                      pm2 delete $Pm2AppName 2>$null
+                      $pm2List = pm2 jlist 2>$null | ConvertFrom-Json
+                      $existingApp = $pm2List | Where-Object { $_.name -eq $Pm2AppName }
+
+                      if ($existingApp) {
+                        Write-Host "Found existing PM2 application '$Pm2AppName'. Deleting..."
+                        pm2 delete $Pm2AppName
+
+                        if ($LASTEXITCODE -ne 0) {
+                          throw "Failed to delete PM2 application '$Pm2AppName'."
+                        }
+                      }
+                      else {
+                        Write-Host "PM2 application '$Pm2AppName' does not exist. Nothing to stop."
+                      }
 
                       # ------------------------------------------------
                       # Create application directory
