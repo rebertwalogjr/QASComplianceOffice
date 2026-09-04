@@ -134,6 +134,8 @@ stages:
                     cleanDestinationFolder: true
                   displayName: 'Extract build artifact'
 
+                
+
                 # Deploy to UAT Server
                 - task: PowerShell@2
                   displayName: 'Deploy to UAT Windows Server'
@@ -182,6 +184,8 @@ stages:
                         
                           Set-Location $AppPath
 
+                          $Pm2AppName = "$AppName-$Environment"
+
                           # 1. Install dependencies
                           Write-Host "Installing dependencies..."
                           npm ci --production --no-fund --no-audit
@@ -206,31 +210,32 @@ stages:
 
                           # 3. Stop PM2
                           Write-Host "Stopping PM2 process..."
-                          pm2 delete $AppName 2>$null
+                          pm2 delete $Pm2AppName 2>$null
 
                           # 4. Create ecosystem config
                           Write-Host "Creating ecosystem.config.js..."
                           New-Item -ItemType Directory -Path "$AppPath\logs" -Force | Out-Null
 
-                          $config = @"
-                          module.exports = {
-                            apps: [{
-                              name: '$AppName-$Environment',
-                              script: 'node_modules/next/dist/bin/next',
-                              args: 'start',
-                              env_$Environment: {
-                                NODE_ENV: 'production',
-                                PORT: $Port
-                              },
-                              watch: false,
-                              autorestart: true,
-                              max_memory_restart: '1G',
-                              error_file: '$AppPath/logs/pm2-error.log',
-                              out_file: '$AppPath/logs/pm2-out.log',
-                              instances: 'max',
-                              exec_mode: 'cluster'
-                            }]
-                          }"@
+                          $config = @(
+                            "module.exports = {"
+                            " apps: [{"
+                            " name: '$Pm2AppName',"
+                            " script: 'node_modules/next/dist/bin/next',"
+                            " args: 'start',"
+                            " env_${Environment}: {"
+                            "   NODE_ENV: 'production',"
+                            "   PORT: $Port"
+                            " },"
+                            " watch: false,"
+                            " autorestart: true,"
+                            " max_memory_restart: '1G',"
+                            " error_file: '$AppPath/logs/pm2-error.log',"
+                            " out_file: '$AppPath/logs/pm2-out.log',"
+                            " instances: 'max',"
+                            " exec_mode: 'cluster'"
+                            " }]"
+                            "}"
+                          ) -join [Environment]::NewLine
 
                           Set-Content -Path "$AppPath\ecosystem.config.js" -Value $config
 
