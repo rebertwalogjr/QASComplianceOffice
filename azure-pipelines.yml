@@ -169,7 +169,7 @@ stages:
                       $Environment = 'uat'
                       $Port = '$(Port)'
 
-                      $SourcePath = "$(System.ArtifactsDirectory)/extracted"
+                      $SourcePath = "$(System.ArtifactsDirectory)/extracted/standalone"
                       $AppPath = Join-Path $DeploymentPath $AppName
                       $Pm2AppName = "$AppName-$Environment"
 
@@ -248,13 +248,13 @@ stages:
                       # ------------------------------------------------
                       # Install production dependencies
                       # ------------------------------------------------
-                      Write-Host "Installing production dependencies..."
+                      # Write-Host "Installing production dependencies..."
 
-                      npm ci --production --no-fund --no-audit
+                      # npm ci --production --no-fund --no-audit
 
-                      if ($LASTEXITCODE -ne 0) {
-                        throw "npm ci failed with exit code $LASTEXITCODE"
-                      }
+                      # if ($LASTEXITCODE -ne 0) {
+                      #   throw "npm ci failed with exit code $LASTEXITCODE"
+                      # }
 
                       # ------------------------------------------------
                       # Create .env.uat
@@ -300,7 +300,7 @@ stages:
                         "module.exports = {"
                         " apps: [{"
                         " name: '$Pm2AppName',"
-                        " script: 'node_modules/next/dist/bin/next',"
+                        " script: 'server.js',"
                         " args: 'start',"
                         " env_${Environment}: {"
                         "   NODE_ENV: 'production',"
