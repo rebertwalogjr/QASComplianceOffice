@@ -68,21 +68,6 @@ stages:
             OverWrite: true
           displayName: 'Copy public files'
 
-        # - task: CopyFiles@2
-        #   inputs:
-        #     SourceFolder: '$(System.DefaultWorkingDirectory)'
-        #     Contents: |
-        #       .next/**
-        #       public/**
-        #       package.json
-        #       package-lock.json
-        #       ecosystem.config.js
-        #       server.js
-        #       deploy-scripts/**
-        #     TargetFolder: '$(Build.ArtifactStagingDirectory)/standalone'
-        #     OverWrite: true
-        #   displayName: 'Prepare standalone build'
-
         - script: |
             echo "NODE_ENV=production" > $(Build.ArtifactStagingDirectory)/standalone/.env.template
             echo "PORT=3000" >> $(Build.ArtifactStagingDirectory)/standalone/.env.template
@@ -283,17 +268,6 @@ stages:
                       Set-Location $AppPath
 
                       # ------------------------------------------------
-                      # Install production dependencies
-                      # ------------------------------------------------
-                      # Write-Host "Installing production dependencies..."
-
-                      # npm ci --production --no-fund --no-audit
-
-                      # if ($LASTEXITCODE -ne 0) {
-                      #   throw "npm ci failed with exit code $LASTEXITCODE"
-                      # }
-
-                      # ------------------------------------------------
                       # Create .env.uat
                       # ------------------------------------------------
                       Write-Host "Creating .env.$Environment..."
@@ -333,13 +307,13 @@ stages:
                       # ------------------------------------------------
                       Write-Host "Creating ecosystem.config.js..."
 
+                      $Pm2LogPath = $AppPath -replace '\\', '/'
+
                       $config = @(
                         "module.exports = {"
                         " apps: [{"
                         " name: '$Pm2AppName',"
                         " script: 'server.js',"
-                        " cwd: '$AppPath',"
-                        " args: 'start',"
                         " env_${Environment}: {"
                         "   NODE_ENV: 'production',"
                         "   PORT: $Port"
@@ -347,8 +321,8 @@ stages:
                         " watch: false,"
                         " autorestart: true,"
                         " max_memory_restart: '1G',"
-                        " error_file: '$AppPath/logs/pm2-error.log',"
-                        " out_file: '$AppPath/logs/pm2-out.log',"
+                        " error_file: '$Pm2LogPath/logs/pm2-error.log',"
+                        " out_file: '$Pm2LogPath/logs/pm2-out.log',"
                         # " instances: 'max',"
                         # " exec_mode: 'cluster'"
                         " instances: '1',"
