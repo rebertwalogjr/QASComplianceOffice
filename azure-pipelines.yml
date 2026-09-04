@@ -161,12 +161,13 @@ stages:
 
                       try {
                         $AppPath = "$DeploymentPath\$AppName"
+                        $Pm2AppName = "$AppName-$Environment"
 
                         # Stop PM2
                         Invoke-Command -Session $session -ScriptBlock {
                           param($AppName)
-                          pm2 delete $AppName 2>$null
-                        } -ArgumentList $AppName
+                          pm2 delete $Pm2AppName 2>$null
+                        } -ArgumentList $Pm2AppName
 
                         # Create destination directory
                         Invoke-Command -Session $session -ScriptBlock {
@@ -178,13 +179,32 @@ stages:
                         Write-Host "Copying files to $Server..."
                         Copy-Item -Path "$SourcePath/*" -Destination $AppPath -ToSession $session -Recurse -Force
 
-                        # Remote work transaction on Windows Server
+                        # Remote deployment on Windows Server
                         Invoke-Command -Session $session -ScriptBlock {
-                          param($AppPath, $AppName, $Environment, $Port, $DB_URL, $DB_HOST, $DB_NAME, $DB_PASSWORD, $DB_PORT, $DB_USER, $FILE_PATH, $NEXTAUTH_SECRET, $NEXTAUTH_URL)
+                          param(
+                            $AppPath,
+                            $AppName,
+                            $Environment,
+                            $Port, 
+                            $DB_URL,
+                            $DB_HOST,
+                            $DB_NAME,
+                            $DB_PASSWORD,
+                            $DB_PORT, 
+                            $DB_USER,
+                            $FILE_PATH,
+                            $NEXTAUTH_SECRET,
+                            $NEXTAUTH_URL
+                          )
                         
                           Set-Location $AppPath
 
-                          $Pm2AppName = "$AppName-$Environment"
+                          Write-Host "========================================"
+                          Write-Host "Deploying $Pm2AppName"
+                          Write-Host "Path: $AppPath"
+                          Write-Host "Environment: $Environment"
+                          Write-Host "Port: $Port"
+                          Write-Host "========================================"
 
                           # 1. Install dependencies
                           Write-Host "Installing dependencies..."
@@ -193,7 +213,11 @@ stages:
                           # 2. Create .env file on the server
                           Write-Host "Creating .env.$Environment file..."
                           $envFile = "$AppPath\.env.$Environment"
-                          Copy-Item "$AppPath\.env.template" $envFile
+                          if (-not (Test-Path "$AppPath\.env.template")) {
+                            throw ".env.template was not found at $AppPath"
+                          }
+                          Copy-Item "$AppPath\.env.template" $envFile -Force
+
                           Add-Content $envFile "`n# $Environment Environment Variables"
                           Add-Content $envFile "DATABASE_URL=$DB_URL"
                           Add-Content $envFile "DB_HOST=$DB_HOST"
@@ -237,23 +261,53 @@ stages:
                             "}"
                           ) -join [Environment]::NewLine
 
-                          Set-Content -Path "$AppPath\ecosystem.config.js" -Value $config
+                          Set-Content -Path "$AppPath\ecosystem.config.js" -Value $config -Encoding UTF8
+                          Write-Host "ecosystem.config.js created."
 
                           # 5. Start PM2
                           Write-Host "Starting PM2..."
                           pm2 start ecosystem.config.js --env $Environment
+                          if ($LASTEXITCODE -ne 0) {
+                            throw "PM2 start failed with exit code $LASTEXITCODE"
+                          }
                           pm2 save
+                          Write-Host "PM2 process started successfully."
                           pm2 list
 
-                        } -ArgumentList $AppPath, $AppName, $Environment, $Port, `
-                          $(DATABASE_URL), $(DB_HOST), $(DB_NAME), $(DB_PASSWORD), $(DB_PORT), $(DB_USER), `
-                          $(FILE_SERVER_PATH), $(NEXTAUTH_SECRET), $(NEXTAUTH_URL)
+                        } -ArgumentList `
+                          $AppPath,
+                          $AppName,
+                          $Environment,
+                          $Port,
+                          $env:DATABASE_URL,
+                          $env:DB_HOST,
+                          $env:DB_NAME,
+                          $env:DB_PASSWORD,
+                          $env:DB_PORT,
+                          $env:DB_USER,
+                          $env:FILE_SERVER_PATH,
+                          $env:NEXTAUTH_SECRET,
+                          $env:NEXTAUTH_URL
                           
-                      } finally {
-                        Remove-PSSession $session
+                      }
+                      finally {
+                        if ($session) {
+                          Write-Host "Closing PowerShell session..."
+                          Remove-PSSession $session
+                        }
                       }
 
                       Write-Host "UAT Deployment completed!"
+                  env:
+                    DATABASE_URL: $(DATABASE_URL)
+                    DB_HOST: $(DB_HOST)
+                    DB_NAME: $(DB_NAME)
+                    DB_PASSWORD: $(DB_PASSWORD)
+                    DB_PORT: $(DB_PORT)
+                    DB_USER: $(DB_USER)
+                    FILE_SERVER_PATH: $(FILE_SERVER_PATH)
+                    NEXTAUTH_SECRET: $(NEXTAUTH_SECRET)
+                    NEXTAUTH_URL: $(NEXTAUTH_URL)
 
                 # Health Check
                 - task: PowerShell@2
