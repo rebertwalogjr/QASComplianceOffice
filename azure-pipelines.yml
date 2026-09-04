@@ -96,29 +96,43 @@ stages:
           runOnce:
             deploy:
               steps:
-                - script: |
-                    echo ==== Agent ====
-                    echo Agent OS: %AGENT_OS%
-                    echo Agent Name: %AGENT_NAME%
-                    echo ==== PATH ====
-                    echo %Path%
-                    echo ===== SYSTEMROOT =====
-                    echo %SYSTEMROOT%
-                    echo ==== PowerShell ====
-                    where powershell
-                    C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -Command "$PSVersionTable"
-                  displayName: 'Agent Diagnostics'
 
+                # ==================================================
+                # UAT Agent diagnostics
+                # ==================================================
                 - task: PowerShell@2
                   displayName: 'Verify Target Machine'
                   inputs:
                     targetType: 'inline'
                     script: |
+                      Write-Host "========================================"
+                      Write-Host "UAT Agent Diagnostics"
+                      Write-Host "========================================"
+
                       Write-Host "Agent OS: $(Agent.OS)"
                       Write-Host "Agent Name: $(Agent.Name)"
+                      Write-Host "Computer Name:"
                       hostname
 
+                      Write-Host ""
+                      Write-Host "PowerShell:"
+                      $PSVersionTable
+
+                      Write-Host ""
+                      Write-Host "Node:"
+                      node --version
+
+                      Write-Host ""
+                      Write-Host "NPM:"
+                      npm --version
+
+                      Write-Host ""
+                      Write-Host "PM2:"
+                      pm2 --version
+
+                # ==================================================
                 # Download artifacts
+                # ==================================================
                 - task: DownloadBuildArtifacts@0
                   inputs:
                     buildType: 'current'
@@ -127,6 +141,9 @@ stages:
                     downloadPath: '$(System.ArtifactsDirectory)'
                   displayName: 'Download build artifact'
 
+                # ==================================================
+                # Extract artifacts
+                # ==================================================
                 - task: ExtractFiles@1
                   inputs:
                     archiveFilePatterns: '$(System.ArtifactsDirectory)/drop/*.zip'
@@ -134,170 +151,184 @@ stages:
                     cleanDestinationFolder: true
                   displayName: 'Extract build artifact'
 
-                
-
+                # ==================================================
                 # Deploy to UAT Server
+                # ==================================================
                 - task: PowerShell@2
                   displayName: 'Deploy to UAT Windows Server'
                   inputs:
                     targetType: 'inline'
                     script: |
-                      $Server = '$(Server)'
-                      $User = '$(User)'
-                      $Password = '$(Password)'
+                      $ErrorActionPreference = 'Stop'
+
+                      # ------------------------------------------------
+                      # Configuration
+                      # ------------------------------------------------
                       $DeploymentPath = '$(Path)'
                       $AppName = '$(appName)'
                       $Environment = 'uat'
                       $Port = '$(Port)'
+
                       $SourcePath = "$(System.ArtifactsDirectory)/extracted"
+                      $AppPath = Join-Path $DeploymentPath $AppName
+                      $Pm2AppName = "$AppName-$Environment"
+
+                      Write-Host "========================================"
+                      Write-Host "UAT DEPLOYMENT"
+                      Write-Host "========================================"
+                      Write-Host "Computer : $env:COMPUTERNAME"
+                      Write-Host "App Name : $AppName"
+                      Write-Host "PM2 Name : $Pm2AppName"
+                      Write-Host "Environment : $Environment"
+                      Write-Host "Port : $Port"
+                      Write-Host "Source : $SourcePath"
+                      Write-Host "Destination : $AppPath"
+                      Write-Host "========================================"
                       
-                      Write-Host "Deploying to UAT Server: $Server"
-                      Write-Host "Source path on agent: $SourcePath"
-
-                      # Create session
-                      $securePass = ConvertTo-SecureString $Password -AsPlainText -Force
-                      $cred = New-Object System.Management.Automation.PSCredential($User, $securePass)
-                      $session = New-PSSession -ComputerName $Server -Credential $cred -ErrorAction Stop
-
-                      try {
-                        $AppPath = "$DeploymentPath\$AppName"
-                        $Pm2AppName = "$AppName-$Environment"
-
-                        # Stop PM2
-                        Invoke-Command -Session $session -ScriptBlock {
-                          param($AppName)
-                          pm2 delete $Pm2AppName 2>$null
-                        } -ArgumentList $Pm2AppName
-
-                        # Create destination directory
-                        Invoke-Command -Session $session -ScriptBlock {
-                          param($AppPath)
-                          New-Item -ItemType Directory -Path $AppPath -Force | Out-Null
-                        } -ArgumentList $AppPath
-
-                        # Copy files to remote server
-                        Write-Host "Copying files to $Server..."
-                        Copy-Item -Path "$SourcePath/*" -Destination $AppPath -ToSession $session -Recurse -Force
-
-                        # Remote deployment on Windows Server
-                        Invoke-Command -Session $session -ScriptBlock {
-                          param(
-                            $AppPath,
-                            $AppName,
-                            $Environment,
-                            $Port, 
-                            $DB_URL,
-                            $DB_HOST,
-                            $DB_NAME,
-                            $DB_PASSWORD,
-                            $DB_PORT, 
-                            $DB_USER,
-                            $FILE_PATH,
-                            $NEXTAUTH_SECRET,
-                            $NEXTAUTH_URL
-                          )
-                        
-                          Set-Location $AppPath
-
-                          Write-Host "========================================"
-                          Write-Host "Deploying $Pm2AppName"
-                          Write-Host "Path: $AppPath"
-                          Write-Host "Environment: $Environment"
-                          Write-Host "Port: $Port"
-                          Write-Host "========================================"
-
-                          # 1. Install dependencies
-                          Write-Host "Installing dependencies..."
-                          npm ci --production --no-fund --no-audit
-
-                          # 2. Create .env file on the server
-                          Write-Host "Creating .env.$Environment file..."
-                          $envFile = "$AppPath\.env.$Environment"
-                          if (-not (Test-Path "$AppPath\.env.template")) {
-                            throw ".env.template was not found at $AppPath"
-                          }
-                          Copy-Item "$AppPath\.env.template" $envFile -Force
-
-                          Add-Content $envFile "`n# $Environment Environment Variables"
-                          Add-Content $envFile "DATABASE_URL=$DB_URL"
-                          Add-Content $envFile "DB_HOST=$DB_HOST"
-                          Add-Content $envFile "DB_NAME=$DB_NAME"
-                          Add-Content $envFile "DB_PASSWORD=$DB_PASSWORD"
-                          Add-Content $envFile "DB_PORT=$DB_PORT"
-                          Add-Content $envFile "DB_USER=$DB_USER"
-                          Add-Content $envFile "FILE_SERVER_PATH=$FILE_PATH"
-                          Add-Content $envFile "NEXTAUTH_SECRET=$NEXTAUTH_SECRET"
-                          Add-Content $envFile "NEXTAUTH_URL=$NEXTAUTH_URL"
-                          Add-Content $envFile "PORT=$Port"
-                          Add-Content $envFile "APP_ENVIRONMENT=$Environment"
-                          Write-Host "Created .env file on server"
-
-                          # 3. Stop PM2
-                          Write-Host "Stopping PM2 process..."
-                          pm2 delete $Pm2AppName 2>$null
-
-                          # 4. Create ecosystem config
-                          Write-Host "Creating ecosystem.config.js..."
-                          New-Item -ItemType Directory -Path "$AppPath\logs" -Force | Out-Null
-
-                          $config = @(
-                            "module.exports = {"
-                            " apps: [{"
-                            " name: '$Pm2AppName',"
-                            " script: 'node_modules/next/dist/bin/next',"
-                            " args: 'start',"
-                            " env_${Environment}: {"
-                            "   NODE_ENV: 'production',"
-                            "   PORT: $Port"
-                            " },"
-                            " watch: false,"
-                            " autorestart: true,"
-                            " max_memory_restart: '1G',"
-                            " error_file: '$AppPath/logs/pm2-error.log',"
-                            " out_file: '$AppPath/logs/pm2-out.log',"
-                            " instances: 'max',"
-                            " exec_mode: 'cluster'"
-                            " }]"
-                            "}"
-                          ) -join [Environment]::NewLine
-
-                          Set-Content -Path "$AppPath\ecosystem.config.js" -Value $config -Encoding UTF8
-                          Write-Host "ecosystem.config.js created."
-
-                          # 5. Start PM2
-                          Write-Host "Starting PM2..."
-                          pm2 start ecosystem.config.js --env $Environment
-                          if ($LASTEXITCODE -ne 0) {
-                            throw "PM2 start failed with exit code $LASTEXITCODE"
-                          }
-                          pm2 save
-                          Write-Host "PM2 process started successfully."
-                          pm2 list
-
-                        } -ArgumentList `
-                          $AppPath,
-                          $AppName,
-                          $Environment,
-                          $Port,
-                          $env:DATABASE_URL,
-                          $env:DB_HOST,
-                          $env:DB_NAME,
-                          $env:DB_PASSWORD,
-                          $env:DB_PORT,
-                          $env:DB_USER,
-                          $env:FILE_SERVER_PATH,
-                          $env:NEXTAUTH_SECRET,
-                          $env:NEXTAUTH_URL
-                          
-                      }
-                      finally {
-                        if ($session) {
-                          Write-Host "Closing PowerShell session..."
-                          Remove-PSSession $session
-                        }
+                      # ------------------------------------------------
+                      # Validate source
+                      # ------------------------------------------------
+                      if (-not (Test-Path $SourcePath)) {
+                        throw "Source path does not exist: $SourcePath"
                       }
 
-                      Write-Host "UAT Deployment completed!"
+                      # ------------------------------------------------
+                      # Stop existing application
+                      # ------------------------------------------------
+                      Write-Host "Stopping existing PM2 application..."
+
+                      pm2 delete $Pm2AppName 2>$null
+
+                      # ------------------------------------------------
+                      # Create application directory
+                      # ------------------------------------------------
+                      Write-Host "Creating application directory..."
+
+                      New-Item -ItemType Directory -Path $AppPath -Force | Out-Null
+
+                      # ------------------------------------------------
+                      # Copy application files
+                      # ------------------------------------------------
+                      Write-Host "Copying application files..."
+
+                      Copy-Item -Path "$SourcePath/*" -Destination $AppPath -Recurse -Force
+
+                      Write-Host "Files copied successfully."
+
+                      # ------------------------------------------------
+                      # Validate application
+                      # ------------------------------------------------
+                      if (-not (Test-Path "$AppPath\package.json")) {
+                        throw "package.json not found at $AppPath"
+                      }
+
+                      if (-not (Test-Path "$AppPath\.env.template")) {
+                        throw ".env.template not found at $AppPath"
+                      }
+
+                       # ------------------------------------------------
+                      # Move to application directory
+                      # ------------------------------------------------
+                      Set-Location $AppPath
+
+                      # ------------------------------------------------
+                      # Install production dependencies
+                      # ------------------------------------------------
+                      Write-Host "Installing production dependencies..."
+
+                      npm ci --production --no-fund --no-audit
+
+                      if ($LASTEXITCODE -ne 0) {
+                        throw "npm ci failed with exit code $LASTEXITCODE"
+                      }
+
+                      # ------------------------------------------------
+                      # Create .env.uat
+                      # ------------------------------------------------
+                      Write-Host "Creating .env.$Environment..."
+
+                      $envFile = Join-Path $AppPath ".env.$Environment"
+
+                      if (-not (Test-Path "$AppPath\.env.template")) {
+                        throw ".env.template was not found at $AppPath"
+                      }
+
+                      Copy-Item "$AppPath\.env.template" $envFile -Force
+
+                      Add-Content $envFile ""
+                      Add-Content $envFile "# $Environment Environment Variables"
+                      Add-Content $envFile "DATABASE_URL=$DB_URL"
+                      Add-Content $envFile "DB_HOST=$DB_HOST"
+                      Add-Content $envFile "DB_NAME=$DB_NAME"
+                      Add-Content $envFile "DB_PASSWORD=$DB_PASSWORD"
+                      Add-Content $envFile "DB_PORT=$DB_PORT"
+                      Add-Content $envFile "DB_USER=$DB_USER"
+                      Add-Content $envFile "FILE_SERVER_PATH=$FILE_PATH"
+                      Add-Content $envFile "NEXTAUTH_SECRET=$NEXTAUTH_SECRET"
+                      Add-Content $envFile "NEXTAUTH_URL=$NEXTAUTH_URL"
+                      Add-Content $envFile "PORT=$Port"
+                      Add-Content $envFile "APP_ENVIRONMENT=$Environment"
+
+                      Write-Host ".env.$Environment created."
+
+                      # ------------------------------------------------
+                      # Create logs directory
+                      # ------------------------------------------------
+                      $LogsPath = Join-Path $AppPath "logs"
+                      New-Item -ItemType Directory -Path $LogsPath -Force | Out-Null
+
+                      # ------------------------------------------------
+                      # Create PM2 ecosystem configuration
+                      # ------------------------------------------------
+                      Write-Host "Creating ecosystem.config.js..."
+
+                      $config = @(
+                        "module.exports = {"
+                        " apps: [{"
+                        " name: '$Pm2AppName',"
+                        " script: 'node_modules/next/dist/bin/next',"
+                        " args: 'start',"
+                        " env_${Environment}: {"
+                        "   NODE_ENV: 'production',"
+                        "   PORT: $Port"
+                        " },"
+                        " watch: false,"
+                        " autorestart: true,"
+                        " max_memory_restart: '1G',"
+                        " error_file: '$AppPath/logs/pm2-error.log',"
+                        " out_file: '$AppPath/logs/pm2-out.log',"
+                        " instances: 'max',"
+                        " exec_mode: 'cluster'"
+                        " }]"
+                        "}"
+                      ) -join [Environment]::NewLine
+
+                      Set-Content -Path "$AppPath\ecosystem.config.js" -Value $config -Encoding UTF8
+                      Write-Host "ecosystem.config.js created."
+
+                      # ------------------------------------------------
+                      # Start PM2
+                      # ------------------------------------------------
+                      Write-Host "Starting PM2 application..."
+
+                      pm2 start ecosystem.config.js --env $Environment
+
+                      if ($LASTEXITCODE -ne 0) {
+                        throw "PM2 start failed with exit code $LASTEXITCODE"
+                      }
+
+                      Write-Host "Saving PM2 process list..."
+
+                      pm2 save
+
+                      Write-Host "PM2 status:"
+
+                      pm2 list
+
+                      Write-Host ""
+                      Write-Host "========================================"
+                      Write-Host "UAT DEPLOYMENT COMPLETED"
+                      Write-Host "========================================"
                   env:
                     DATABASE_URL: $(DATABASE_URL)
                     DB_HOST: $(DB_HOST)
@@ -309,37 +340,65 @@ stages:
                     NEXTAUTH_SECRET: $(NEXTAUTH_SECRET)
                     NEXTAUTH_URL: $(NEXTAUTH_URL)
 
+                # ==================================================
                 # Health Check
+                # ==================================================
                 - task: PowerShell@2
                   displayName: 'Verify UAT deployment'
                   inputs:
                     targetType: 'inline'
                     script: |
-                      $Server = '$(Server)'
+                      $ErrorActionPreference = 'Stop'
+
                       $Port = $(Port)
                       $maxAttempts = 12
                       $attempt = 1
                       $success = $false
 
+                      Write-Host "========================================"
+                      Write-Host "UAT HEALTH CHECK"
+                      Write-Host "========================================"
+
+                      Write-Host "Server: $env:COMPUTERNAME"
+                      Write-Host "Port: $Port"
+
                       while ($attempt -le $maxAttempts -and -not $success) {
                         try {
-                          $response = Invoke-WebRequest -Uri "http://$Server`:$Port/api/health" -UseBasicParsing -TimeoutSec 10
+                          Write-Host "Health check attempt $attempt/$maxAttempts..."
+
+                          $response = Invoke-WebRequest -Uri "http://localhost:$Port/api/health" -UseBasicParsing -TimeoutSec 10
+
                           if ($response.StatusCode -eq 200) {
                             Write-Host "Health check passed!"
+                            Write-Host "Status: $($response.StatusCode)"
+
                             $success = $true
                           }
                         } catch {
-                          Write-Host "Attempt $attempt failed: $($_.Exception.Message)"
+                          Write-Host "Attempt $attempt failed:"
+                          Write-Host $_.Exception.Message
                         }
                         if (-not $success) {
-                          Start-Sleep -Seconds 5
+                          if ($attempt -lt $maxAttempts) {
+                            Write-Host "Waiting 5 seconds..."
+                            Start-Sleep -Seconds 5
+                          }
+
                           $attempt++
                         }
                       }
                 
                       if (-not $success) {
-                        throw "Deployment verification failed"
+                        Write-Host ""
+                        Write-Host "PM2 status:"
+                        pm2 list
+
+                        throw "UAT deployment health check failed."
                       }
+
+                      Write-Host "========================================"
+                      Write-Host "UAT HEALTH CHECK PASSED"
+                      Write-Host "========================================"
 
 
   - stage: Deploy_Production
