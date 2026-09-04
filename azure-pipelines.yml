@@ -197,18 +197,19 @@ stages:
                       # ------------------------------------------------
                       Write-Host "Stopping existing PM2 application..."
 
-                      pm2 describe $Pm2AppName 2>&1 | Out-Null
+                      try {
+                        pm2 describe $Pm2AppName 2>&1 | Out-Null
 
-                      if ($LASTEXITCODE -eq 0) {
-                        Write-Host "Found existing PM2 application '$Pm2AppName'. Deleting..."
+                        if ($LASTEXITCODE -eq 0) {
+                          Write-Host "Found existing PM2 application '$Pm2AppName'. Deleting..."
 
-                        pm2 delete $Pm2AppName
+                          pm2 delete $Pm2AppName
 
-                        if ($LASTEXITCODE -ne 0) {
-                          throw "Failed to delete PM2 application '$Pm2AppName'."
+                          if ($LASTEXITCODE -ne 0) {
+                            throw "Failed to delete PM2 application '$Pm2AppName'."
+                          }
                         }
-                      }
-                      else {
+                      } catch {
                         Write-Host "PM2 application '$Pm2AppName' does not exist. Nothing to stop."
                       }
 
