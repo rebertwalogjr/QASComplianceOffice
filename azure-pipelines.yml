@@ -38,20 +38,50 @@ stages:
         #   displayName: 'Run tests'
         #   continueOnError: true
 
+        # ==================================================
+        # Prepare Next.js standalone build
+        # ==================================================
         - task: CopyFiles@2
           inputs:
-            SourceFolder: '$(System.DefaultWorkingDirectory)'
+            SourceFolder: '$(System.DefaultWorkingDirectory)/.next/standalone'
             Contents: |
-              .next/**
-              public/**
-              package.json
-              package-lock.json
-              ecosystem.config.js
-              server.js
-              deploy-scripts/**
+              **/*
             TargetFolder: '$(Build.ArtifactStagingDirectory)/standalone'
             OverWrite: true
-          displayName: 'Prepare standalone build'
+          displayName: 'Copy Next.js standalone build'
+
+        - task: CopyFiles@2
+          inputs:
+            SourceFolder: '$(System.DefaultWorkingDirectory)/.next/static'
+            Contents: |
+              **/*
+            TargetFolder: '$(Build.ArtifactStagingDirectory)/standalone/.next/static'
+            OverWrite: true
+          displayName: 'Copy Next.js static files'
+
+        - task: CopyFiles@2
+          inputs:
+            SourceFolder: '$(System.DefaultWorkingDirectory)/public'
+            Contents: |
+              **/*
+            TargetFolder: '$(Build.ArtifactStagingDirectory)/standalone/public'
+            OverWrite: true
+          displayName: 'Copy public files'
+
+        # - task: CopyFiles@2
+        #   inputs:
+        #     SourceFolder: '$(System.DefaultWorkingDirectory)'
+        #     Contents: |
+        #       .next/**
+        #       public/**
+        #       package.json
+        #       package-lock.json
+        #       ecosystem.config.js
+        #       server.js
+        #       deploy-scripts/**
+        #     TargetFolder: '$(Build.ArtifactStagingDirectory)/standalone'
+        #     OverWrite: true
+        #   displayName: 'Prepare standalone build'
 
         - script: |
             echo "NODE_ENV=production" > $(Build.ArtifactStagingDirectory)/standalone/.env.template
@@ -63,6 +93,9 @@ stages:
             echo $(Build.SourceBranchName) > $(Build.ArtifactStagingDirectory)/standalone/BRANCH.txt
           displayName: 'Store branch info'
 
+        # ==================================================
+        # Archive standalone build files
+        # ==================================================
         - task: ArchiveFiles@2
           inputs:
             rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/standalone'
@@ -197,21 +230,40 @@ stages:
                       # ------------------------------------------------
                       Write-Host "Stopping existing PM2 application..."
 
-                      try {
-                        pm2 describe $Pm2AppName 2>&1 | Out-Null
+                      $pm2Output = & pm2 describe $Pm2AppName 2>&1
+                      $pm2ExitCode = $LASTEXITCODE
 
-                        if ($LASTEXITCODE -eq 0) {
-                          Write-Host "Found existing PM2 application '$Pm2AppName'. Deleting..."
+                      if ($pm2ExitCode -eq 0) {
+                        Write-Host "Found existing PM2 application '$Pm2AppName'. Deleting..."
 
-                          pm2 delete $Pm2AppName
+                        & pm2 delete $Pm2AppName
 
-                          if ($LASTEXITCODE -ne 0) {
+                        if ($LASTEXITCODE -ne 0) {
                             throw "Failed to delete PM2 application '$Pm2AppName'."
-                          }
                         }
-                      } catch {
+
+                        Write-Host "PM2 application deleted successfully."
+
+                      }
+                      else {
                         Write-Host "PM2 application '$Pm2AppName' does not exist. Nothing to stop."
                       }
+
+                      # try {
+                      #   pm2 describe $Pm2AppName 2>&1 | Out-Null
+
+                      #   if ($LASTEXITCODE -eq 0) {
+                      #     Write-Host "Found existing PM2 application '$Pm2AppName'. Deleting..."
+
+                      #     pm2 delete $Pm2AppName
+
+                      #     if ($LASTEXITCODE -ne 0) {
+                      #       throw "Failed to delete PM2 application '$Pm2AppName'."
+                      #     }
+                      #   }
+                      # } catch {
+                      #   Write-Host "PM2 application '$Pm2AppName' does not exist. Nothing to stop."
+                      # }
 
                       # ------------------------------------------------
                       # Create application directory
@@ -301,6 +353,7 @@ stages:
                         " apps: [{"
                         " name: '$Pm2AppName',"
                         " script: 'server.js',"
+                        " cwd: '$AppPath',"
                         " args: 'start',"
                         " env_${Environment}: {"
                         "   NODE_ENV: 'production',"
@@ -311,8 +364,10 @@ stages:
                         " max_memory_restart: '1G',"
                         " error_file: '$AppPath/logs/pm2-error.log',"
                         " out_file: '$AppPath/logs/pm2-out.log',"
-                        " instances: 'max',"
-                        " exec_mode: 'cluster'"
+                        # " instances: 'max',"
+                        # " exec_mode: 'cluster'"
+                        " instances: '1',"
+                        " exec_mode: 'fork'"
                         " }]"
                         "}"
                       ) -join [Environment]::NewLine
