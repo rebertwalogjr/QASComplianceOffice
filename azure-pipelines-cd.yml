@@ -1,196 +1,17 @@
-trigger:
-  branches:
-    include:
-      - dev
-      - main
+trigger: none
+
+pr: none
 
 variables:
-  - name: nodeVersion
-    value: '22'
   - name: appName
     value: 'qasco'
 
 stages:
-  # **************************************************
-  # ==================================================
-  # BUILD STAGE
-  # ==================================================
-  # **************************************************
-  - stage: Build
-    displayName: 'Build Stage'
-    jobs:
-    - job: Build
-      displayName: 'Build Next.js Application'
-      pool:
-        vmImage: 'windows-latest'
-
-      steps:
-        - task: UseNode@1
-          inputs:
-            version: '$(nodeVersion)'
-          displayName: 'Install Node.js'
-
-        - task: PowerShell@2
-          inputs:
-            targetType: 'inline'
-            script: |
-              npm ci
-          displayName: 'Install dependencies'
-
-        - task: PowerShell@2
-          inputs:
-            targetType: 'inline'
-            script: |
-              npm run build
-          displayName: 'Build Next.js app'
-
-        - task: PowerShell@2
-          displayName: 'Diagnose Next.js'
-          inputs:
-            targetType: 'inline'
-            script: |
-              Write-Host "========================================"
-              Write-Host "NEXT BUILD DIAGNOSTICS"
-              Write-Host "========================================"
-
-              Write-Host ""
-              Write-Host "Node version:"
-              node --version
-
-              Write-Host ""
-              Write-Host "Next.js version:"
-              npx next --version
-
-              Write-Host ""
-              Write-Host "Checking node/buffer chunks..."
-
-              Get-ChildItem "$(System.DefaultWorkingDirectory)\.next" -Recurse -File |
-                Where-Object {
-                  $_.Name -like "*buffer*" -or
-                  $_.Name -like "*externals*"
-                } |
-                Select-Object FullName
-
-              Write-Host ""
-              Write-Host "Searching for node:buffer references..."
-
-              Get-ChildItem "$(System.DefaultWorkingDirectory)\.next" -Recurse -File |
-                Select-String "node:buffer" -ErrorAction SilentlyContinue |
-                Select-Object Path, LineNumber
-
-        # ==================================================
-        # Run test
-        # ==================================================
-        # - script: |
-        #     npm run test
-        #   displayName: 'Run tests'
-        #   continueOnError: true
-
-        # ==================================================
-        # Prepare Next.js standalone build
-        # ==================================================
-
-        # ==================================================
-        # 1. Copy standalone folder
-        # ==================================================
-        - task: CopyFiles@2
-          inputs:
-            SourceFolder: '$(System.DefaultWorkingDirectory)/.next/standalone'
-            Contents: |
-              **/*
-            TargetFolder: '$(Build.ArtifactStagingDirectory)/standalone'
-            OverWrite: true
-          displayName: 'Copy Next.js standalone build'
-
-        # ==================================================
-        # 2. Copy static folder
-        # ==================================================
-        - task: CopyFiles@2
-          inputs:
-            SourceFolder: '$(System.DefaultWorkingDirectory)/.next/static'
-            Contents: |
-              **/*
-            TargetFolder: '$(Build.ArtifactStagingDirectory)/standalone/.next/static'
-            OverWrite: true
-          displayName: 'Copy Next.js static files'
-
-        # ==================================================
-        # 3. Copy public folder
-        # ==================================================
-        - task: CopyFiles@2
-          inputs:
-            SourceFolder: '$(System.DefaultWorkingDirectory)/public'
-            Contents: |
-              **/*
-            TargetFolder: '$(Build.ArtifactStagingDirectory)/standalone/public'
-            OverWrite: true
-          displayName: 'Copy public files'
-
-        # ==================================================
-        # 4. Create .env.template file
-        # ==================================================
-        - task: PowerShell@2
-          inputs:
-            targetType: 'inline'
-            script: |
-              echo "NODE_ENV=production" > $(Build.ArtifactStagingDirectory)/standalone/.env.template
-              echo "PORT=3000" >> $(Build.ArtifactStagingDirectory)/standalone/.env.template
-              echo "# Add environment-specific variables below" >> $(Build.ArtifactStagingDirectory)/standalone/.env.template
-          displayName: 'Create environment template'
-
-        # - script: |
-        #     echo "NODE_ENV=production" > $(Build.ArtifactStagingDirectory)/standalone/.env.template
-        #     echo "PORT=3000" >> $(Build.ArtifactStagingDirectory)/standalone/.env.template
-        #     echo "# Add environment-specific variables below" >> $(Build.ArtifactStagingDirectory)/standalone/.env.template
-        #   displayName: 'Create environment template'
-
-        # ==================================================
-        # 5. Create store branch info
-        # ==================================================
-        - task: PowerShell@2
-          inputs:
-            targetType: 'inline'
-            script: |
-              echo $(Build.SourceBranchName) > $(Build.ArtifactStagingDirectory)/standalone/BRANCH.txt
-          displayName: 'Store branch info'
-
-        # - script: |
-        #     echo $(Build.SourceBranchName) > $(Build.ArtifactStagingDirectory)/standalone/BRANCH.txt
-        #   displayName: 'Store branch info'
-
-        # ==================================================
-        # Archive standalone build files
-        # ==================================================
-        - task: ArchiveFiles@2
-          inputs:
-            rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/standalone'
-            includeRootFolder: true
-            archiveType: 'zip'
-            archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
-            replaceExistingArchive: true
-          displayName: 'Compress files into a zip'
-
-        # ==================================================
-        # Publish build artifact
-        # ==================================================
-        - task: PublishBuildArtifacts@1
-          inputs:
-            PathtoPublish: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
-            ArtifactName: 'drop'
-            publishLocation: 'Container'
-          displayName: 'Publish build artifact'
-
-  # **************************************************
   # ==================================================
   # UAT DEPLOYMENT STAGE
   # ==================================================
-  # **************************************************
   - stage: Deploy_UAT
     displayName: 'Deploy to UAT'
-    dependsOn: Build
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/dev'))
-    variables:
-      - group: 'qasco-uat-variables'
     jobs:
       - deployment: DeployToUAT
         displayName: 'Deploy to UAT Windows Server'
@@ -198,10 +19,18 @@ stages:
           name: uat
           resourceName: UAT_QASCO
           resourceType: VirtualMachine
+        variables:
+          - group: 'qasco-uat-variables'
         strategy:
           runOnce:
             deploy:
               steps:
+
+                # --------------------------------------------------
+                # Download artifact produced by CI
+                # --------------------------------------------------
+                - download: current
+                  artifact: drop
 
                 # ==================================================
                 # UAT Agent diagnostics
