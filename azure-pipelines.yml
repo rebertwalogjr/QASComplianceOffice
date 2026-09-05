@@ -44,14 +44,6 @@ stages:
               npm run build
           displayName: 'Build Next.js app'
 
-        # - script: |
-        #     npm ci
-        #   displayName: 'Install dependencies'
-
-        # - script: |
-        #     npm run build
-        #   displayName: 'Build Next.js app'
-
         - task: PowerShell@2
           displayName: 'Diagnose Next.js'
           inputs:
