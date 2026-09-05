@@ -17,7 +17,7 @@ stages:
     - job: Build
       displayName: 'Build and Test'
       pool:
-        vmImage: 'ubuntu-latest'
+        vmImage: 'windows-latest'
 
       steps:
         - task: UseNode@1
