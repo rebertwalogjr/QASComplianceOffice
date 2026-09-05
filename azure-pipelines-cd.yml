@@ -81,14 +81,14 @@ stages:
                     definition: '$(resources.pipeline.ci.pipelineID)'
                     buildVersionToDownload: 'latest'
                     artifactName: 'drop'
-                    targetPath: '$(System.ArtifactsDirectory)'
+                    targetPath: '$(Pipeline.Workspace)'
 
                 # ==================================================
                 # Extract artifacts
                 # ==================================================
                 - task: ExtractFiles@1
                   inputs:
-                    archiveFilePatterns: '$(System.ArtifactsDirectory)/drop/*.zip'
+                    archiveFilePatterns: '$(Pipeline.Workspace)/drop/*.zip'
                     destinationFolder: '$(System.ArtifactsDirectory)/extracted'
                     cleanDestinationFolder: true
                   displayName: 'Extract build artifact'
@@ -130,7 +130,7 @@ stages:
                       exit 0
 
                 # ==================================================
-                # Cleaning / Creating application directory
+                # Cleaning & Copy application files
                 # ==================================================
                 - task: PowerShell@2
                   displayName: 'Clean & Copy application files'
