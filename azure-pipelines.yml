@@ -268,11 +268,11 @@ stages:
                       Set-Location $AppPath
 
                       # ------------------------------------------------
-                      # Create .env.uat
+                      # Create .env
                       # ------------------------------------------------
                       Write-Host "Creating .env.$Environment..."
 
-                      $envFile = Join-Path $AppPath ".env.$Environment"
+                      $envFile = Join-Path $AppPath ".env"
 
                       if (-not (Test-Path "$AppPath\.env.template")) {
                         throw ".env.template was not found at $AppPath"
