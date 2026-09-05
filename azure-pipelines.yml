@@ -20,7 +20,7 @@ stages:
     displayName: 'Build Stage'
     jobs:
     - job: Build
-      displayName: 'Build and Test'
+      displayName: 'Build Next.js Application'
       pool:
         vmImage: 'windows-latest'
 
@@ -258,49 +258,26 @@ stages:
                   displayName: 'Extract build artifact'
 
                 # ==================================================
-                # Deploy to UAT Server
+                # Stop existing application
                 # ==================================================
                 - task: PowerShell@2
-                  displayName: 'Deploy to UAT Windows Server'
+                  displayName: 'Stop existing PM2 application'
+                  name: StopPM2
                   inputs:
                     targetType: 'inline'
                     script: |
                       $ErrorActionPreference = 'Stop'
 
-                      # ------------------------------------------------
                       # Configuration
-                      # ------------------------------------------------
-                      $DeploymentPath = '$(DeploymentPath)'
                       $AppName = '$(appName)'
                       $Environment = 'uat'
-                      $Port = '$(Port)'
-
-                      $SourcePath = "$(System.ArtifactsDirectory)/extracted/standalone"
-                      $AppPath = Join-Path $DeploymentPath $AppName
                       $Pm2AppName = "$AppName-$Environment"
 
                       Write-Host "========================================"
-                      Write-Host "UAT DEPLOYMENT"
+                      Write-Host "STOP PM2 APPLICATION"
                       Write-Host "========================================"
-                      Write-Host "Computer : $env:COMPUTERNAME"
-                      Write-Host "App Name : $AppName"
-                      Write-Host "PM2 Name : $Pm2AppName"
-                      Write-Host "Environment : $Environment"
-                      Write-Host "Port : $Port"
-                      Write-Host "Source : $SourcePath"
-                      Write-Host "Destination : $AppPath"
-                      Write-Host "========================================"
-                      
-                      # ------------------------------------------------
-                      # Validate source
-                      # ------------------------------------------------
-                      if (-not (Test-Path $SourcePath)) {
-                        throw "Source path does not exist: $SourcePath"
-                      }
+                      Write-Host "PM2 Name: $Pm2AppName"
 
-                      # ------------------------------------------------
-                      # Stop existing application
-                      # ------------------------------------------------
                       Write-Host "Stopping existing PM2 application..."
 
                       try {
@@ -323,69 +300,96 @@ stages:
                         Write-Host "PM2 application '$Pm2AppName' does not exist. Nothing to stop."
                       }
 
-                      # ------------------------------------------------
-                      # Cleaning / Creating application directory
-                      # ------------------------------------------------
-                      Write-Host "Cleaning existing application directory..."
+                      Write-Host "##vso[task.setvariable variable=Pm2AppName;isOutput=true]$Pm2AppName"
+                      Write-Host "##vso[task.setvariable variable=AppExists;isOutput=true]$appExists"
 
-                      if (Test-Path $AppPath) {
-                          Remove-Item -Path $AppPath -Recurse -Force
+                      Write-Host "AppExists: $appExists"
+
+                # ==================================================
+                # Cleaning / Creating application directory
+                # ==================================================
+                - task: PowerShell@2
+                  displayName: 'Clean & Copy application files'
+                  name: CopyFiles
+                  inputs:
+                    targetType: 'inline'
+                    script: |
+                      $ErrorActionPreference = 'Stop'
+
+                      # Configuration
+                      $DeploymentPath = '$(DeploymentPath)'
+                      $AppName = '$(appName)'
+                      $SourcePath = "$(System.ArtifactsDirectory)/extracted/standalone"
+                      $AppPath = Join-Path $DeploymentPath $AppName
+
+                      Write-Host "========================================"
+                      Write-Host "CLEAN & COPY FILES"
+                      Write-Host "========================================"
+                      Write-Host "Source: $SourcePath"
+                      Write-Host "Destination: $AppPath"
+
+                      # Validate source
+                      if (-not (Test-Path $SourcePath)) {
+                        throw "Source path does not exist: $SourcePath"
                       }
 
+                      # Clean destination
+                      Write-Host "Cleaning existing application directory..."
+                      if (Test-Path $AppPath) {
+                        Remove-Item -Path $AppPath -Recurse -Force
+                        Write-Host "Removed existing directory: $AppPath"
+                      }
+
+                      # Create destination
                       New-Item -ItemType Directory -Path $AppPath -Force | Out-Null
+                      Write-Host "Created directory: $AppPath"
 
-                      Write-Host "Application directory cleaned.
-
-                      # ------------------------------------------------
-                      # Copy application files
-                      # ------------------------------------------------
+                      # Copy files
                       Write-Host "Copying application files..."
-
                       Copy-Item -Path "$SourcePath/*" -Destination $AppPath -Recurse -Force
-
                       Write-Host "Files copied successfully."
 
-                      # ------------------------------------------------
-                      # Deployed next.js chunks
-                      # ------------------------------------------------
-                      Write-Host "========================================"
-                      Write-Host "DEPLOYED NEXT.JS CHUNKS"
-                      Write-Host "========================================"
-
-                      Get-ChildItem "$AppPath\.next\server\chunks" -Recurse -File |
-                        Where-Object {
-                            $_.Name -like "*buffer*" -or
-                            $_.Name -like "*externals*"
-                        } |
-                        Select-Object FullName
-
-                      # ------------------------------------------------
-                      # Validate application
-                      # ------------------------------------------------
+                      # Validate package.json existence
                       if (-not (Test-Path "$AppPath\package.json")) {
                         throw "package.json not found at $AppPath"
                       }
 
+                      Write-Host "##vso[task.setvariable variable=AppPath;isOutput=true]$AppPath"
+                      Write-Host "##vso[task.setvariable variable=SourcePath;isOutput=true]$SourcePath"
+
+                      Write-Host "AppPath: $AppPath"
+
+                # ==================================================
+                # Setup .env file
+                # ==================================================
+                - task: PowerShell@2
+                  displayName: 'Setup environment variables (.env)'
+                  name: SetupEnv
+                  inputs:
+                    targetType: 'inline'
+                    script: |
+                      $ErrorActionPreference = 'Stop'
+
+                      # Configuration
+                      $AppPath = '$(CopyFiles.AppPath)'
+                      $Environment = '$(StopPM2.Environment)'
+                      $Port = '$(Port)'
+
+                      Write-Host "========================================"
+                      Write-Host "SETUP ENVIRONMENT"
+                      Write-Host "========================================"
+                      Write-Host "AppPath: $AppPath"
+                      Write-Host "Environment: $Environment"
+                      Write-Host "Port: $Port"
+
+                      # Validate .env.template existence
                       if (-not (Test-Path "$AppPath\.env.template")) {
                         throw ".env.template not found at $AppPath"
                       }
 
-                       # ------------------------------------------------
-                      # Move to application directory
-                      # ------------------------------------------------
-                      Set-Location $AppPath
-
-                      # ------------------------------------------------
                       # Create .env
-                      # ------------------------------------------------
-                      Write-Host "Creating .env..."
-
+                      Write-Host "Creating .env file..."
                       $envFile = Join-Path $AppPath ".env"
-
-                      if (-not (Test-Path "$AppPath\.env.template")) {
-                        throw ".env.template was not found at $AppPath"
-                      }
-
                       Copy-Item "$AppPath\.env.template" $envFile -Force
 
                       Add-Content $envFile ""
@@ -402,42 +406,53 @@ stages:
                       Add-Content $envFile "PORT=$Port"
                       Add-Content $envFile "APP_ENVIRONMENT=$Environment"
 
-                      Write-Host ".env created."
+                      Write-Host ".env file created at $envFile"
 
-                      # ------------------------------------------------
+                      Write-Host "##vso[task.setvariable variable=EnvFile;isOutput=true]$envFile"
+                  env:
+                    DATABASE_URL: $(DATABASE_URL)
+                    DB_HOST: $(DB_HOST)
+                    DB_NAME: $(DB_NAME)
+                    DB_PASSWORD: $(DB_PASSWORD)
+                    DB_PORT: $(DB_PORT)
+                    DB_USER: $(DB_USER)
+                    FILE_SERVER_PATH: $(FILE_SERVER_PATH)
+                    NEXTAUTH_SECRET: $(NEXTAUTH_SECRET)
+                    NEXTAUTH_URL: $(NEXTAUTH_URL)
+
+                # ==================================================
+                # Setup PM2 ecosystem config
+                # ==================================================
+                - task: PowerShell@2
+                  displayName: 'Setup PM2 ecosystem configuration'
+                  name: SetupPM2
+                  inputs:
+                    targetType: 'inline'
+                    script: |
+                      $ErrorActionPreference = 'Stop'
+
+                      # Configuration
+                      $AppPath = '$(CopyFiles.AppPath)'
+                      $AppName = '$(appName)'
+                      $Environment = '$(StopPM2.Environment)'
+                      $Port = '$(Port)'
+                      $Pm2AppName = '$(StopPM2.Pm2AppName)'
+
+                      Write-Host "========================================"
+                      Write-Host "SETUP PM2 ECOSYSTEM"
+                      Write-Host "========================================"
+                      Write-Host "AppPath: $AppPath"
+                      Write-Host "PM2 App Name: $Pm2AppName"
+
                       # Create logs directory
-                      # ------------------------------------------------
                       $LogsPath = Join-Path $AppPath "logs"
                       New-Item -ItemType Directory -Path $LogsPath -Force | Out-Null
+                      Write-Host "Logs directory created: $LogsPath"
 
-                      # ------------------------------------------------
-                      # Create PM2 ecosystem configuration
-                      # ------------------------------------------------
+                      # Create ecosystem config
                       Write-Host "Creating ecosystem.config.js..."
 
                       $Pm2LogPath = $AppPath -replace '\\', '/'
-
-                      # $config = @(
-                      #   "module.exports = {"
-                      #   " apps: [{"
-                      #   " name: '$Pm2AppName',"
-                      #   " script: 'server.js',"
-                      #   " env_${Environment}: {"
-                      #   "   NODE_ENV: 'production',"
-                      #   "   PORT: $Port"
-                      #   " },"
-                      #   " watch: false,"
-                      #   " autorestart: true,"
-                      #   " max_memory_restart: '1G',"
-                      #   " error_file: '$Pm2LogPath/logs/pm2-error.log',"
-                      #   " out_file: '$Pm2LogPath/logs/pm2-out.log',"
-                      #   # " instances: 'max',"
-                      #   # " exec_mode: 'cluster'"
-                      #   " instances: '1',"
-                      #   " exec_mode: 'fork'"
-                      #   " }]"
-                      #   "}"
-                      # ) -join [Environment]::NewLine
 
                       $config = @"
                         module.exports = {
@@ -464,11 +479,34 @@ stages:
                       Set-Content -Path "$AppPath\ecosystem.config.js" -Value $config -Encoding UTF8
                       Write-Host "ecosystem.config.js created."
 
-                      # ------------------------------------------------
-                      # Start PM2
-                      # ------------------------------------------------
-                      Write-Host "Starting PM2 application..."
+                # ==================================================
+                # Start PM2 application
+                # ==================================================
+                - task: PowerShell@2
+                  displayName: 'Start PM2 application'
+                  name: StartPM2
+                  inputs:
+                    targetType: 'inline'
+                    script: |
+                      $ErrorActionPreference = 'Stop'
 
+                      # Configuration
+                      $AppPath = '$(CopyFiles.AppPath)'
+                      $Environment = '$(StopPM2.Environment)'
+                      $Pm2AppName = '$(StopPM2.Pm2AppName)'
+
+                      Write-Host "========================================"
+                      Write-Host "START PM2 APPLICATION"
+                      Write-Host "========================================"
+                      Write-Host "AppPath: $AppPath"
+                      Write-Host "PM2 App Name: $Pm2AppName"
+                      Write-Host "Environment: $Environment"
+
+                      # Move to app directory
+                      Set-Location $AppPath
+
+                      # Start PM2
+                      Write-Host "Starting PM2 application..."
                       pm2 start ecosystem.config.js --env $Environment
 
                       if ($LASTEXITCODE -ne 0) {
@@ -476,27 +514,12 @@ stages:
                       }
 
                       Write-Host "Saving PM2 process list..."
-
                       pm2 save
 
                       Write-Host "PM2 status:"
-
                       pm2 list
 
-                      Write-Host ""
-                      Write-Host "========================================"
-                      Write-Host "UAT DEPLOYMENT COMPLETED"
-                      Write-Host "========================================"
-                  env:
-                    DATABASE_URL: $(DATABASE_URL)
-                    DB_HOST: $(DB_HOST)
-                    DB_NAME: $(DB_NAME)
-                    DB_PASSWORD: $(DB_PASSWORD)
-                    DB_PORT: $(DB_PORT)
-                    DB_USER: $(DB_USER)
-                    FILE_SERVER_PATH: $(FILE_SERVER_PATH)
-                    NEXTAUTH_SECRET: $(NEXTAUTH_SECRET)
-                    NEXTAUTH_URL: $(NEXTAUTH_URL)
+                      Write-Host "##vso[task.setvariable variable=PM2Started;isOutput=true]true"
 
                 # ==================================================
                 # Health Check
