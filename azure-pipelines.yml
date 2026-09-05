@@ -270,7 +270,7 @@ stages:
                       # ------------------------------------------------
                       # Create .env
                       # ------------------------------------------------
-                      Write-Host "Creating .env.$Environment..."
+                      Write-Host "Creating .env..."
 
                       $envFile = Join-Path $AppPath ".env"
 
@@ -294,7 +294,7 @@ stages:
                       Add-Content $envFile "PORT=$Port"
                       Add-Content $envFile "APP_ENVIRONMENT=$Environment"
 
-                      Write-Host ".env.$Environment created."
+                      Write-Host ".env created."
 
                       # ------------------------------------------------
                       # Create logs directory
