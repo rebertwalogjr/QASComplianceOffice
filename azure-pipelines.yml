@@ -352,6 +352,8 @@ stages:
                       $ErrorActionPreference = 'Stop'
 
                       # Configuration
+                      $DeploymentPath = '$(DeploymentPath)'
+                      $AppName = '$(appName)'
                       $AppPath = Join-Path $DeploymentPath $AppName
                       $Environment = 'uat'
                       $Port = '$(Port)'
@@ -410,8 +412,9 @@ stages:
                       $ErrorActionPreference = 'Stop'
 
                       # Configuration
-                      $AppPath = Join-Path $DeploymentPath $AppName
+                      $DeploymentPath = '$(DeploymentPath)'
                       $AppName = '$(appName)'
+                      $AppPath = Join-Path $DeploymentPath $AppName
                       $Environment = 'uat'
                       $Port = '$(Port)'
                       $Pm2AppName = "$AppName-$Environment"
@@ -468,6 +471,8 @@ stages:
                       $ErrorActionPreference = 'Stop'
 
                       # Configuration
+                      $DeploymentPath = '$(DeploymentPath)'
+                      $AppName = '$(appName)'
                       $AppPath = Join-Path $DeploymentPath $AppName
                       $Environment = 'uat'
                       $Pm2AppName = "$AppName-$Environment"
