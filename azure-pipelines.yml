@@ -417,27 +417,49 @@ stages:
 
                       $Pm2LogPath = $AppPath -replace '\\', '/'
 
-                      $config = @(
-                        "module.exports = {"
-                        " apps: [{"
-                        " name: '$Pm2AppName',"
-                        " script: 'server.js',"
-                        " env_${Environment}: {"
-                        "   NODE_ENV: 'production',"
-                        "   PORT: $Port"
-                        " },"
-                        " watch: false,"
-                        " autorestart: true,"
-                        " max_memory_restart: '1G',"
-                        " error_file: '$Pm2LogPath/logs/pm2-error.log',"
-                        " out_file: '$Pm2LogPath/logs/pm2-out.log',"
-                        # " instances: 'max',"
-                        # " exec_mode: 'cluster'"
-                        " instances: '1',"
-                        " exec_mode: 'fork'"
-                        " }]"
-                        "}"
-                      ) -join [Environment]::NewLine
+                      # $config = @(
+                      #   "module.exports = {"
+                      #   " apps: [{"
+                      #   " name: '$Pm2AppName',"
+                      #   " script: 'server.js',"
+                      #   " env_${Environment}: {"
+                      #   "   NODE_ENV: 'production',"
+                      #   "   PORT: $Port"
+                      #   " },"
+                      #   " watch: false,"
+                      #   " autorestart: true,"
+                      #   " max_memory_restart: '1G',"
+                      #   " error_file: '$Pm2LogPath/logs/pm2-error.log',"
+                      #   " out_file: '$Pm2LogPath/logs/pm2-out.log',"
+                      #   # " instances: 'max',"
+                      #   # " exec_mode: 'cluster'"
+                      #   " instances: '1',"
+                      #   " exec_mode: 'fork'"
+                      #   " }]"
+                      #   "}"
+                      # ) -join [Environment]::NewLine
+
+                      $config = @"
+                        module.exports = {
+                          apps: [{
+                          name: '$Pm2AppName',
+                          script: 'server.js',
+                          env_${Environment}: {
+                            NODE_ENV: 'production',
+                            PORT: $Port
+                          },
+                          watch: false,
+                          autorestart: true,
+                          max_memory_restart: '1G',
+                          error_file: '$Pm2LogPath/logs/pm2-error.log',
+                          out_file: '$Pm2LogPath/logs/pm2-out.log',
+                          #  instances: 'max',
+                          #  exec_mode: 'cluster'
+                          instances: '1',
+                          exec_mode: 'fork'
+                          }]
+                        }
+                      "@
 
                       Set-Content -Path "$AppPath\ecosystem.config.js" -Value $config -Encoding UTF8
                       Write-Host "ecosystem.config.js created."
