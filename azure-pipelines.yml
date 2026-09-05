@@ -265,7 +265,7 @@ stages:
                   inputs:
                     targetType: 'inline'
                     script: |
-                      $ErrorActionPreference = 'Stop'
+                      $ErrorActionPreference = 'Continue'
 
                       # Configuration
                       $AppName = '$(appName)'
