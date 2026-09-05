@@ -492,7 +492,7 @@ stages:
 
                       # Configuration
                       $AppPath = '$(CopyFiles.AppPath)'
-                      $Environment = '$(StopPM2.Environment)'
+                      $Environment = 'uat'
                       $Pm2AppName = '$(StopPM2.Pm2AppName)'
 
                       Write-Host "========================================"
