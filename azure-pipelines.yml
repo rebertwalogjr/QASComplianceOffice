@@ -262,7 +262,6 @@ stages:
                 # ==================================================
                 - task: PowerShell@2
                   displayName: 'Stop existing PM2 application'
-                  name: StopPM2
                   inputs:
                     targetType: 'inline'
                     script: |
@@ -300,17 +299,11 @@ stages:
                         Write-Host "PM2 application '$Pm2AppName' does not exist. Nothing to stop."
                       }
 
-                      Write-Host "##vso[task.setvariable variable=Pm2AppName;isOutput=true]$Pm2AppName"
-                      Write-Host "##vso[task.setvariable variable=AppExists;isOutput=true]$appExists"
-
-                      Write-Host "AppExists: $appExists"
-
                 # ==================================================
                 # Cleaning / Creating application directory
                 # ==================================================
                 - task: PowerShell@2
                   displayName: 'Clean & Copy application files'
-                  name: CopyFiles
                   inputs:
                     targetType: 'inline'
                     script: |
@@ -354,25 +347,19 @@ stages:
                         throw "package.json not found at $AppPath"
                       }
 
-                      Write-Host "##vso[task.setvariable variable=AppPath;isOutput=true]$AppPath"
-                      Write-Host "##vso[task.setvariable variable=SourcePath;isOutput=true]$SourcePath"
-
-                      Write-Host "AppPath: $AppPath"
-
                 # ==================================================
                 # Setup .env file
                 # ==================================================
                 - task: PowerShell@2
                   displayName: 'Setup environment variables (.env)'
-                  name: SetupEnv
                   inputs:
                     targetType: 'inline'
                     script: |
                       $ErrorActionPreference = 'Stop'
 
                       # Configuration
-                      $AppPath = '$(CopyFiles.AppPath)'
-                      $Environment = '$(StopPM2.Environment)'
+                      $AppPath = Join-Path $DeploymentPath $AppName
+                      $Environment = 'uat'
                       $Port = '$(Port)'
 
                       Write-Host "========================================"
@@ -407,8 +394,6 @@ stages:
                       Add-Content $envFile "APP_ENVIRONMENT=$Environment"
 
                       Write-Host ".env file created at $envFile"
-
-                      Write-Host "##vso[task.setvariable variable=EnvFile;isOutput=true]$envFile"
                   env:
                     DATABASE_URL: $(DATABASE_URL)
                     DB_HOST: $(DB_HOST)
@@ -425,18 +410,17 @@ stages:
                 # ==================================================
                 - task: PowerShell@2
                   displayName: 'Setup PM2 ecosystem configuration'
-                  name: SetupPM2
                   inputs:
                     targetType: 'inline'
                     script: |
                       $ErrorActionPreference = 'Stop'
 
                       # Configuration
-                      $AppPath = '$(CopyFiles.AppPath)'
+                      $AppPath = Join-Path $DeploymentPath $AppName
                       $AppName = '$(appName)'
-                      $Environment = '$(StopPM2.Environment)'
+                      $Environment = 'uat'
                       $Port = '$(Port)'
-                      $Pm2AppName = '$(StopPM2.Pm2AppName)'
+                      $Pm2AppName = "$AppName-$Environment"
 
                       Write-Host "========================================"
                       Write-Host "SETUP PM2 ECOSYSTEM"
@@ -484,16 +468,15 @@ stages:
                 # ==================================================
                 - task: PowerShell@2
                   displayName: 'Start PM2 application'
-                  name: StartPM2
                   inputs:
                     targetType: 'inline'
                     script: |
                       $ErrorActionPreference = 'Stop'
 
                       # Configuration
-                      $AppPath = '$(CopyFiles.AppPath)'
+                      $AppPath = Join-Path $DeploymentPath $AppName
                       $Environment = 'uat'
-                      $Pm2AppName = '$(StopPM2.Pm2AppName)'
+                      $Pm2AppName = "$AppName-$Environment"
 
                       Write-Host "========================================"
                       Write-Host "START PM2 APPLICATION"
@@ -518,8 +501,6 @@ stages:
 
                       Write-Host "PM2 status:"
                       pm2 list
-
-                      Write-Host "##vso[task.setvariable variable=PM2Started;isOutput=true]true"
 
                 # ==================================================
                 # Health Check
