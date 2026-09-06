@@ -11,32 +11,45 @@ export default withAuth(
     const userRoles = token?.userRoles as number [] | undefined
 
     const { pathname, searchParams } = req.nextUrl
-    const callbackUrl = searchParams.get("callbackUrl") || "/qas"
 
+    // User is logged in but has not activated their account
     if (token && !isActivated && pathname !== "/activate") {
       const url = new URL("/activate", req.url)
-      url.searchParams.set("callbackUrl", pathname)
+
+      url.searchParams.set(
+        "callbackUrl",
+        pathname + (searchParams.toString() ? `?${searchParams.toString()}` : "")
+      )
+
       return NextResponse.redirect(url)
     }
 
+    // User is already activated but somehow visits /activate
     if (token && isActivated && pathname === "/activate") {
+      const callbackUrl = searchParams.get("callbackUrl") || "/qas"
+
       return NextResponse.redirect(new URL(callbackUrl, req.url))
     }
 
+    // Admin authorization
     if (pathname.startsWith("/qas/admin")) {
       const isAdmin = userRoles?.includes(ADMIN_ROLE_ID)
+
       if (!isAdmin) {
         return NextResponse.rewrite(new URL("/qas/access-denied", req.url))
       }
     }
 
+    // Auditor authorization
     if (pathname.startsWith("/qas/new")) {
       const isAuditor = userRoles?.includes(AUDITOR_ROLE_ID)
+
       if (!isAuditor) {
         return NextResponse.rewrite(new URL("/qas/access-denied", req.url))
       }
     }
 
+    // Root of the website goes to the QAS application
     if (pathname === "/") {
       return NextResponse.redirect(new URL("/qas", req.url))
     }

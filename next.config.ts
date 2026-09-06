@@ -16,8 +16,6 @@ const nextConfig: NextConfig = {
     }
   },
   output: "standalone",
-  basePath: '/qas',
-  assetPrefix: '/qas',
   images: {
     unoptimized: true,
   },
