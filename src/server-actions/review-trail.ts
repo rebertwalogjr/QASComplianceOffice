@@ -8,9 +8,8 @@ import { userSelect } from "./selectors";
 import { Prisma } from "../../generated/prisma/client";
 import { triggerWebhook } from "@/lib/webhook";
 
-const prisma = getPrisma()
-
 export async function createReviewTrail(formData: FormData) {
+  const prisma = getPrisma()
   const creatorId = await getUserId()
 
   if (!creatorId) {
@@ -37,6 +36,8 @@ export async function createReviewTrail(formData: FormData) {
 }
 
 export async function getReviewTrailByTransactionId(jobTransactionId: number) : Promise<{data: ReviewTrailPayload[] | null, error: any}> {
+  const prisma = getPrisma()
+  
   return await dbQuery(
     prisma.reviewTrail.findMany({
       where:{ jobTransactionId },

@@ -3,8 +3,6 @@ import { getPrisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { AuthOptions } from "next-auth"
 
-const prisma = getPrisma()
-
 export const authOptions: AuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   providers: [
@@ -16,7 +14,9 @@ export const authOptions: AuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.username || !credentials?.password) return null
-
+        
+        const prisma = getPrisma()
+        
         const user = await prisma.user.findUnique({
           where: { username: credentials.username },
           select: {
@@ -69,6 +69,9 @@ export const authOptions: AuthOptions = {
         token.employeeNumber = user.employeeNumber
       }
       if (trigger === "update") {
+
+        const prisma = getPrisma()
+
         const dbUser = await prisma.user.findUnique({
           where: { id: Number(token.id) },
           select: {

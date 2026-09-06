@@ -6,9 +6,9 @@ import { dbQuery } from "@/lib/prisma-db-utils"
 import { EmailTemplate, Prisma } from "../../generated/prisma/client"
 import { getUserId } from "./get-session"
 
-const prisma = getPrisma()
-
 export async function getTemplates() {
+  const prisma = getPrisma()
+
   return await dbQuery(
     prisma.emailTemplate.findMany({
       orderBy: { createdOn: "desc" }
@@ -17,6 +17,7 @@ export async function getTemplates() {
 }
 
 export async function createTemplate(formData: FormData) {
+  const prisma = getPrisma()
   const name = formData.get("name") as string
   const subject = formData.get("subject") as string
   const content = formData.get("content") as string
@@ -44,6 +45,8 @@ export async function createTemplate(formData: FormData) {
 }
 
 export async function getTemplateById(id: number): Promise<{ data: EmailTemplate | null, error: any }> {
+  const prisma = getPrisma()
+
   return await dbQuery(
     prisma.emailTemplate.findUnique({
       where: { id }
@@ -52,6 +55,7 @@ export async function getTemplateById(id: number): Promise<{ data: EmailTemplate
 }
 
 export async function updateTemplate(formData: FormData) {
+  const prisma = getPrisma()
   const id = Number(formData.get("id") as string)
 
   const rawData = {

@@ -5,9 +5,9 @@ import { revalidatePath } from "next/cache";
 import { dbQuery } from "@/lib/prisma-db-utils";
 import { getUserId } from "./get-session";
 
-const prisma = getPrisma()
-
 export async function getHolidays() {
+  const prisma = getPrisma()
+
   return await dbQuery(
     prisma.holiday.findMany({
       orderBy: { createdOn: "desc" }
@@ -16,6 +16,7 @@ export async function getHolidays() {
 }
 
 export async function createHoliday(formData: FormData) {
+  const prisma = getPrisma()
   const currentUserId = await getUserId();
 
   if (!currentUserId) {
@@ -38,6 +39,7 @@ export async function createHoliday(formData: FormData) {
 }
 
 export async function updateHoliday(formData: FormData) {
+  const prisma = getPrisma()
   const currentUserId = await getUserId();
 
   if (!currentUserId) {

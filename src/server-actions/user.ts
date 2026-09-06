@@ -10,9 +10,9 @@ import { triggerDatabaseMail } from "@/lib/mail-service"
 import { getUserInvitationEmailHtml } from "@/lib/email-builder"
 import { generateRandomPassword } from "@/lib/utils"
 
-const prisma = getPrisma()
-
 export async function getUsers(): Promise<{ data: UserBasicIncludePayload[] | null, error: any }> {
+  const prisma = getPrisma()
+
   return await dbQuery(
     prisma.user.findMany({
       include: userBasicInclude,
@@ -22,6 +22,8 @@ export async function getUsers(): Promise<{ data: UserBasicIncludePayload[] | nu
 }
 
 export async function getUserById(id: number): Promise<{ data: UserInfoPayload | null, error: any }> {
+  const prisma = getPrisma()
+
   return await dbQuery(
     prisma.user.findUnique({
       where: { id },
@@ -31,6 +33,7 @@ export async function getUserById(id: number): Promise<{ data: UserInfoPayload |
 }
 
 export async function createUser(formData: any) {
+  const prisma = getPrisma()
   const currentUserId = await getUserId()
 
   if (!currentUserId) {
@@ -147,6 +150,7 @@ export async function createUser(formData: any) {
 }
 
 export async function updateUser(userId: number, formData: any) {
+  const prisma = getPrisma()
   const currentUserId = await getUserId()
 
   if (!currentUserId) {
@@ -255,6 +259,8 @@ export async function updateUser(userId: number, formData: any) {
 }
 
 export async function getActiveComplianceOfficers(): Promise<{ data: UserBasicPayload[] | null, error: any }> {
+  const prisma = getPrisma()
+
   return await dbQuery(
     prisma.user.findMany({
       where: {
@@ -270,6 +276,8 @@ export async function getActiveComplianceOfficers(): Promise<{ data: UserBasicPa
 }
 
 export async function getActiveSupervisors(): Promise<{ data: UserBasicPayload[] | null, error: any }> {
+  const prisma = getPrisma()
+
   return await dbQuery(
     prisma.user.findMany({
       where: {
@@ -285,6 +293,8 @@ export async function getActiveSupervisors(): Promise<{ data: UserBasicPayload[]
 }
 
 export async function getActiveRecipients(): Promise<{ data: UserBasicPayload[] | null, error: any }> {
+  const prisma = getPrisma()
+
   return await dbQuery(
     prisma.user.findMany({
       where: {
@@ -300,6 +310,7 @@ export async function getActiveRecipients(): Promise<{ data: UserBasicPayload[] 
 }
 
 export async function activateAccount(newPassword: string) {
+  const prisma = getPrisma()
   const session = await getSession()
   const userId = session?.user.id
 

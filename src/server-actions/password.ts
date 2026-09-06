@@ -4,8 +4,6 @@ import { getPrisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { getUserId } from "./get-session"
 
-const prisma = getPrisma()
-
 interface ChangePasswordPayload {
   oldPassword: string
   newPassword: string
@@ -13,6 +11,7 @@ interface ChangePasswordPayload {
 }
 
 export async function changePassword(formData: FormData) {
+  const prisma = getPrisma()
   const userId = await getUserId()
 
   const rawData = {
@@ -76,6 +75,7 @@ export async function changePassword(formData: FormData) {
 }
 
 export async function canUpdatePassword() {
+  const prisma = getPrisma()
   const userId = await getUserId()
 
   if (!userId) {

@@ -6,9 +6,9 @@ import { dbQuery } from "@/lib/prisma-db-utils";
 import { Prisma } from "../../generated/prisma/client";
 import { getUserId } from "./get-session";
 
-const prisma = getPrisma()
-
 export async function getFindingTypes() {
+  const prisma = getPrisma()
+
   return await dbQuery(
     prisma.typeOfFinding.findMany({
       orderBy: { createdOn: "desc" }
@@ -17,6 +17,8 @@ export async function getFindingTypes() {
 }
 
 export async function getActiveFindingTypes() : Promise<{ data: ActiveFindingTypePayload[] | null, error: any}> {
+  const prisma = getPrisma()
+
   return await dbQuery(
     prisma.typeOfFinding.findMany({
       where: { isActive: true }
@@ -25,6 +27,7 @@ export async function getActiveFindingTypes() : Promise<{ data: ActiveFindingTyp
 }
 
 export async function createFindingType(formData: FormData) {
+  const prisma = getPrisma()
   const name = formData.get("name") as string
   const currentUserId = await getUserId()
 
@@ -46,6 +49,7 @@ export async function createFindingType(formData: FormData) {
 }
 
 export async function updateFindingType(formData: FormData) {
+  const prisma = getPrisma()
   const currentUserId = await getUserId()
   
   if (!currentUserId) {

@@ -4,9 +4,8 @@ import { getPrisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { getUserId } from "./get-session"
 
-const prisma = getPrisma()
-
 export async function updateUserTheme(theme: string) {
+  const prisma = getPrisma()
   const creatorId = await getUserId()
 
   if (!creatorId) {
@@ -24,6 +23,7 @@ export async function updateUserTheme(theme: string) {
 }
 
 export async function getUserTheme() {
+  const prisma = getPrisma()
   const userId = await getUserId()
   
   if (!userId) return "system"

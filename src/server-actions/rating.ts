@@ -6,9 +6,9 @@ import { dbQuery } from "@/lib/prisma-db-utils";
 import { Prisma } from "../../generated/prisma/client";
 import { getUserId } from "./get-session";
 
-const prisma = getPrisma()
-
 export async function getAuditRatings() {
+  const prisma = getPrisma()
+
   return await dbQuery(
     prisma.auditRating.findMany({
       include: {
@@ -20,6 +20,7 @@ export async function getAuditRatings() {
 }
 
 export async function createAuditRating(formData: FormData) {
+  const prisma = getPrisma()
   const name = formData.get("name") as string;
   const companyId = Number(formData.get("companyId"));
   const currentUserId = await getUserId();
@@ -43,6 +44,7 @@ export async function createAuditRating(formData: FormData) {
 }
 
 export async function updateAuditRating(formData: FormData) {
+  const prisma = getPrisma()
   const currentUserId = await getUserId();
   
   if (!currentUserId) {
@@ -72,6 +74,7 @@ export async function updateAuditRating(formData: FormData) {
 }
 
 export async function getActiveAuditRatings() : Promise<{ data: ActiveAuditRatingPayload[] | null, error: any}> {
+  const prisma = getPrisma()
   return await dbQuery(
     prisma.auditRating.findMany({
       where: { isActive: true }

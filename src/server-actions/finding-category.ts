@@ -6,9 +6,9 @@ import { dbQuery } from "@/lib/prisma-db-utils";
 import { Prisma } from "../../generated/prisma/client";
 import { getUserId } from "./get-session";
 
-const prisma = getPrisma()
-
 export async function getFindingCategories() {
+  const prisma = getPrisma()
+
   return await dbQuery(
     prisma.findingCategory.findMany({
       orderBy: { createdOn: "desc" }
@@ -17,6 +17,7 @@ export async function getFindingCategories() {
 }
 
 export async function createFindingCategory(formData: FormData) {
+  const prisma = getPrisma()
   const name = formData.get("name") as string;
   const currentUserId = await getUserId();
 
@@ -38,6 +39,7 @@ export async function createFindingCategory(formData: FormData) {
 }
 
 export async function updateFindingCategory(formData: FormData) {
+  const prisma = getPrisma()
   const id = Number(formData.get("id"))
   const name = formData.get("name") as string;
   const isActive = formData.get("isActive") === "true";
@@ -64,6 +66,8 @@ export async function updateFindingCategory(formData: FormData) {
 }
 
 export async function getActiveFindingCategories() : Promise<{ data: ActiveFindingCategoryPayload[] | null, error: any}> {
+  const prisma = getPrisma()
+  
   return await dbQuery(
     prisma.findingCategory.findMany({
       where: { isActive: true }

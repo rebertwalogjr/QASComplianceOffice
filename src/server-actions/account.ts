@@ -8,9 +8,8 @@ import bcrypt from "bcryptjs"
 import { generateCode, generateRandomPassword } from "@/lib/utils"
 import { createHash } from "crypto"
 
-const prisma = getPrisma()
-
 export async function updateUsername(formData: FormData) {
+  const prisma = getPrisma()
   const userId = await getUserId()
 
   if (!userId) {
@@ -52,7 +51,7 @@ export async function updateUsername(formData: FormData) {
 }
 
 export async function ResetPassword(userId: number) {
-
+  const prisma = getPrisma()
   const genPassword = generateRandomPassword(8)
   const hashedPassword = await bcrypt.hash(genPassword, 10)
 

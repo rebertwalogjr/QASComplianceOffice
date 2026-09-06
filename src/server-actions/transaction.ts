@@ -10,9 +10,8 @@ import fs from 'fs-extra'
 import path from 'path'
 import { getUserId } from "./get-session"
 
-const prisma = getPrisma()
-
 export async function createTransaction(formData: FormData) {
+  const prisma = getPrisma()
   const creatorId = await getUserId()
 
   if (!creatorId) {
@@ -113,6 +112,7 @@ export async function createTransaction(formData: FormData) {
 }
 
 export async function updateTransaction(formData: FormData) {
+  const prisma = getPrisma()
   const creatorId = await getUserId()
 
   if (!creatorId) {
@@ -221,6 +221,7 @@ export async function getTransactions(page: number = 1, pageSize: number = 10, f
   totalCount: number,
   error: any
 }> {
+  const prisma = getPrisma()
   const userId = await getUserId()
 
   const skip = (page - 1) * pageSize
@@ -287,6 +288,8 @@ export async function getTransactions(page: number = 1, pageSize: number = 10, f
 }
 
 export async function getTransactionById(id: number): Promise<{ data: TransactionPayload | null, error: any }> {
+  const prisma = getPrisma()
+
   return await dbQuery(
     prisma.jobTransaction.findUnique({
       where: { id },
@@ -296,7 +299,9 @@ export async function getTransactionById(id: number): Promise<{ data: Transactio
 }
 
 export async function jobTransactionClientUpdate(formData: FormData) {
+  const prisma = getPrisma()
   const creatorId = await getUserId()
+
   if (!creatorId) throw new Error("Unauthorized")
 
   const sessionId = formData.get("sessionId") as string
@@ -433,6 +438,7 @@ export async function jobTransactionClientUpdate(formData: FormData) {
 }
 
 export async function search(params: string): Promise<{ data: TransactionBasicPaylod[] | null, error: any }> {
+  const prisma = getPrisma()
   const idValue = parseInt(params)
   const isNumeric = !isNaN(idValue)
 
@@ -451,6 +457,7 @@ export async function search(params: string): Promise<{ data: TransactionBasicPa
 }
 
 export async function reOpenTransaction(id: number) {
+  const prisma = getPrisma()
   const creatorId = await getUserId()
   if (!creatorId) throw new Error("Unauthorized")
 
@@ -482,6 +489,7 @@ export async function reOpenTransaction(id: number) {
 }
 
 export async function generateAuditFindingNumber(id: number) {
+  const prisma = getPrisma()
   const {data: count, error} = await dbQuery(
     prisma.$executeRaw`
     EXEC pr_GenerateAuditFindingNumber

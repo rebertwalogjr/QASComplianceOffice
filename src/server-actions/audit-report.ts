@@ -6,9 +6,9 @@ import { dbQuery } from "@/lib/prisma-db-utils";
 import { Prisma } from "../../generated/prisma/client";
 import { getUserId } from "./get-session";
 
-const prisma = getPrisma()
-
 export async function getAuditReports() {
+  const prisma = getPrisma()
+
   return await dbQuery(
     prisma.auditReport.findMany({
       include: {
@@ -22,6 +22,7 @@ export async function getAuditReports() {
 }
 
 export async function createAuditReport(formData: FormData) {
+  const prisma = getPrisma()
   const name = formData.get("name") as string;
   const projectId = Number(formData.get("projectId"));
   const auditEngagementId = Number(formData.get("auditEngagementId"));
@@ -54,6 +55,7 @@ export async function createAuditReport(formData: FormData) {
 
 export async function updateAuditReport(formData: FormData) {
   const currentUserId = await getUserId();
+  const prisma = getPrisma()
   
   if (!currentUserId) {
     throw new Error("You must be logged in.")
@@ -86,6 +88,8 @@ export async function updateAuditReport(formData: FormData) {
 }
 
 export async function getActiveAuditReport() : Promise<{ data: ActiveAuditReportPayload[] | null, error: any}> {
+  const prisma = getPrisma()
+  
   return await dbQuery(
     prisma.auditReport.findMany({
       where: { isActive: true}

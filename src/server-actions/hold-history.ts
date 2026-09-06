@@ -6,9 +6,9 @@ import { dbQuery } from "@/lib/prisma-db-utils";
 import { userSelect } from "./selectors";
 import { getUserId } from "./get-session";
 
-const prisma = getPrisma()
-
 export async function getActiveHolding(jobTransactionId: number) : Promise<{ data: HoldingPayload | null, error: any }> {
+  const prisma = getPrisma()
+
   return await dbQuery(
     prisma.holdingHistory.findFirstOrThrow({
       where: { jobTransactionId, isActive: true },
@@ -19,7 +19,9 @@ export async function getActiveHolding(jobTransactionId: number) : Promise<{ dat
 }
 
 export async function liftHoldStatusById(jobTransactionId: number, holdingId: number) {
+  const prisma = getPrisma()
   const creatorId = await getUserId()
+  
   if (!creatorId) throw new Error("Unauthorized")
 
   return await dbQuery(

@@ -4,9 +4,8 @@ import { getPrisma } from "@/lib/prisma"
 import { cache } from "react"
 import { getUserId } from "./get-session";
 
-const prisma = getPrisma()
-
 export const getFilterOptions = cache(async (): Promise<FilterOptionsPayload> => {
+  const prisma = getPrisma()
   const userId = await getUserId()
 
   const [companies, projects, findings, categories, engagements, ratings, reports, groups, rawUsers] = await Promise.all([

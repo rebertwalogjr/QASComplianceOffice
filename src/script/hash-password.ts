@@ -3,13 +3,13 @@ import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 import { getPrisma } from "@/lib/prisma";
 
-const prisma = getPrisma()
-
 // Manually point to the .env file in the root directory
 dotenv.config({ path: path.resolve(process.cwd(), ".env") });
 
 async function main() {
   console.log("--- Starting Password Hashing ---");
+
+  const prisma = getPrisma()
 
   if (!process.env.DATABASE_URL) {
     throw new Error("DATABASE_URL is not defined in your .env file");
@@ -44,5 +44,7 @@ main()
     process.exit(1);
   })
   .finally(async () => {
+    const prisma = getPrisma()
+    
     await prisma.$disconnect();
   });

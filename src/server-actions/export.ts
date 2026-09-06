@@ -5,9 +5,8 @@ import { dbQuery } from "@/lib/prisma-db-utils";
 import { Prisma } from "../../generated/prisma/client";
 import { recipientSelect, userSelect } from "./selectors";
 
-const prisma = getPrisma()
-
 export async function getExportData(filters: any): Promise<{ data: TransactionExportPayload[] | null, error: any }> {
+  const prisma = getPrisma()
   const where: any = {}
 
   if (filters.status?.length) where.jobStatus = { in: filters.status }
@@ -48,6 +47,7 @@ export async function getExportData(filters: any): Promise<{ data: TransactionEx
 }
 
 export async function getExportDatav2(filters: any): Promise<{ data: jobTransactionViewSelect[] | null, error: any }> {
+  const prisma = getPrisma()
   const conditions: Prisma.Sql[] = []
 
   if (filters.status?.length) {

@@ -4,9 +4,9 @@ import { getPrisma } from "@/lib/prisma";
 import { dbQuery } from "@/lib/prisma-db-utils";
 import { Prisma } from "../../generated/prisma/client";
 
-const prisma = getPrisma()
-
 export async function getEmployees(search: string = "", skip: number = 0) : Promise<{data: EmployeePayload[] | null, error: any}> {
+  const prisma = getPrisma()
+  
   return await dbQuery(
     prisma.appSuiteEmployeeMaster.findMany({
       where: {

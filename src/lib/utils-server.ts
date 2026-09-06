@@ -3,9 +3,9 @@
 import { format, isWeekend, addDays } from "date-fns"
 import { getPrisma } from "./prisma"
 
-const prisma = getPrisma()
-
 export async function addDate(startDate: Date, daysToAdd: number) : Promise<Date> {
+  const prisma = getPrisma()
+
   const holidays = await prisma.holiday.findMany({
     where: { isActive: true },
     select: { date: true }

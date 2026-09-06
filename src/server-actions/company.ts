@@ -6,9 +6,9 @@ import { dbQuery } from "@/lib/prisma-db-utils";
 import { Prisma } from "../../generated/prisma/client";
 import { getUserId } from "./get-session";
 
-const prisma = getPrisma()
-
 export async function getCompanies() {
+  const prisma = getPrisma()
+
   return await dbQuery(
     prisma.company.findMany({
       orderBy: { createdOn: "desc"}
@@ -17,6 +17,7 @@ export async function getCompanies() {
 }
 
 export async function createCompany(formData: FormData) {
+  const prisma = getPrisma()
   const name = formData.get("name") as string;
   const code = formData.get("code") as string;
   const currentUserId = await getUserId();
@@ -40,6 +41,7 @@ export async function createCompany(formData: FormData) {
 }
 
 export async function updateCompany(formData: FormData) {
+  const prisma = getPrisma()
   const id = Number(formData.get("id"))
   const name = formData.get("name") as string;
   const code = formData.get("code") as string;
@@ -68,6 +70,8 @@ export async function updateCompany(formData: FormData) {
 }
 
 export async function deleteCompany(companyId: number) {
+  const prisma = getPrisma()
+
   const { data, error } = await dbQuery(
     prisma.company.delete({ where: { id: companyId } })
   )
@@ -76,6 +80,8 @@ export async function deleteCompany(companyId: number) {
 }
 
 export async function getActiveCompanies() : Promise<{ data: ActiveCompanyPayload[] | null, error: any}> {
+  const prisma = getPrisma()
+  
   return await dbQuery(
     prisma.company.findMany({ 
       where: { isActive: true }

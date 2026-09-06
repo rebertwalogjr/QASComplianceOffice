@@ -4,9 +4,9 @@ import { getPrisma } from "@/lib/prisma"
 import { dbQuery } from "@/lib/prisma-db-utils"
 import { Prisma } from "../../generated/prisma/client"
 
-const prisma = getPrisma()
-
 export async function getEscalations() {
+  const prisma = getPrisma()
+
   return await dbQuery(
     prisma.user.findMany({
       where: { isEscalation: true },
@@ -20,6 +20,8 @@ export async function getEscalations() {
 }
 
 export async function getEscalationUser(search: string = "", skip: number = 0): Promise<{ data: EscalationUserPayload[] | null, error: any }> {
+  const prisma = getPrisma()
+  
   return await dbQuery(
     prisma.user.findMany({
       where: {

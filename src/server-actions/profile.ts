@@ -6,9 +6,8 @@ import { Prisma } from "../../generated/prisma/client"
 import { getUserId } from "./get-session"
 import bcrypt from "bcryptjs"
 
-const prisma = getPrisma()
-
 export async function getUserDetails(): Promise<{ data: UserDetailsPayload | null, error: any }> {
+  const prisma = getPrisma()
   const userId = await getUserId()
 
   if (!userId) {
@@ -24,6 +23,7 @@ export async function getUserDetails(): Promise<{ data: UserDetailsPayload | nul
 }
 
 export async function updateUserProfile(formData: FormData) {
+  const prisma = getPrisma()
   const userId = await getUserId()
 
   if (!userId) {

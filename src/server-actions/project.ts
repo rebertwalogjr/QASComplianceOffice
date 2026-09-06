@@ -6,9 +6,9 @@ import { dbQuery } from "@/lib/prisma-db-utils";
 import { Prisma } from "../../generated/prisma/client";
 import { getUserId } from "./get-session";
 
-const prisma = getPrisma()
-
 export async function getProjects() {
+  const prisma = getPrisma()
+
   return await dbQuery(
     prisma.project.findMany({
       include: {
@@ -20,6 +20,8 @@ export async function getProjects() {
 }
 
 export async function getActiveProjects() : Promise<{ data: ActiveProjectPayload[] | null, error: any}> {
+  const prisma = getPrisma()
+
   return await dbQuery(
     prisma.project.findMany({
       where: { isActive: true }
@@ -28,6 +30,7 @@ export async function getActiveProjects() : Promise<{ data: ActiveProjectPayload
 }
 
 export async function createProject(formData: FormData) {
+  const prisma = getPrisma()
   const name = formData.get("name") as string;
   const code = formData.get("code") as string;
   const companyId = Number(formData.get("companyId"));
@@ -55,6 +58,7 @@ export async function createProject(formData: FormData) {
 }
 
 export async function updateProject(formData: FormData, projectId: number) {
+  const prisma = getPrisma()
   const name = formData.get("name") as string;
   const code = formData.get("code") as string;
   const companyId = Number(formData.get("companyId"));

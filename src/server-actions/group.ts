@@ -6,9 +6,9 @@ import { dbQuery } from "@/lib/prisma-db-utils";
 import { Prisma } from "../../generated/prisma/client";
 import { getUserId } from "./get-session";
 
-const prisma = getPrisma()
-
 export async function getGroups() {
+  const prisma = getPrisma()
+
   return await dbQuery(
     prisma.group.findMany({
       include: {
@@ -20,6 +20,8 @@ export async function getGroups() {
 }
 
 export async function getActiveGroups() : Promise<{ data: ActiveGroupPayload[] | null, error: any}> {
+  const prisma = getPrisma()
+
   return await dbQuery(
     prisma.group.findMany({
       where: {
@@ -30,6 +32,7 @@ export async function getActiveGroups() : Promise<{ data: ActiveGroupPayload[] |
 }
 
 export async function createGroup(formData: FormData) {
+  const prisma = getPrisma()
   const currentUserId = await getUserId();
   
   if (!currentUserId) {
@@ -66,6 +69,7 @@ export async function createGroup(formData: FormData) {
 }
 
 export async function updateGroup(formData: FormData) {
+  const prisma = getPrisma()
   const id = Number(formData.get("id"))
   const name = formData.get("name") as string;
   const code = formData.get("code") as string;

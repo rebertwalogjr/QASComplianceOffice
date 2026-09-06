@@ -1,7 +1,5 @@
 import { getPrisma } from "@/lib/prisma"
 
-const prisma = getPrisma()
-
 interface MailPayload {
   to: string
   subject: string
@@ -10,6 +8,8 @@ interface MailPayload {
 }
 
 export async function triggerDatabaseMail({ to, subject, body, cc = "" }: MailPayload) {
+  const prisma = getPrisma()
+  
   try {
     await prisma.$executeRaw`EXEC [dbo].[pr_MailSend] 
       @email_recipient = ${to}, 

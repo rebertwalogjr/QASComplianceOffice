@@ -5,9 +5,9 @@ import { dbQuery } from "@/lib/prisma-db-utils";
 import { Prisma } from "../../generated/prisma/client";
 import { userSelect } from "./selectors";
 
-const prisma = getPrisma()
-
 export async function getAuditTrailByTransId(id: number) : Promise<{ data: AuditTrailPayload[] | null, error: any }> {
+  const prisma = getPrisma()
+  
   return await dbQuery(
     prisma.auditTrail.findMany({
       where: { jobTransactionId: id },
