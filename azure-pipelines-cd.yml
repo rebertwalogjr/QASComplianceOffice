@@ -71,6 +71,49 @@ stages:
                       pm2 --version
 
                 # ==================================================
+                # Clean old download artifacts
+                # ==================================================
+                - task: PowerShell@2
+                  displayName: 'Clean old CI artifacts'
+                  inputs:
+                    targetType: 'inline'
+                    script: |
+                      $ErrorActionPreference = 'Stop'
+
+                      $DropPath = "$(Pipeline.Workspace)\ci\drop"
+
+                      Write-Host "========================================"
+                      Write-Host "CLEAN OLD CI ARTIFACTS"
+                      Write-Host "========================================"
+                      Write-Host "Artifact directory: $DropPath"
+
+                      if (Test-Path $DropPath) {
+                        Write-Host "Existing files:"
+                        Get-ChildItem $DropPath -File | ForEach-Object {
+                          Write-Host "  $($_.Name)"
+                        }
+
+                        Write-Host ""
+                        Write-Host "Removing old ZIP files..."
+
+                        Get-ChildItem $DropPath -Filter "*.zip" -File |
+                          Remove-Item -Force
+
+                        Write-Host "Old ZIP files removed."
+                      }
+                      else {
+                        Write-Host "Drop directory does not exist. Creating it..."
+                        New-Item -ItemType Directory -Path $DropPath -Force | Out-Null
+                      }
+
+                      Write-Host ""
+                      Write-Host "Remaining files:"
+                      Get-ChildItem $DropPath -File -ErrorAction SilentlyContinue |
+                        ForEach-Object {
+                          Write-Host "  $($_.Name)"
+                        }
+
+                # ==================================================
                 # Download artifacts
                 # ==================================================
                 - task: DownloadPipelineArtifact@2
