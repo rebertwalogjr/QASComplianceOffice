@@ -132,7 +132,19 @@ stages:
           displayName: 'Copy public files'
 
         # ==================================================
-        # 4. Create .env.template file
+        # 4. Copy web.config
+        # ==================================================
+        - task: CopyFiles@2
+          inputs:
+            SourceFolder: '$(System.DefaultWorkingDirectory)'
+            Contents: |
+              web.config
+            TargetFolder: '$(Build.ArtifactStagingDirectory)/standalone'
+            OverWrite: true
+          displayName: 'Copy web.config'
+
+        # ==================================================
+        # 5. Create .env.template file
         # ==================================================
         - task: PowerShell@2
           inputs:
@@ -150,7 +162,7 @@ stages:
         #   displayName: 'Create environment template'
 
         # ==================================================
-        # 5. Create store branch info
+        # 6. Create store branch info
         # ==================================================
         - task: PowerShell@2
           inputs:
@@ -164,19 +176,19 @@ stages:
         #   displayName: 'Store branch info'
 
         # ==================================================
-        # Archive standalone build files
+        # 7. Archive standalone build files
         # ==================================================
         - task: ArchiveFiles@2
           inputs:
             rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/standalone'
-            includeRootFolder: true
+            includeRootFolder: false
             archiveType: 'zip'
             archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
             replaceExistingArchive: true
           displayName: 'Compress files into a zip'
 
         # ==================================================
-        # Publish build artifact
+        # 8. Publish build artifact
         # ==================================================
         - task: PublishBuildArtifacts@1
           inputs:
