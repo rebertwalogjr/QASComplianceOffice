@@ -125,7 +125,7 @@ stages:
                     buildVersionToDownload: 'specific'
                     pipelineId: '$(resources.pipeline.ci.runID)'
                     artifactName: 'drop'
-                    targetPath: '$(Pipeline.Workspace)'
+                    targetPath: '$(Pipeline.Workspace)\ci\drop'
 
                 # ==================================================
                 # Clean extraction folder
