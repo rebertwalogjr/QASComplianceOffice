@@ -79,9 +79,30 @@ stages:
                     buildType: 'specific'
                     project: '$(System.TeamProjectId)'
                     definition: '$(resources.pipeline.ci.pipelineID)'
-                    buildVersionToDownload: 'latest'
+                    buildVersionToDownload: 'specific'
+                    pipelineId: '$(resources.pipeline.ci.runID)'
                     artifactName: 'drop'
                     targetPath: '$(Pipeline.Workspace)'
+
+                # ==================================================
+                # Clean extraction folder
+                # ==================================================
+                # - task: PowerShell@2
+                #   displayName: 'Clean extraction folder'
+                #   inputs:
+                #     targetType: 'inline'
+                #     script: |
+                #       $extractPath = "$(System.ArtifactsDirectory)/extracted"
+      
+                #       Write-Host "Cleaning extraction folder: $extractPath"
+                      
+                #       if (Test-Path $extractPath) {
+                #         Remove-Item -Path $extractPath -Recurse -Force -ErrorAction SilentlyContinue
+                #         Write-Host "Removed existing extraction folder."
+                #       }
+                      
+                #       New-Item -ItemType Directory -Path $extractPath -Force | Out-Null
+                #       Write-Host "Created clean extraction folder."
 
                 # ==================================================
                 # Extract artifacts
@@ -91,6 +112,7 @@ stages:
                     archiveFilePatterns: '$(Pipeline.Workspace)/ci/drop/*.zip'
                     destinationFolder: '$(System.ArtifactsDirectory)/extracted'
                     cleanDestinationFolder: true
+                    overwriteExistingFiles: true
                   displayName: 'Extract build artifact'
 
                 # ==================================================
@@ -142,7 +164,7 @@ stages:
                       # Configuration
                       $DeploymentPath = '$(DeploymentPath)'
                       $AppName = '$(appName)'
-                      $SourcePath = "$(System.ArtifactsDirectory)/extracted/standalone"
+                      $SourcePath = "$(System.ArtifactsDirectory)/extracted"
                       $AppPath = Join-Path $DeploymentPath $AppName
 
                       Write-Host "========================================"
@@ -176,6 +198,12 @@ stages:
                       if (-not (Test-Path "$AppPath\package.json")) {
                         throw "package.json not found at $AppPath"
                       }
+
+                      # Validate web.config existence
+                      if (-not (Test-Path "$AppPath\web.config")) {
+                        throw "web.config not found at $AppPath"
+                      }
+                      Write-Host "web.config found at $AppPath\web.config"
 
                 # ==================================================
                 # Setup .env file
@@ -473,6 +501,7 @@ stages:
                     archiveFilePatterns: '$(System.ArtifactsDirectory)/drop/*.zip'
                     destinationFolder: '$(System.ArtifactsDirectory)/extracted'
                     cleanDestinationFolder: true
+                    overwriteExistingFiles: true
                   displayName: 'Extract build artifact'
 
                 # ==================================================
@@ -524,7 +553,7 @@ stages:
                       # Configuration
                       $DeploymentPath = '$(DeploymentPath)'
                       $AppName = '$(appName)'
-                      $SourcePath = "$(System.ArtifactsDirectory)/extracted/standalone"
+                      $SourcePath = "$(System.ArtifactsDirectory)/extracted"
                       $AppPath = Join-Path $DeploymentPath $AppName
 
                       Write-Host "========================================"
@@ -566,6 +595,12 @@ stages:
                       if (-not (Test-Path "$AppPath\package.json")) {
                         throw "package.json not found at $AppPath"
                       }
+
+                      # Validate web.config existence
+                      if (-not (Test-Path "$AppPath\web.config")) {
+                        throw "web.config not found at $AppPath"
+                      }
+                      Write-Host "web.config found at $AppPath\web.config"
 
                 # ==================================================
                 # Setup .env file
