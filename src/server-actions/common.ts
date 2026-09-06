@@ -1,11 +1,10 @@
 "use server"
 
-import { prisma } from "@/lib/prisma"
-import { revalidatePath } from "next/cache"
-import { dbQuery } from "@/lib/prisma-db-utils"
-import { Prisma } from "../../generated/prisma/client"
+import { getPrisma } from "@/lib/prisma"
 import { cache } from "react"
 import { getUserId } from "./get-session";
+
+const prisma = getPrisma()
 
 export const getFilterOptions = cache(async (): Promise<FilterOptionsPayload> => {
   const userId = await getUserId()

@@ -1,8 +1,10 @@
 "use server"
 
-import { prisma } from "@/lib/prisma"
+import { getPrisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { getUserId } from "./get-session"
+
+const prisma = getPrisma()
 
 export async function updateUserTheme(theme: string) {
   const creatorId = await getUserId()

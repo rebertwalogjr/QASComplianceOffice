@@ -1,8 +1,10 @@
 "use server"
 
-import { prisma } from "@/lib/prisma" // adjust to your prisma instance location
+import { getPrisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { getUserId } from "./get-session"
+
+const prisma = getPrisma()
 
 interface ChangePasswordPayload {
   oldPassword: string

@@ -1,10 +1,11 @@
 "use server"
 
-import { prisma } from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
+import { getPrisma } from "@/lib/prisma";
 import { dbQuery } from "@/lib/prisma-db-utils";
 import { Prisma } from "../../generated/prisma/client";
 import { userSelect } from "./selectors";
+
+const prisma = getPrisma()
 
 export async function getAuditTrailByTransId(id: number) : Promise<{ data: AuditTrailPayload[] | null, error: any }> {
   return await dbQuery(

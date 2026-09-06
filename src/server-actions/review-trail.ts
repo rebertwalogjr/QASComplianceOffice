@@ -1,12 +1,14 @@
 "use server"
 
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { dbQuery } from "@/lib/prisma-db-utils";
 import { getUserId } from "./get-session";
 import { userSelect } from "./selectors";
 import { Prisma } from "../../generated/prisma/client";
 import { triggerWebhook } from "@/lib/webhook";
+
+const prisma = getPrisma()
 
 export async function createReviewTrail(formData: FormData) {
   const creatorId = await getUserId()

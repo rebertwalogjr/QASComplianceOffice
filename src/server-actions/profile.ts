@@ -1,11 +1,12 @@
 "use server"
 
-import { prisma } from "@/lib/prisma"
-import { revalidatePath } from "next/cache"
+import { getPrisma } from "@/lib/prisma"
 import { dbQuery } from "@/lib/prisma-db-utils"
 import { Prisma } from "../../generated/prisma/client"
 import { getUserId } from "./get-session"
 import bcrypt from "bcryptjs"
+
+const prisma = getPrisma()
 
 export async function getUserDetails(): Promise<{ data: UserDetailsPayload | null, error: any }> {
   const userId = await getUserId()

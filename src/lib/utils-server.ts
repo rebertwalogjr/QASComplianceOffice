@@ -1,7 +1,9 @@
 "use server"
 
 import { format, isWeekend, addDays } from "date-fns"
-import { prisma } from "./prisma"
+import { getPrisma } from "./prisma"
+
+const prisma = getPrisma()
 
 export async function addDate(startDate: Date, daysToAdd: number) : Promise<Date> {
   const holidays = await prisma.holiday.findMany({

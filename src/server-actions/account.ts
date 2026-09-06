@@ -1,13 +1,14 @@
 "use server"
 
-import { prisma } from "@/lib/prisma"
+import { getPrisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { dbQuery } from "@/lib/prisma-db-utils"
-import { Prisma } from "../../generated/prisma/client"
 import { getUserId } from "./get-session"
 import bcrypt from "bcryptjs"
 import { generateCode, generateRandomPassword } from "@/lib/utils"
 import { createHash } from "crypto"
+
+const prisma = getPrisma()
 
 export async function updateUsername(formData: FormData) {
   const userId = await getUserId()

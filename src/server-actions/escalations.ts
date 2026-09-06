@@ -1,10 +1,10 @@
 "use server"
 
-import { prisma } from "@/lib/prisma"
-import { revalidatePath } from "next/cache"
+import { getPrisma } from "@/lib/prisma"
 import { dbQuery } from "@/lib/prisma-db-utils"
 import { Prisma } from "../../generated/prisma/client"
-import { getUserId, getSession } from "./get-session"
+
+const prisma = getPrisma()
 
 export async function getEscalations() {
   return await dbQuery(

@@ -1,8 +1,10 @@
 "use server"
 
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { dbQuery } from "@/lib/prisma-db-utils";
+
+const prisma = getPrisma()
 
 // Stored Proc Actions
 export async function execAppSuiteEmployeeMasterUpdateAll() {

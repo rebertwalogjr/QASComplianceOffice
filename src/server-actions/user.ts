@@ -1,6 +1,6 @@
 "use server"
 
-import { prisma } from "@/lib/prisma"
+import { getPrisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { dbQuery } from "@/lib/prisma-db-utils"
 import { Prisma } from "../../generated/prisma/client"
@@ -9,6 +9,8 @@ import { getUserId, getSession } from "./get-session"
 import { triggerDatabaseMail } from "@/lib/mail-service"
 import { getUserInvitationEmailHtml } from "@/lib/email-builder"
 import { generateRandomPassword } from "@/lib/utils"
+
+const prisma = getPrisma()
 
 export async function getUsers(): Promise<{ data: UserBasicIncludePayload[] | null, error: any }> {
   return await dbQuery(

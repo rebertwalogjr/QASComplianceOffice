@@ -1,10 +1,11 @@
 "use server"
 
-import { prisma } from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
+import { getPrisma } from "@/lib/prisma";
 import { dbQuery } from "@/lib/prisma-db-utils";
 import { Prisma } from "../../generated/prisma/client";
 import { recipientSelect, userSelect } from "./selectors";
+
+const prisma = getPrisma()
 
 export async function getExportData(filters: any): Promise<{ data: TransactionExportPayload[] | null, error: any }> {
   const where: any = {}

@@ -1,7 +1,9 @@
 import path from "path";
 import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
+
+const prisma = getPrisma()
 
 // Manually point to the .env file in the root directory
 dotenv.config({ path: path.resolve(process.cwd(), ".env") });

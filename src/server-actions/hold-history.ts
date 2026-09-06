@@ -1,11 +1,12 @@
 "use server"
 
-import { prisma } from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
+import { getPrisma } from "@/lib/prisma";
 import { Prisma } from "../../generated/prisma/client";
 import { dbQuery } from "@/lib/prisma-db-utils";
 import { userSelect } from "./selectors";
 import { getUserId } from "./get-session";
+
+const prisma = getPrisma()
 
 export async function getActiveHolding(jobTransactionId: number) : Promise<{ data: HoldingPayload | null, error: any }> {
   return await dbQuery(

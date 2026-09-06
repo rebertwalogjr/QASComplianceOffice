@@ -1,10 +1,12 @@
 "use server"
 
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { dbQuery } from "@/lib/prisma-db-utils";
 import { Prisma } from "../../generated/prisma/client";
 import { getUserId } from "./get-session";
+
+const prisma = getPrisma()
 
 export async function getAuditRatings() {
   return await dbQuery(
