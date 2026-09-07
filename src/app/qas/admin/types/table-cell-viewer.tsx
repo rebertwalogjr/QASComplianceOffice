@@ -16,10 +16,12 @@ import { Loader2, X } from "lucide-react"
 import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field"
 import { TypeOfFinding } from "../../../../../generated/prisma/client"
 import { updateFindingType } from "@/server-actions/finding-type"
+import { Checkbox } from "@/components/ui/checkbox"
 
 const findingTypeUpdateSchema = z.object({
   name: z.string().min(1, "Finding type name is required"),
   isActive: z.string(),
+  requireAcceptance: z.boolean(),
 })
 
 type FindingTypeUpdateValues = z.infer<typeof findingTypeUpdateSchema>
@@ -38,7 +40,8 @@ export default function TableCellViewer({ item, className }: Props) {
     resolver: zodResolver(findingTypeUpdateSchema),
     values: {
       name: item.name,
-      isActive: item.isActive ? "Active" : "Inactive"
+      isActive: item.isActive ? "Active" : "Inactive",
+      requireAcceptance: item.requireAcceptance,
     }
   })
 
@@ -47,8 +50,9 @@ export default function TableCellViewer({ item, className }: Props) {
     formData.append("id", item.id.toString())
     formData.append("name", values.name)
     formData.append("isActive", (values.isActive === "Active").toString())
+    formData.append("requireAcceptance", String(values.requireAcceptance))
 
-    const response = await updateFindingType(formData);
+    const response = await updateFindingType(formData)
 
     if (response.error) {
       toast.error(response.error)
@@ -56,7 +60,7 @@ export default function TableCellViewer({ item, className }: Props) {
       toast.success("Finding type updated successfully!", { position: "top-center" })
       reset()
       setIsEditing(false)
-      setIsOpen(false);
+      setIsOpen(false)
     }
   }
 
@@ -107,28 +111,46 @@ export default function TableCellViewer({ item, className }: Props) {
                       {...register("name")}
                       readOnly={!isEditing}
                       className={!isEditing ? "bg-muted/30 border-transparent shadow-none" : ""} />
-                      {errors.name && <p className="text-[10px] text-destructive mt-1">{errors.name.message}</p>}
+                    {errors.name && <p className="text-[10px] text-destructive mt-1">{errors.name.message}</p>}
                   </Field>
 
                   {/* Status Field */}
-                <Field>
-                  <FieldLabel>Status</FieldLabel>
-                  <Controller
-                    name="isActive"
-                    control={control}
-                    render={({ field }) => (
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <SelectTrigger className={!isEditing ? "bg-muted/30 border-transparent shadow-none pointer-events-none cursor-default" : ""}>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Active">Active</SelectItem>
-                          <SelectItem value="Inactive">Inactive</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
-                </Field>
+                  <Field>
+                    <FieldLabel>Status</FieldLabel>
+                    <Controller
+                      name="isActive"
+                      control={control}
+                      render={({ field }) => (
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <SelectTrigger className={!isEditing ? "bg-muted/30 border-transparent shadow-none pointer-events-none cursor-default" : ""}>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Active">Active</SelectItem>
+                            <SelectItem value="Inactive">Inactive</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                  </Field>
+
+                  {/* Require Acceptamce Field */}
+                  <Field orientation="horizontal">
+                    <Controller
+                      name="requireAcceptance"
+                      defaultValue={true}
+                      control={control}
+                      render={({ field }) => (
+                        <Checkbox
+                          id="requireAcceptance"
+                          checked={field.value}
+                          onCheckedChange={(checked) => field.onChange(checked === true)}
+                          disabled={!isEditing}
+                        />
+                      )}
+                    />
+                    <FieldLabel htmlFor="requireAcceptance">Require Acceptance</FieldLabel>
+                  </Field>
 
                 </FieldGroup>
               </FieldSet>

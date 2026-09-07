@@ -309,6 +309,18 @@ export async function jobTransactionClientUpdate(formData: FormData) {
   const type = formData.get("actionType")
   const comment = formData.get("comment") as string
   const payload = formData.get("payload") as string
+  const corrCommitmentDateValue = formData.get("corrCommitmentDate")
+  const prevCommitmentDateValue = formData.get("prevCommitmentDate")
+
+  const corrCommitmentDate =
+  corrCommitmentDateValue && String(corrCommitmentDateValue).trim() !== ""
+    ? new Date(String(corrCommitmentDateValue))
+    : null
+
+const prevCommitmentDate =
+  prevCommitmentDateValue && String(prevCommitmentDateValue).trim() !== ""
+    ? new Date(String(prevCommitmentDateValue))
+    : null
 
   const { deletedAttachmentIds } = JSON.parse(payload)
 
@@ -336,9 +348,9 @@ export async function jobTransactionClientUpdate(formData: FormData) {
     case "accept":
       rawData = {
         correctiveAction: formData.get("correctiveAction") as string ?? "",
-        correctiveCommitmentDate: new Date(formData.get("corrCommitmentDate") as string) ?? null,
+        correctiveCommitmentDate: corrCommitmentDate,
         preventiveAction: formData.get("preventiveAction") as string ?? "",
-        preventiveCommitmentDate: new Date(formData.get("prevCommitmentDate") as string) ?? null,
+        preventiveCommitmentDate: prevCommitmentDate,
         jobStatus: 'accepted', onHold: false
       }
       actionTaken = "accepted this series"
@@ -530,7 +542,7 @@ const transactionInfoInclude = {
   company: { select: { id: true, name: true, isActive: true } },
   project: { select: { id: true, name: true, isActive: true } },
   auditEngagement: { select: { id: true, name: true, isActive: true } },
-  typeOfFinding: { select: { id: true, name: true, isActive: true } },
+  typeOfFinding: { select: { id: true, name: true, isActive: true, requireAcceptance: true } },
   findingCategory: { select: { id: true, name: true, isActive: true } },
   complianceOfficer: userSelect,
   complianceSecretariat: userSelect,

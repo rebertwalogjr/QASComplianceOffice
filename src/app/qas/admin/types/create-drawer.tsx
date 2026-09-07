@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { useForm } from "react-hook-form"
+import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import z from "zod"
 import { toast } from "sonner"
@@ -14,9 +14,11 @@ import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { Loader2, PlusCircle, X } from "lucide-react"
 import { createFindingType } from "@/server-actions/finding-type"
+import { Checkbox } from "@/components/ui/checkbox"
 
 const findingTypeSchema = z.object({
-  name: z.string().min(1, "Finding type name is required")
+  name: z.string().min(1, "Finding type name is required"),
+  requireAcceptance: z.boolean()
 })
 
 type FindingTypeFormValues = z.infer<typeof findingTypeSchema>
@@ -29,21 +31,23 @@ export default function CreateDrawer() {
     resolver: zodResolver(findingTypeSchema),
     defaultValues: {
       name: "",
+      requireAcceptance: true
     }
   })
 
   const onSubmit = async (values: FindingTypeFormValues) => {
-    const formData = new FormData();
-    formData.append("name", values.name);
+    const formData = new FormData()
+    formData.append("name", values.name)
+    formData.append("requireAcceptance", String(values.requireAcceptance))
 
-    const response = await createFindingType(formData);
+    const response = await createFindingType(formData)
 
     if (response.error) {
       toast.error(response.error)
     } else {
-      toast.success("Finding type created successfully!", { position: "top-center" });
+      toast.success("Finding type created successfully!", { position: "top-center" })
       reset()
-      setIsOpen(false);
+      setIsOpen(false)
     }
   }
 
@@ -86,9 +90,25 @@ export default function CreateDrawer() {
                   <Field>
                     <FieldLabel htmlFor="name">Name</FieldLabel>
                     <Input id="name"
-                     placeholder="e.g. Action Item"
-                     {...register("name")} />
+                      placeholder="e.g. Action Item"
+                      {...register("name")} />
                     {errors.name && <p className="text-xs text-destructive mt-1">{errors.name.message}</p>}
+                  </Field>
+
+                  <Field orientation="horizontal">
+                    <Controller
+                      name="requireAcceptance"
+                      defaultValue={true}
+                      control={control}
+                      render={({ field }) => (
+                        <Checkbox
+                          id="requireAcceptance"
+                          checked={field.value}
+                          onCheckedChange={(checked) => field.onChange(checked === true)}
+                        />
+                      )}
+                    />
+                    <FieldLabel htmlFor="requireAcceptance">Require Acceptance</FieldLabel>
                   </Field>
 
                 </FieldGroup>
@@ -108,5 +128,5 @@ export default function CreateDrawer() {
         </form>
       </DrawerContent>
     </Drawer>
-  );
+  )
 }

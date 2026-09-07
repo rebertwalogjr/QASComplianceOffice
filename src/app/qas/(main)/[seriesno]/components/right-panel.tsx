@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
+import React, { useState, useMemo, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useForm, Controller } from "react-hook-form"
@@ -15,12 +15,13 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { DatePicker, DateRangePicker } from "@/components/datepicker"
 import { Separator } from "@/components/ui/separator"
-import { Loader2 } from "lucide-react"
+import { Asterisk, Loader2 } from "lucide-react"
 import StatusBadge from "@/components/status-badge"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { HoldingPayload } from "@/server-actions/hold-history"
 import { FileUpload, Attachment } from "@/components/FileUpload"
 import AttachmentViewer from "@/components/series/attachments-viewer"
+import { Badge } from "@/components/ui/badge"
 
 export default function RightPanel({ jobTransaction, activeHolding }: { jobTransaction: TransactionPayload, activeHolding: HoldingPayload | null }) {
   const router = useRouter()
@@ -38,14 +39,16 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
   const isCancelled = jobTransaction.jobStatus === "cancelled"
   const isHeld = jobTransaction.jobStatus === "on-hold"
 
+  const requireAcceptance = jobTransaction.typeOfFinding.requireAcceptance
+
   // Generate sessionId for attachment upload
   useEffect(() => {
     if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-      setSessionId(crypto.randomUUID());
+      setSessionId(crypto.randomUUID())
     } else {
       // Basic fallback for non-secure contexts
-      const fallbackId = (Math.random().toString(36).substring(2) + Date.now().toString(36));
-      setSessionId(fallbackId);
+      const fallbackId = (Math.random().toString(36).substring(2) + Date.now().toString(36))
+      setSessionId(fallbackId)
     }
   }, [])
 
@@ -112,7 +115,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
     }).superRefine((data, ctx) => {
       const isAcceptanceStage = permissions.isStateApproved && permissions.canAccept
 
-      if (isAcceptanceStage && !data.isHold && !data.isCancel) {
+      if (isAcceptanceStage && requireAcceptance && !data.isHold && !data.isCancel) {
         if (!data.correctiveAction || data.correctiveAction.trim() === "") {
           ctx.addIssue({
             code: "custom",
@@ -202,9 +205,23 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
   const isForClosingChecked = watch("isForClosing")
   const isToCloseChecked = watch("isToClose")
   const holdRangeValue = watch("holdRange")
+  const commentValue = watch("comment")
+  const correctiveActionValue = watch("correctiveAction")
+  const preventiveActionValue = watch("preventiveAction")
+  const corrCommitmentDateValue = watch("corrCommitmentDate")
+  const prevCommitmentDateValue = watch("prevCommitmentDate")
 
   const showUpdateArea = !isHoldChecked && !isCancelChecked && (permissions.canAccept || isAccepted || isForClosing || isClosed)
-  
+  const isAcceptanceStage = permissions.isStateApproved && permissions.canAccept && !isAccepted && !isCancelled && !isForClosing && !isClosed
+
+  const notValidAttachment = useMemo(() => {
+    const activeAttachmentIds = attachments.filter((f) => f.isDbRecord && !f.isMarkedForDeletion).map((f) => f.id)
+    const deletedAttachmentIds = attachments.filter((f) => f.isDbRecord && f.isMarkedForDeletion).map((f) => f.id)
+    const prevAttCount = activeAttachmentIds.length - deletedAttachmentIds.length
+    const attCount = prevAttCount + attachments.length
+    return (attCount === 0)
+  }, [attachments])
+
   const disableCommenting = useMemo(() => {
     // 1. Verification
     if (permissions.canVerify && permissions.isStateNew) return false
@@ -223,7 +240,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
   }, [permissions, isVerifiedChecked, isApprovedChecked, isForClosingChecked, isToCloseChecked, isCancelChecked, isHoldChecked])
 
   const isFormDisabled = useMemo(() => {
-    const hasComment = !!watch("comment")?.trim()
+    const hasComment = !!commentValue?.trim()
     if (isPending) return true
     if (isClosed || isCancelled || isHeld) return true
 
@@ -234,8 +251,9 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
     }
     // RULE 2: Verified stage requirements
     if (permissions.isStateVerified) {
-      if (permissions.canApprove && !isApprovedChecked) return true
       if (!permissions.canApprove) return true
+      if (!isApprovedChecked) return true
+      if (!hasComment) return true
     }
     // RULE 3: Acceptance criteria validation
     if (permissions.isStateApproved) {
@@ -252,22 +270,39 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
       if (isCancelChecked) {
         return !hasComment
       }
-      const hasActions = !!watch("correctiveAction")?.trim() && !!watch("preventiveAction")?.trim()
-      const hasDates = !!watch("corrCommitmentDate") && !!watch("prevCommitmentDate")
-      if (!hasActions || !hasDates || !hasComment) return true
+      if (requireAcceptance) {
+        const hasActions = !!watch("correctiveAction")?.trim() && !!watch("preventiveAction")?.trim()
+        const hasDates = !!watch("corrCommitmentDate") && !!watch("prevCommitmentDate")
+
+        if (!hasActions || !hasDates || !hasComment) return true
+        if (notValidAttachment) return true
+      }
+      if (!hasComment) return true
     }
     // RULE 4: Action check configurations
     if (isAccepted) {
       if (permissions.canAskForClosing && !isForClosingChecked) return true
       if (!permissions.canAskForClosing) return true
+      if (!hasComment) return true
     }
     // RULE 5: Closing stage
     if (isForClosing) {
       if (permissions.canClose && !isToCloseChecked) return true
       if (!permissions.canClose) return true
+      if (!hasComment) return true
     }
     return false
-  }, [permissions, isPending, isAccepted, isForClosing, isCancelChecked, isVerifiedChecked, isApprovedChecked, isHoldChecked, isApprovedChecked, isForClosingChecked, isToCloseChecked, holdRangeValue, watch("correctiveAction"), watch("preventiveAction"), watch("corrCommitmentDate"), watch("prevCommitmentDate"), watch("holdRange.start"), watch("holdRange.end"), watch("comment")])
+  }, [permissions, isPending, isAccepted, isForClosing, isCancelChecked, isVerifiedChecked,
+    isApprovedChecked, isHoldChecked, isApprovedChecked, isForClosingChecked, isToCloseChecked,
+    notValidAttachment,
+    holdRangeValue,
+    correctiveActionValue,
+    preventiveActionValue,
+    corrCommitmentDateValue,
+    prevCommitmentDateValue,
+    watch("holdRange.start"),
+    watch("holdRange.end"),
+    commentValue])
 
   useEffect(() => {
     // Clear validation errors for Update Area when moving to hold
@@ -299,16 +334,9 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
     }
   }, [activeHolding])
 
-  const notValidAttachment = useMemo(() => {
-    const activeAttachmentIds = attachments.filter((f) => f.isDbRecord && !f.isMarkedForDeletion).map((f) => f.id)
-    const deletedAttachmentIds = attachments.filter((f) => f.isDbRecord && f.isMarkedForDeletion).map((f) => f.id)
-    const prevAttCount = activeAttachmentIds.length - deletedAttachmentIds.length
-    const attCount = prevAttCount + attachments.length
-    return (attCount === 0)
-  }, [attachments])
 
   const onSubmit = async (data: JobTransactionFormValues) => {
-    if(permissions.canAccept && notValidAttachment && !isHoldChecked) return 
+    if (permissions.canAccept && requireAcceptance && notValidAttachment && !isHoldChecked && !isCancelChecked) return
 
     setIsPending(true)
 
@@ -369,6 +397,29 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
     }
 
     setIsPending(false)
+  }
+
+  const FieldRequirement = () => {
+    if (!isAcceptanceStage) return null
+
+    return requireAcceptance ? (
+      <Asterisk className="text-red-600 size-4" />
+    ) : (
+      <Badge className="bg-muted text-muted-foreground dark:bg-muted-foreground dark:text-muted">
+        Optional
+      </Badge>
+    )
+  }
+
+  const UpdateAreaView = ({ isEmpty, children }: { isEmpty: boolean, children: React.ReactNode }) => {
+    if (isAcceptanceStage) return children
+
+    return isEmpty ? (
+      <div className="border rounded-md px-3 py-2 bg-muted">
+        <span className="font-normal text-sm text-muted-foreground">None</span>
+      </div>
+    ) :
+      children
   }
 
   return (
@@ -553,79 +604,112 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
               <Label className="text-muted-foreground text-xs uppercase font-bold">Update Area</Label>
 
               <Field>
-                <FieldLabel className="text-muted-foreground">Corrective Actions</FieldLabel>
-                <Textarea
-                  id="correctiveAction"
-                  {...register("correctiveAction")}
-                  defaultValue={jobTransaction.correctiveAction ?? ""}
-                  placeholder="Type here..."
-                  className="resize-none"
-                  readOnly={!permissions.canAccept}
-                  disabled={permissions.canAccept && isHoldChecked && isCancelChecked}
-                />
+                <div className="flex items-center gap-2">
+                  <FieldLabel className="text-muted-foreground">Corrective Actions</FieldLabel>
+                  <FieldRequirement />
+                </div>
+                {
+                  <UpdateAreaView isEmpty={!jobTransaction.correctiveAction?.trim()}>
+                    <Textarea
+                      id="correctiveAction"
+                      {...register("correctiveAction")}
+                      defaultValue={jobTransaction.correctiveAction ?? ""}
+                      placeholder="Type here..."
+                      className="resize-none"
+                      readOnly={!permissions.canAccept}
+                      disabled={permissions.canAccept && isHoldChecked && isCancelChecked}
+                    />
+                  </UpdateAreaView>
+                }
                 {errors.correctiveAction && <FieldError>{errors.correctiveAction.message}</FieldError>}
               </Field>
 
               <Field>
-                <FieldLabel className="text-muted-foreground">Corrective Commitment Date</FieldLabel>
-                <Controller
-                  control={control}
-                  name="corrCommitmentDate"
-                  render={({ field }) => (
-                    <DatePicker
-                      defaultDate={field.value ?? undefined}
-                      onChange={field.onChange}
-                      readonly={!permissions.canAccept}
-                      disabled={permissions.canAccept && isHoldChecked && isCancelChecked}
-                      disablePastDates={true}
+                <div className="flex items-center gap-1">
+                  <FieldLabel className="text-muted-foreground">Corrective Commitment Date</FieldLabel>
+                  <FieldRequirement />
+                </div>
+                {
+                  <UpdateAreaView isEmpty={jobTransaction.correctiveCommitmentDate === null}>
+                    <Controller
+                      control={control}
+                      name="corrCommitmentDate"
+                      render={({ field }) => (
+                        <DatePicker
+                          defaultDate={field.value ?? undefined}
+                          onChange={field.onChange}
+                          readonly={!permissions.canAccept}
+                          disabled={permissions.canAccept && isHoldChecked && isCancelChecked}
+                          disablePastDates={true}
+                        />
+                      )}
                     />
-                  )}
-                />
+                  </UpdateAreaView>
+                }
                 {errors.corrCommitmentDate && <FieldError>{errors.corrCommitmentDate.message}</FieldError>}
               </Field>
 
               <Field>
-                <FieldLabel className="text-muted-foreground">Preventive Actions</FieldLabel>
-                <Textarea
-                  id="preventiveAction"
-                  {...register("preventiveAction")}
-                  defaultValue={jobTransaction.preventiveAction ?? ""}
-                  placeholder="Type here..."
-                  className="resize-none"
-                  readOnly={!permissions.canAccept}
-                  disabled={permissions.canAccept && isHoldChecked && isCancelChecked}
-                />
+                <div className="flex items-center gap-1">
+                  <FieldLabel className="text-muted-foreground">Preventive Actions</FieldLabel>
+                  <FieldRequirement />
+                </div>
+                {
+                  <UpdateAreaView isEmpty={!jobTransaction.preventiveAction?.trim()}>
+                    <Textarea
+                      id="preventiveAction"
+                      {...register("preventiveAction")}
+                      defaultValue={jobTransaction.preventiveAction ?? ""}
+                      placeholder="Type here..."
+                      className="resize-none"
+                      readOnly={!permissions.canAccept}
+                      disabled={permissions.canAccept && isHoldChecked && isCancelChecked}
+                    />
+                  </UpdateAreaView>
+                }
                 {errors.preventiveAction && <FieldError>{errors.preventiveAction.message}</FieldError>}
               </Field>
 
               <Field>
-                <FieldLabel className="text-muted-foreground">Preventive Commitment Date</FieldLabel>
-                <Controller
-                  control={control}
-                  name="prevCommitmentDate"
-                  render={({ field }) => (
-                    <DatePicker
-                      defaultDate={field.value ?? undefined}
-                      onChange={field.onChange}
-                      readonly={!permissions.canAccept}
-                      disabled={permissions.canAccept && isHoldChecked && isCancelChecked}
-                      disablePastDates={true}
+                <div className="flex items-center gap-1">
+                  <FieldLabel className="text-muted-foreground">Preventive Commitment Date</FieldLabel>
+                  <FieldRequirement />
+                </div>
+                {
+                  <UpdateAreaView isEmpty={!jobTransaction.preventiveCommitmentDate}>
+                    <Controller
+                      control={control}
+                      name="prevCommitmentDate"
+                      render={({ field }) => (
+                        <DatePicker
+                          defaultDate={field.value ?? undefined}
+                          onChange={field.onChange}
+                          readonly={!permissions.canAccept}
+                          disabled={permissions.canAccept && isHoldChecked && isCancelChecked}
+                          disablePastDates={true}
+                        />
+                      )}
                     />
-                  )}
-                />
+                  </UpdateAreaView>
+                }
                 {errors.prevCommitmentDate && <FieldError>{errors.prevCommitmentDate.message}</FieldError>}
               </Field>
 
               {/* Recipient's Attachement Upload */}
               {!(isAccepted || isClosed || isForClosing) &&
                 <Field>
-                  <FieldLabel className="text-muted-foreground" htmlFor="attachments">Attachments</FieldLabel>
+                  <div className="flex items-center gap-1">
+                    <FieldLabel className="text-muted-foreground" htmlFor="attachments">Attachments</FieldLabel>
+                    <FieldRequirement />
+                  </div>
                   <FileUpload
                     sessionId={sessionId}
                     onFilesChange={setAttachments}
                     initialAttachments={jobTransaction.attachments.filter(att => att.isActive && att.fromRecipient)}
                   />
-                  {notValidAttachment && <p className="text-sm text-destructive mt-1">{`At least one attachment is required`}</p>}
+                  {permissions.canAccept && requireAcceptance && notValidAttachment && !isHoldChecked && !isCancelChecked && (
+                    <p className="text-sm text-destructive mt-1">{`At least one attachment is required`}</p>
+                  )}
                 </Field>
               }
 
@@ -646,7 +730,10 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
           {!(isClosed || isCancelled || isHeld) &&
             <>
               <div className="flex flex-col gap-3">
-                <Label htmlFor="comment" className="text-muted-foreground">{isHoldChecked ? "Holding Reason" : isCancelChecked ? "Cancel Reason" : "Comments / Remarks"}</Label>
+                <div className="flex items-center gap-1">
+                  <Label htmlFor="comment" className="text-muted-foreground">{isHoldChecked ? "Holding Reason" : isCancelChecked ? "Cancel Reason" : "Comments / Remarks"}</Label>
+                  <Asterisk className="text-red-600 size-4" />
+                </div>
                 <Textarea id="comment"
                   {...register("comment")}
                   placeholder="Type here..."

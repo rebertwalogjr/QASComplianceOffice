@@ -29,6 +29,7 @@ export async function getActiveFindingTypes() : Promise<{ data: ActiveFindingTyp
 export async function createFindingType(formData: FormData) {
   const prisma = getPrisma()
   const name = formData.get("name") as string
+  const requireAcceptance = formData.get("requireAcceptance") === "true"
   const currentUserId = await getUserId()
 
   if (!currentUserId) {
@@ -39,6 +40,7 @@ export async function createFindingType(formData: FormData) {
     prisma.typeOfFinding.create({
       data: {
         name,
+        requireAcceptance,
         createdBy: currentUserId,
       },
     })
@@ -58,6 +60,7 @@ export async function updateFindingType(formData: FormData) {
 
   const id = Number(formData.get("id"))
   const name = formData.get("name") as string
+  const requireAcceptance = formData.get("requireAcceptance") === "true"
   const isActive = formData.get("isActive") === "true"
   
   const { data, error } = await dbQuery(
@@ -66,6 +69,7 @@ export async function updateFindingType(formData: FormData) {
       data: {
         name,
         isActive,
+        requireAcceptance,
         modifiedBy: currentUserId,
         modifiedOn: new Date(),
       }

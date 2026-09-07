@@ -43,7 +43,11 @@ export default function AttachmentViewer({ jobTransactionId, attachments } : Att
     }
   }
 
-  if (attachments.length === 0) return <p className="text-sm text-muted-foreground">No attachments found</p>
+  if (attachments.length === 0) return (
+    <div className="border rounded-md px-3 py-2 bg-muted">
+        <span className="font-normal text-sm text-muted-foreground">No attachment/s found</span>
+      </div>
+  )
 
   return (
     <div className="grid grid-cols-1 space-y-2 w-full">
