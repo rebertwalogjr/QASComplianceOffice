@@ -2,7 +2,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
-import { ResetPassword } from "@/server-actions/account"
+import { adminTriggeredResetPassword } from "@/server-actions/account"
 import { toast } from "sonner"
 
 type ResetAccountProps = {
@@ -15,7 +15,7 @@ type ResetAccountProps = {
 export default function ResetAccountDialog({ id, employeeNumber, email, fullName }: ResetAccountProps) {
 
   const onSubmit = async () => {
-    const result = await ResetPassword(id)
+    const result = await adminTriggeredResetPassword(id)
 
     if (result.success) {
       toast.success(result.message, { position: "top-center" })

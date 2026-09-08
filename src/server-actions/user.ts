@@ -6,8 +6,6 @@ import { dbQuery } from "@/lib/prisma-db-utils"
 import { Prisma } from "../../generated/prisma/client"
 import bcrypt from "bcryptjs"
 import { getUserId, getSession } from "./get-session"
-import { triggerDatabaseMail } from "@/lib/mail-service"
-import { getUserInvitationEmailHtml } from "@/lib/email-builder"
 import { generateRandomPassword } from "@/lib/utils"
 
 export async function getUsers(): Promise<{ data: UserBasicIncludePayload[] | null, error: any }> {
@@ -131,18 +129,15 @@ export async function createUser(formData: any) {
         include: userInfoInclude
       })
 
+      // send email notif
+      await tx.$executeRaw`
+        EXEC dbo.pr_SendUserInvitationEmailNotif
+          @UserId = ${newUser.id},
+          @Password = ${genPassword}`
+
       return newUser
     })
   )
-
-  if (newUser) {
-    const emailHtml = await getUserInvitationEmailHtml({ newUser, password: genPassword })
-    triggerDatabaseMail({
-      to: emailHtml.recipient,
-      subject: emailHtml.subject,
-      body: emailHtml.template
-    }).catch(err => console.error("Background Email Error:", err))
-  }
 
   if (error) { return { newUser, error } }
   revalidatePath("/qas/admin/users")

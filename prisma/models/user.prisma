@@ -26,7 +26,7 @@ model User {
   passwordChangedAt         DateTime?              @db.DateTime
   usernameChangedAt         DateTime?              @db.DateTime
   emailChangedAt            DateTime?              @db.DateTime
-  theme                     String                 @default("system") @db.NVarChar(50)
+  theme                     String                 @default("light") @db.NVarChar(50)
   escalation1User           User?                  @relation("escalation1User", fields: [escalation1], references: [id], onUpdate: NoAction, onDelete: NoAction)
   escalation2User           User?                  @relation("escalation2User", fields: [escalation2], references: [id], onUpdate: NoAction, onDelete: NoAction)
   escalation3User           User?                  @relation("escalation3User", fields: [escalation3], references: [id], onUpdate: NoAction, onDelete: NoAction)
@@ -89,4 +89,6 @@ model User {
   reviewTrails              ReviewTrail[]          @relation("ReviewTrailCreator")
   emailTemplatesCreator     EmailTemplate[]        @relation("EmailTemplateCreator")
   emailTemplatesModifier    EmailTemplate[]        @relation("EmailTemplateModifier")
+  codeHistories             CodeHistory[]
+  passwordResetTokens       PasswordResetToken[]
 }

@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Field, FieldError, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Loader2 } from "lucide-react"
+import { Eye, EyeOff, Loader2 } from "lucide-react"
 import { getUserTheme } from "@/server-actions/theme"
 import { useTheme } from "next-themes"
 
@@ -27,7 +27,7 @@ type LoginFormValues = z.infer<typeof loginSchema>
 
 export function SignInForm() {
   const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get("callbackUrl") || "/qas"
   const { theme, setTheme } = useTheme()
@@ -35,7 +35,7 @@ export function SignInForm() {
   const {
     register,
     handleSubmit,
-    formState: { errors }
+    formState: { errors, isSubmitting }
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -45,8 +45,6 @@ export function SignInForm() {
   })
 
   const onSubmit = async (data: LoginFormValues) => {
-    setIsLoading(true)
-
     const result = await signIn("credentials", {
       username: data.username,
       password: data.password,
@@ -60,7 +58,6 @@ export function SignInForm() {
       } else { // Unexpected Error
         toast.error(result?.error, { position: "top-center" })
       }
-      setIsLoading(false)
       return
     }
 
@@ -85,7 +82,7 @@ export function SignInForm() {
           />
         </div>
         <CardTitle>Login to your account</CardTitle>
-        <CardDescription>Enter your username below to login to your account</CardDescription>
+        <CardDescription>Enter your credentials below to login to your account</CardDescription>
       </CardHeader>
       <CardContent>
 
@@ -95,28 +92,60 @@ export function SignInForm() {
 
               <Field>
                 <FieldLabel htmlFor="username">Username</FieldLabel>
-                <Input id="username" type="text" placeholder="email or username" {...register("username")} disabled={isLoading} tabIndex={1} />
+                <Input
+                  {...register("username")}
+                  id="username"
+                  type="text"
+                  placeholder="Enter your username"
+                  disabled={isSubmitting}
+                  tabIndex={1} />
                 {errors.username && (
                   <FieldError>{errors.username.message}</FieldError>
                 )}
               </Field>
 
               <Field>
-                <div className="flex justify-between">
-                  <FieldLabel htmlFor="password">Password</FieldLabel>
-                  {/* <Button variant="link" className="font-normal h-auto p-0" tabIndex={4} >
-                    Forgot your password?
-                  </Button> */}
+                <FieldLabel htmlFor="password">Password</FieldLabel>
+                <div className="relative">
+                  <Input
+                    {...register("password")}
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter your password"
+                    disabled={isSubmitting}
+                    tabIndex={2} />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    tabIndex={-1}
+                    disabled={isSubmitting}
+                    className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                    onClick={() =>
+                      setShowPassword((value) => !value)
+                    }
+                  >
+                    {showPassword ? (
+                      <EyeOff className="size-4" />
+                    ) : (
+                      <Eye className="size-4" />
+                    )}
+
+                    <span className="sr-only">
+                      {showPassword
+                        ? "Hide password"
+                        : "Show password"}
+                    </span>
+                  </Button>
                 </div>
-                <Input id="password" type="password" placeholder="********" {...register("password")} disabled={isLoading} tabIndex={2} />
                 {errors.password && (
                   <FieldError>{errors.password.message}</FieldError>
                 )}
               </Field>
 
               <Field>
-                <Button type="submit" disabled={isLoading} tabIndex={3}>
-                  {isLoading ? (
+                <Button type="submit" disabled={isSubmitting} tabIndex={3}>
+                  {isSubmitting ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Logging in...
@@ -132,9 +161,16 @@ export function SignInForm() {
         </form>
 
         <div className="flex justify-center mt-4 gap-1">
-          <Label className="font-normal text-muted-foreground">Don't have an account?</Label>
-          <Button variant="link" className="font-normal h-auto p-0" tabIndex={5}>
-            Sign up
+          {/* <Label className="font-normal text-muted-foreground">Don't have an account?</Label> */}
+          <Button
+            variant="link"
+            className="font-normal h-auto p-0"
+            tabIndex={5}
+            onClick={() => {
+              router.push("/forgotpassword")
+            }}
+          >
+            Forgot you password?
           </Button>
         </div>
       </CardContent>
