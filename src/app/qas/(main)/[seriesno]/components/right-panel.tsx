@@ -411,17 +411,6 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
     )
   }
 
-  const UpdateAreaView = ({ isEmpty, children }: { isEmpty: boolean, children: React.ReactNode }) => {
-    if (isAcceptanceStage) return children
-
-    return isEmpty ? (
-      <div className="border rounded-md px-3 py-2 bg-muted">
-        <span className="font-normal text-sm text-muted-foreground">None</span>
-      </div>
-    ) :
-      children
-  }
-
   return (
     <div className="bg-muted py-2 px-2 border-l h-full">
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col h-full bg-background rounded-md border shadow-2xl">
@@ -608,19 +597,23 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
                   <FieldLabel className="text-muted-foreground">Corrective Actions</FieldLabel>
                   <FieldRequirement />
                 </div>
-                {
-                  <UpdateAreaView isEmpty={!jobTransaction.correctiveAction?.trim()}>
-                    <Textarea
-                      id="correctiveAction"
-                      {...register("correctiveAction")}
-                      defaultValue={jobTransaction.correctiveAction ?? ""}
-                      placeholder="Type here..."
-                      className="resize-none"
-                      readOnly={!permissions.canAccept}
-                      disabled={permissions.canAccept && isHoldChecked && isCancelChecked}
-                    />
-                  </UpdateAreaView>
-                }
+                {isAcceptanceStage || !jobTransaction.correctiveAction?.trim() ? (
+                  <Textarea
+                    id="correctiveAction"
+                    {...register("correctiveAction")}
+                    defaultValue={jobTransaction.correctiveAction ?? ""}
+                    placeholder="Type here..."
+                    className="resize-none"
+                    readOnly={!permissions.canAccept}
+                    disabled={permissions.canAccept && isHoldChecked && isCancelChecked}
+                  />
+                ) : (
+                  <div className="border rounded-md px-3 py-2 bg-muted">
+                    <span className="font-normal text-sm text-muted-foreground">
+                      None
+                    </span>
+                  </div>
+                )}
                 {errors.correctiveAction && <FieldError>{errors.correctiveAction.message}</FieldError>}
               </Field>
 
@@ -629,23 +622,27 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
                   <FieldLabel className="text-muted-foreground">Corrective Commitment Date</FieldLabel>
                   <FieldRequirement />
                 </div>
-                {
-                  <UpdateAreaView isEmpty={jobTransaction.correctiveCommitmentDate === null}>
-                    <Controller
-                      control={control}
-                      name="corrCommitmentDate"
-                      render={({ field }) => (
-                        <DatePicker
-                          defaultDate={field.value ?? undefined}
-                          onChange={field.onChange}
-                          readonly={!permissions.canAccept}
-                          disabled={permissions.canAccept && isHoldChecked && isCancelChecked}
-                          disablePastDates={true}
-                        />
-                      )}
-                    />
-                  </UpdateAreaView>
-                }
+                {isAcceptanceStage || !jobTransaction.correctiveAction?.trim() ? (
+                  <Controller
+                    control={control}
+                    name="corrCommitmentDate"
+                    render={({ field }) => (
+                      <DatePicker
+                        defaultDate={field.value ?? undefined}
+                        onChange={field.onChange}
+                        readonly={!permissions.canAccept}
+                        disabled={permissions.canAccept && isHoldChecked && isCancelChecked}
+                        disablePastDates={true}
+                      />
+                    )}
+                  />
+                ) : (
+                  <div className="border rounded-md px-3 py-2 bg-muted">
+                    <span className="font-normal text-sm text-muted-foreground">
+                      None
+                    </span>
+                  </div>
+                )}
                 {errors.corrCommitmentDate && <FieldError>{errors.corrCommitmentDate.message}</FieldError>}
               </Field>
 
@@ -654,19 +651,23 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
                   <FieldLabel className="text-muted-foreground">Preventive Actions</FieldLabel>
                   <FieldRequirement />
                 </div>
-                {
-                  <UpdateAreaView isEmpty={!jobTransaction.preventiveAction?.trim()}>
-                    <Textarea
-                      id="preventiveAction"
-                      {...register("preventiveAction")}
-                      defaultValue={jobTransaction.preventiveAction ?? ""}
-                      placeholder="Type here..."
-                      className="resize-none"
-                      readOnly={!permissions.canAccept}
-                      disabled={permissions.canAccept && isHoldChecked && isCancelChecked}
-                    />
-                  </UpdateAreaView>
-                }
+                {isAcceptanceStage || !jobTransaction.correctiveAction?.trim() ? (
+                  <Textarea
+                    id="preventiveAction"
+                    {...register("preventiveAction")}
+                    defaultValue={jobTransaction.preventiveAction ?? ""}
+                    placeholder="Type here..."
+                    className="resize-none"
+                    readOnly={!permissions.canAccept}
+                    disabled={permissions.canAccept && isHoldChecked && isCancelChecked}
+                  />
+                ) : (
+                  <div className="border rounded-md px-3 py-2 bg-muted">
+                    <span className="font-normal text-sm text-muted-foreground">
+                      None
+                    </span>
+                  </div>
+                )}
                 {errors.preventiveAction && <FieldError>{errors.preventiveAction.message}</FieldError>}
               </Field>
 
@@ -675,23 +676,27 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
                   <FieldLabel className="text-muted-foreground">Preventive Commitment Date</FieldLabel>
                   <FieldRequirement />
                 </div>
-                {
-                  <UpdateAreaView isEmpty={!jobTransaction.preventiveCommitmentDate}>
-                    <Controller
-                      control={control}
-                      name="prevCommitmentDate"
-                      render={({ field }) => (
-                        <DatePicker
-                          defaultDate={field.value ?? undefined}
-                          onChange={field.onChange}
-                          readonly={!permissions.canAccept}
-                          disabled={permissions.canAccept && isHoldChecked && isCancelChecked}
-                          disablePastDates={true}
-                        />
-                      )}
-                    />
-                  </UpdateAreaView>
-                }
+                {isAcceptanceStage || !jobTransaction.correctiveAction?.trim() ? (
+                  <Controller
+                    control={control}
+                    name="prevCommitmentDate"
+                    render={({ field }) => (
+                      <DatePicker
+                        defaultDate={field.value ?? undefined}
+                        onChange={field.onChange}
+                        readonly={!permissions.canAccept}
+                        disabled={permissions.canAccept && isHoldChecked && isCancelChecked}
+                        disablePastDates={true}
+                      />
+                    )}
+                  />
+                ) : (
+                  <div className="border rounded-md px-3 py-2 bg-muted">
+                    <span className="font-normal text-sm text-muted-foreground">
+                      None
+                    </span>
+                  </div>
+                )}
                 {errors.prevCommitmentDate && <FieldError>{errors.prevCommitmentDate.message}</FieldError>}
               </Field>
 
