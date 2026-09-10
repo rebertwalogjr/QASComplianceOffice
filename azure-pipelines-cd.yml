@@ -827,11 +827,11 @@ stages:
                 # ==================================================
                 # Deploy Prisma migrations
                 # ==================================================
-                # - task: PowerShell@2
-                #   inputs:
-                #     targetType: 'inline'
-                #     script: npm run db:deploy
-                #   displayName: 'Deploy Prisma database migrations'
+                - task: PowerShell@2
+                  inputs:
+                    targetType: 'inline'
+                    script: npm run db:deploy
+                  displayName: 'Deploy Prisma database migrations'
 
                 # ==================================================
                 # Start PM2 application

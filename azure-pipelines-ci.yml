@@ -146,7 +146,20 @@ stages:
           displayName: 'Copy web.config'
 
         # ==================================================
-        # 5. Create .env.template file
+        # 5. Copy prisma migration files
+        # ==================================================
+        - task: CopyFiles@2
+          inputs:
+            SourceFolder: '$(System.DefaultWorkingDirectory)'
+            Contents: |
+              prisma/**
+              prisma.config.ts
+            TargetFolder: '$(Build.ArtifactStagingDirectory)/standalone'
+            OverWrite: true
+          displayName: 'Copy Prisma migration files'
+
+        # ==================================================
+        # 6. Create .env.template file
         # ==================================================
         - task: PowerShell@2
           inputs:
@@ -157,14 +170,8 @@ stages:
               echo "# Add environment-specific variables below" >> $(Build.ArtifactStagingDirectory)/standalone/.env.template
           displayName: 'Create environment template'
 
-        # - script: |
-        #     echo "NODE_ENV=production" > $(Build.ArtifactStagingDirectory)/standalone/.env.template
-        #     echo "PORT=3000" >> $(Build.ArtifactStagingDirectory)/standalone/.env.template
-        #     echo "# Add environment-specific variables below" >> $(Build.ArtifactStagingDirectory)/standalone/.env.template
-        #   displayName: 'Create environment template'
-
         # ==================================================
-        # 6. Create store branch info
+        # 7. Create store branch info
         # ==================================================
         - task: PowerShell@2
           inputs:
@@ -178,7 +185,7 @@ stages:
         #   displayName: 'Store branch info'
 
         # ==================================================
-        # 7. Archive standalone build files
+        # 8. Archive standalone build files
         # ==================================================
         - task: ArchiveFiles@2
           inputs:
@@ -190,7 +197,7 @@ stages:
           displayName: 'Compress files into a zip'
 
         # ==================================================
-        # 8. Publish build artifact
+        # 9. Publish build artifact
         # ==================================================
         - task: PublishBuildArtifacts@1
           inputs:
