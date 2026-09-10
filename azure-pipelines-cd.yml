@@ -473,6 +473,7 @@ stages:
   # **************************************************
   - stage: Deploy_Production
     displayName: 'Deploy to Production'
+    dependsOn: []
     condition: and(succeeded(), eq(variables['resources.pipeline.ci.sourceBranch'], 'refs/heads/main'))
     jobs:
       - deployment: DeployToProduction
