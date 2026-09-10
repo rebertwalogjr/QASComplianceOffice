@@ -22,7 +22,7 @@ stages:
   # ==================================================
   - stage: Deploy_UAT
     displayName: 'Deploy to UAT'
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/dev'))
+    condition: and(succeeded(), eq(variables['resources.pipeline.ci.sourceBranch'], 'refs/heads/dev'))
     jobs:
       - deployment: DeployToUAT
         displayName: 'Deploy to UAT Windows Server'
@@ -126,26 +126,6 @@ stages:
                     pipelineId: '$(resources.pipeline.ci.runID)'
                     artifactName: 'drop'
                     targetPath: '$(Pipeline.Workspace)\ci\drop'
-
-                # ==================================================
-                # Clean extraction folder
-                # ==================================================
-                # - task: PowerShell@2
-                #   displayName: 'Clean extraction folder'
-                #   inputs:
-                #     targetType: 'inline'
-                #     script: |
-                #       $extractPath = "$(System.ArtifactsDirectory)/extracted"
-      
-                #       Write-Host "Cleaning extraction folder: $extractPath"
-                      
-                #       if (Test-Path $extractPath) {
-                #         Remove-Item -Path $extractPath -Recurse -Force -ErrorAction SilentlyContinue
-                #         Write-Host "Removed existing extraction folder."
-                #       }
-                      
-                #       New-Item -ItemType Directory -Path $extractPath -Force | Out-Null
-                #       Write-Host "Created clean extraction folder."
 
                 # ==================================================
                 # Extract artifacts
@@ -493,17 +473,14 @@ stages:
   # **************************************************
   - stage: Deploy_Production
     displayName: 'Deploy to Production'
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
-    variables:
-      - group: 'qasco-prod-variables'
+    condition: and(succeeded(), eq(variables['resources.pipeline.ci.sourceBranch'], 'refs/heads/main'))
     jobs:
-      - deployment: DeployToProd
-        displayName: 'Deploy to Prod Windows Server'
-        environment: production
-        # environment:
-        #   name: production
-        #   resourceName: PROD_QASCO
-        #   resourceType: VirtualMachine
+      - deployment: DeployToProduction
+        displayName: 'Deploy to Production Windows Server'
+        environment:
+          name: production
+          resourceName: PROD_QASCO
+          resourceType: VirtualMachine
         variables:
           - group: 'qasco-prod-variables'
         strategy:
@@ -544,6 +521,49 @@ stages:
                       pm2 --version
 
                 # ==================================================
+                # Clean old download artifacts
+                # ==================================================
+                - task: PowerShell@2
+                  displayName: 'Clean old CI artifacts'
+                  inputs:
+                    targetType: 'inline'
+                    script: |
+                      $ErrorActionPreference = 'Stop'
+
+                      $DropPath = "$(Pipeline.Workspace)\ci\drop"
+
+                      Write-Host "========================================"
+                      Write-Host "CLEAN OLD CI ARTIFACTS"
+                      Write-Host "========================================"
+                      Write-Host "Artifact directory: $DropPath"
+
+                      if (Test-Path $DropPath) {
+                        Write-Host "Existing files:"
+                        Get-ChildItem $DropPath -File | ForEach-Object {
+                          Write-Host "  $($_.Name)"
+                        }
+
+                        Write-Host ""
+                        Write-Host "Removing old ZIP files..."
+
+                        Get-ChildItem $DropPath -Filter "*.zip" -File |
+                          Remove-Item -Force
+
+                        Write-Host "Old ZIP files removed."
+                      }
+                      else {
+                        Write-Host "Drop directory does not exist. Creating it..."
+                        New-Item -ItemType Directory -Path $DropPath -Force | Out-Null
+                      }
+
+                      Write-Host ""
+                      Write-Host "Remaining files:"
+                      Get-ChildItem $DropPath -File -ErrorAction SilentlyContinue |
+                        ForEach-Object {
+                          Write-Host "  $($_.Name)"
+                        }
+
+                # ==================================================
                 # Download artifacts
                 # ==================================================
                 - task: DownloadPipelineArtifact@2
@@ -552,16 +572,17 @@ stages:
                     buildType: 'specific'
                     project: '$(System.TeamProjectId)'
                     definition: '$(resources.pipeline.ci.pipelineID)'
-                    buildVersionToDownload: 'latest'
+                    buildVersionToDownload: 'specific'
+                    pipelineId: '$(resources.pipeline.ci.runID)'
                     artifactName: 'drop'
-                    targetPath: '$(System.ArtifactsDirectory)'
+                    targetPath: '$(Pipeline.Workspace)\ci\drop'
 
                 # ==================================================
                 # Extract artifacts
                 # ==================================================
                 - task: ExtractFiles@1
                   inputs:
-                    archiveFilePatterns: '$(System.ArtifactsDirectory)/drop/*.zip'
+                    archiveFilePatterns: '$(Pipeline.Workspace)/ci/drop/*.zip'
                     destinationFolder: '$(System.ArtifactsDirectory)/extracted'
                     cleanDestinationFolder: true
                     overwriteExistingFiles: true
@@ -795,6 +816,15 @@ stages:
                       Write-Host "ecosystem.config.js created."
 
                 # ==================================================
+                # Deploy Prisma migrations
+                # ==================================================
+                - task: PowerShell@2
+                  inputs:
+                    targetType: 'inline'
+                    script: npm run db:deploy
+                  displayName: 'Deploy Prisma database migrations'
+
+                # ==================================================
                 # Start PM2 application
                 # ==================================================
                 - task: PowerShell@2
@@ -839,7 +869,7 @@ stages:
                 # Health Check
                 # ==================================================
                 - task: PowerShell@2
-                  displayName: 'Verify UAT deployment'
+                  displayName: 'Verify Production deployment'
                   inputs:
                     targetType: 'inline'
                     script: |
@@ -888,7 +918,7 @@ stages:
                         Write-Host "PM2 status:"
                         pm2 list
 
-                        throw "Prodcution deployment health check failed."
+                        throw "Production deployment health check failed."
                       }
 
                       Write-Host "========================================"

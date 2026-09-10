@@ -9,6 +9,8 @@ trigger:
       - '*.md'
       - 'docs/**'
 
+pr: none
+
 variables:
   - name: nodeVersion
     value: '22'
