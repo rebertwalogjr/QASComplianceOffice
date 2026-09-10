@@ -815,15 +815,25 @@ stages:
 
                       Set-Content -Path "$AppPath\ecosystem.config.js" -Value $config -Encoding UTF8
                       Write-Host "ecosystem.config.js created."
+                  env:
+                    DATABASE_URL: $(DATABASE_URL)
+                    DB_HOST: $(DB_HOST)
+                    DB_NAME: $(DB_NAME)
+                    DB_PASSWORD: $(DB_PASSWORD)
+                    DB_PORT: $(DB_PORT)
+                    DB_USER: $(DB_USER)
+                    FILE_SERVER_PATH: $(FILE_SERVER_PATH)
+                    NEXTAUTH_SECRET: $(NEXTAUTH_SECRET)
+                    NEXTAUTH_URL: $(NEXTAUTH_URL)
 
                 # ==================================================
                 # Deploy Prisma migrations
                 # ==================================================
-                - task: PowerShell@2
-                  inputs:
-                    targetType: 'inline'
-                    script: npm run db:deploy
-                  displayName: 'Deploy Prisma database migrations'
+                # - task: PowerShell@2
+                #   inputs:
+                #     targetType: 'inline'
+                #     script: npm run db:deploy
+                #   displayName: 'Deploy Prisma database migrations'
 
                 # ==================================================
                 # Start PM2 application
