@@ -835,8 +835,10 @@ stages:
 
                       # Configuration
                       $DeploymentPath = '$(DeploymentPath)'
+                      $AppName = '$(appName)'
+                      $AppPath = Join-Path $DeploymentPath $AppName
 
-                      Set-Location $DeploymentPath
+                      Set-Location $AppPath
                       npm run db:deploy
                   displayName: 'Deploy Prisma database migrations'
 
