@@ -793,7 +793,7 @@ stages:
                             DB_HOST:'$env:DB_HOST',
                             DB_NAME:'$env:DB_NAME',
                             DB_PASSWORD:'$env:DB_PASSWORD',
-                            DB_PORT:$env:DB_PORT,
+                            DB_PORT:'',
                             DB_USER:'$env:DB_USER',
                             FILE_SERVER_PATH:'$env:FILE_SERVER_PATH',
                             NEXTAUTH_SECRET:'$env:NEXTAUTH_SECRET',
@@ -805,8 +805,6 @@ stages:
                           max_memory_restart: '1G',
                           error_file: '$Pm2LogPath/logs/pm2-error.log',
                           out_file: '$Pm2LogPath/logs/pm2-out.log',
-                          #  instances: 'max',
-                          #  exec_mode: 'cluster'
                           instances: '1',
                           exec_mode: 'fork'
                           }]
