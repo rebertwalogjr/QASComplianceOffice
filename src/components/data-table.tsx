@@ -96,7 +96,7 @@ export function DataTable<TData, TValue>({
   }
 
   return (
-    <div className="justify-start mt-2">
+    <div className="justify-start mt-1 lg:mt-2">
 
       {/* FIXED TOP SECTION */}
       {/* <div className="px-6 z-40 w-full h-18 flex items-center">
@@ -116,7 +116,7 @@ export function DataTable<TData, TValue>({
       </div> */}
 
       {/* TABLE */}
-      <div className="overflow-auto rounded-md border  mx-6">
+      <div className="overflow-auto rounded-md border mx-2 lg:mx-6">
         <Table>
 
           <TableHeader className="bg-muted sticky top-0 z-20">

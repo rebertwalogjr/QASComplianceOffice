@@ -4,9 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npx prisma generate && next build --webpack",
-    "db:deploy": "npx prisma migrate deploy",
-    "db:generate": "npx prisma generate",
+    "build": "next build --webpack",
+    "prisma:deploy": "npx prisma@7.4.2 migrate deploy",
+    "prisma:generate": "npx prisma generate",
     "start": "next start",
     "lint": "biome check",
     "format": "biome format --write",

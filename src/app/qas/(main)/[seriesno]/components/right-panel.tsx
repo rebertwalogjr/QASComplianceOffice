@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { DatePicker, DateRangePicker } from "@/components/datepicker"
+import { AutoDateRangePicker, DatePicker, DateRangePicker } from "@/components/datepicker"
 import { Separator } from "@/components/ui/separator"
 import { Asterisk, Loader2 } from "lucide-react"
 import StatusBadge from "@/components/status-badge"
@@ -212,7 +212,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
   const prevCommitmentDateValue = watch("prevCommitmentDate")
 
   const showUpdateArea = !isHoldChecked && !isCancelChecked && (permissions.canAccept || isAccepted || isForClosing || isClosed)
-  const isAcceptanceStage = permissions.isStateApproved && permissions.canAccept && !isAccepted && !isCancelled && !isForClosing && !isClosed
+  const isAcceptanceStage = permissions.isStateApproved && permissions.canAccept && permissions.isOpen
 
   const notValidAttachment = useMemo(() => {
     const activeAttachmentIds = attachments.filter((f) => f.isDbRecord && !f.isMarkedForDeletion).map((f) => f.id)
@@ -560,13 +560,22 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
                   </Field>
 
                   {isHoldChecked &&
-                    <FieldGroup className="flex gap-3 px-4 py-2 animate-in fade-in slide-in-from-top-2 duration-500">
-                      <Field>
+                    <>
+                      {/* <FieldGroup className="flex gap-3 px-4 py-2 animate-in fade-in slide-in-from-top-2 duration-500"> */}
+                      <Field className="animate-in fade-in slide-in-from-top-2 duration-500">
                         <Controller
                           control={control}
                           name="holdRange"
                           render={({ field }) => (
-                            <DateRangePicker
+                            // <DateRangePicker
+                            //   defaultStart={field.value?.start ?? null}
+                            //   defaultEnd={field.value?.end ?? null}
+                            //   onChange={field.onChange}
+                            //   readonly={jobTransaction.onHold}
+                            //   disablePastDates={true}
+                            // />
+                            <AutoDateRangePicker
+                              days={5}
                               defaultStart={field.value?.start ?? null}
                               defaultEnd={field.value?.end ?? null}
                               onChange={field.onChange}
@@ -577,12 +586,15 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
                         />
                       </Field>
                       {errors.holdRange && <FieldError>{errors.holdRange.message}</FieldError>}
-                    </FieldGroup>
+                      {/* </FieldGroup> */}
+                    </>
                   }
                 </FieldGroup>
               )}
 
+
               <Separator />
+
 
             </>
           }
@@ -597,7 +609,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
                   <FieldLabel className="text-muted-foreground">Corrective Actions</FieldLabel>
                   <FieldRequirement />
                 </div>
-                {isAcceptanceStage || !jobTransaction.correctiveAction?.trim() ? (
+                {isAcceptanceStage ? (
                   <Textarea
                     id="correctiveAction"
                     {...register("correctiveAction")}
@@ -605,7 +617,13 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
                     placeholder="Type here..."
                     className="resize-none"
                     readOnly={!permissions.canAccept}
-                    disabled={permissions.canAccept && isHoldChecked && isCancelChecked}
+                  />
+                ) : jobTransaction.correctiveAction?.trim() ? (
+                  <Textarea
+                    id="correctiveAction"
+                    defaultValue={jobTransaction.correctiveAction ?? ""}
+                    className="resize-none"
+                    readOnly
                   />
                 ) : (
                   <div className="border rounded-md px-3 py-2 bg-muted">
@@ -622,7 +640,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
                   <FieldLabel className="text-muted-foreground">Corrective Commitment Date</FieldLabel>
                   <FieldRequirement />
                 </div>
-                {isAcceptanceStage || !jobTransaction.correctiveAction?.trim() ? (
+                {isAcceptanceStage ? (
                   <Controller
                     control={control}
                     name="corrCommitmentDate"
@@ -635,6 +653,11 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
                         disablePastDates={true}
                       />
                     )}
+                  />
+                ) : jobTransaction.correctiveCommitmentDate?.toDateString().trim() ? (
+                  <DatePicker
+                    defaultDate={jobTransaction.correctiveCommitmentDate ?? undefined}
+                    readonly
                   />
                 ) : (
                   <div className="border rounded-md px-3 py-2 bg-muted">
@@ -651,7 +674,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
                   <FieldLabel className="text-muted-foreground">Preventive Actions</FieldLabel>
                   <FieldRequirement />
                 </div>
-                {isAcceptanceStage || !jobTransaction.correctiveAction?.trim() ? (
+                {isAcceptanceStage ? (
                   <Textarea
                     id="preventiveAction"
                     {...register("preventiveAction")}
@@ -660,6 +683,12 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
                     className="resize-none"
                     readOnly={!permissions.canAccept}
                     disabled={permissions.canAccept && isHoldChecked && isCancelChecked}
+                  />
+                ) : jobTransaction.preventiveAction?.trim() ? (
+                  <Textarea
+                    id="preventiveAction"
+                    defaultValue={jobTransaction.preventiveAction ?? ""}
+                    className="resize-none"
                   />
                 ) : (
                   <div className="border rounded-md px-3 py-2 bg-muted">
@@ -676,7 +705,7 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
                   <FieldLabel className="text-muted-foreground">Preventive Commitment Date</FieldLabel>
                   <FieldRequirement />
                 </div>
-                {isAcceptanceStage || !jobTransaction.correctiveAction?.trim() ? (
+                {isAcceptanceStage ? (
                   <Controller
                     control={control}
                     name="prevCommitmentDate"
@@ -689,6 +718,12 @@ export default function RightPanel({ jobTransaction, activeHolding }: { jobTrans
                         disablePastDates={true}
                       />
                     )}
+                  />
+                ) : jobTransaction.preventiveCommitmentDate?.toDateString().trim() ? (
+                  <DatePicker
+                    defaultDate={jobTransaction.preventiveCommitmentDate ?? undefined}
+                    readonly
+                    disablePastDates={true}
                   />
                 ) : (
                   <div className="border rounded-md px-3 py-2 bg-muted">

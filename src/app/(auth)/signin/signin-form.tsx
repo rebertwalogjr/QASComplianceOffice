@@ -13,10 +13,10 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Field, FieldError, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
 import { getUserTheme } from "@/server-actions/theme"
 import { useTheme } from "next-themes"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -26,11 +26,12 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>
 
 export function SignInForm() {
+  const isMobile = useIsMobile()
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get("callbackUrl") || "/qas"
-  const { theme, setTheme } = useTheme()
+  const { setTheme } = useTheme()
 
   const {
     register,
@@ -70,7 +71,7 @@ export function SignInForm() {
   }
 
   return (
-    <Card className="w-full max-w-[400px]">
+    <Card className={isMobile ? "w-screen min-h-screen border-0 rounded-none shadow-none" : "w-full max-w-[400px]"}>
       <CardHeader>
         <div className="flex gap-2 mb-4">
           <Image
@@ -88,7 +89,7 @@ export function SignInForm() {
 
         <form onSubmit={handleSubmit(onSubmit)}>
           <FieldSet className="">
-            <FieldGroup>
+            <FieldGroup className={isMobile ? "flex flex-col flex-1" : ""}>
 
               <Field>
                 <FieldLabel htmlFor="username">Username</FieldLabel>
@@ -143,36 +144,38 @@ export function SignInForm() {
                 )}
               </Field>
 
-              <Field>
-                <Button type="submit" disabled={isSubmitting} tabIndex={3}>
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Logging in...
-                    </>
-                  ) : (
-                    "Login"
-                  )}
-                </Button>
-              </Field>
+              <div className={isMobile ? "mt-auto" : ""}>
+                <Field>
+                  <Button type="submit" disabled={isSubmitting} tabIndex={3}>
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Logging in...
+                      </>
+                    ) : (
+                      "Login"
+                    )}
+                  </Button>
+                </Field>
+
+                <div className="flex justify-center mt-4 gap-1">
+                  <Button
+                    variant="link"
+                    className="font-normal h-auto p-0"
+                    tabIndex={5}
+                    onClick={() => {
+                      router.push("/forgotpassword")
+                    }}
+                  >
+                    Forgot you password?
+                  </Button>
+                </div>
+              </div>
 
             </FieldGroup>
           </FieldSet>
         </form>
 
-        <div className="flex justify-center mt-4 gap-1">
-          {/* <Label className="font-normal text-muted-foreground">Don't have an account?</Label> */}
-          <Button
-            variant="link"
-            className="font-normal h-auto p-0"
-            tabIndex={5}
-            onClick={() => {
-              router.push("/forgotpassword")
-            }}
-          >
-            Forgot you password?
-          </Button>
-        </div>
       </CardContent>
     </Card>
   )

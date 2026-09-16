@@ -12,7 +12,7 @@ import ButtonGenerateAuditReportNumber from "./btn-generate"
 const BadgeYesNo = (str: string) => {
   const val = str.toLowerCase()
   return <>
-    <Badge className={`${val === "yes" ? "bg-primary/80 text-white" : "bg-gray-500/80 text-white"} px-3`}>
+    <Badge className={`${val === "yes" ? "bg-primary/80 text-white dark:bg-primary dark:text-muted" : "bg-gray-500/80 text-white"} px-3`}>
       {str}
     </Badge>
   </>

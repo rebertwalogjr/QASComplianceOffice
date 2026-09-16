@@ -34,6 +34,46 @@ type DateRangePickerProps = {
   onChange?: (range: { start?: Date | null; end?: Date | null }) => void;
 }
 
+type AutoDateRangePickerProps = {
+  startName?: string
+  endName?: string
+  defaultStart?: Date | null
+  defaultEnd?: Date | null
+  days: number
+  disabled?: boolean
+  readonly?: boolean
+  disablePastDates?: boolean
+  onChange?: (range: {
+    start?: Date | null
+    end?: Date | null
+  }) => void
+}
+
+function addDays(date: Date, days: number): Date {
+  const result = new Date(date)
+  result.setDate(result.getDate() + days)
+  return toUTCMidnight(result) ?? result
+}
+
+function addWeekdays(date: Date, days: number): Date {
+  const result = new Date(date)
+  let remaining = days
+
+  while (remaining > 0) {
+    result.setDate(result.getDate() + 1)
+
+    const day = result.getDay()
+
+    // Sunday = 0
+    // Saturday = 6
+    if (day !== 0 && day !== 6) {
+      remaining--
+    }
+  }
+
+  return toUTCMidnight(result) ?? result
+}
+
 function DatePicker({ name, placeholder, defaultDate, disabled, className, readonly, disablePastDates, onChange }: DatePickerProps) {
   const [open, setOpen] = useState(false)
   const [date, setDate] = useState<Date | undefined>(() => isValidDate(defaultDate) ? toUTCMidnight(defaultDate) : undefined)
@@ -235,4 +275,168 @@ function DateRangePicker({ startName, endName, defaultStart, defaultEnd, disable
   )
 }
 
-export { DatePicker, DateRangePicker }
+function AutoDateRangePicker({
+  startName,
+  endName,
+  defaultStart,
+  defaultEnd,
+  days,
+  disabled,
+  readonly,
+  disablePastDates,
+  onChange,
+}: AutoDateRangePickerProps) {
+  const [openStart, setOpenStart] = useState(false)
+
+  const [start, setStart] = useState<Date | undefined>(() =>
+    isValidDate(defaultStart)
+      ? toUTCMidnight(defaultStart)
+      : undefined
+  )
+
+  const [end, setEnd] = useState<Date | undefined>(() =>
+    isValidDate(defaultEnd)
+      ? toUTCMidnight(defaultEnd)
+      : undefined
+  )
+
+  const today = new Date()
+
+  useEffect(() => {
+    if (isValidDate(defaultStart)) {
+      setStart(toUTCMidnight(defaultStart))
+    }
+
+    if (isValidDate(defaultEnd)) {
+      setEnd(toUTCMidnight(defaultEnd))
+    }
+  }, [defaultStart?.getTime(), defaultEnd?.getTime()])
+
+  const handleSelectStart = (date?: Date) => {
+    if (readonly || !date) return
+
+    const utcStart = toUTCMidnight(date)
+
+    if (!utcStart) return
+
+    const calculatedEnd = addWeekdays(utcStart, days)
+
+    setStart(utcStart)
+    setEnd(calculatedEnd)
+    setOpenStart(false)
+
+    onChange?.({
+      start: utcStart,
+      end: calculatedEnd,
+    })
+  }
+
+  const isDateDisabled = (calendarDate: Date) => {
+    if (!disablePastDates) return false
+
+    const localToday = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate()
+    )
+
+    const localCalendarDate = new Date(
+      calendarDate.getFullYear(),
+      calendarDate.getMonth(),
+      calendarDate.getDate()
+    )
+
+    return localCalendarDate < localToday
+  }
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center w-full">
+
+        {/* Start Date */}
+        <Popover
+          open={readonly ? false : openStart}
+          onOpenChange={
+            readonly ? () => {} : setOpenStart
+          }
+        >
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              disabled={disabled}
+              className={cn(
+                "flex-1 justify-between rounded-r-none border-r-0 font-normal px-3 h-10 truncate",
+                !start && "text-muted-foreground",
+                readonly
+                  ? "cursor-default opacity-100 border-dashed shadow-none"
+                  : "hover:bg-accent"
+              )}
+            >
+              {start
+                ? formatLongDate(start)
+                : "From"}
+
+              <CalendarIcon className="size-3.5 opacity-50 ml-2" />
+            </Button>
+          </PopoverTrigger>
+
+          <PopoverContent
+            className="w-auto p-0"
+            align="start"
+          >
+            <Calendar
+              mode="single"
+              selected={start}
+              captionLayout="dropdown"
+              onSelect={handleSelectStart}
+              disabled={isDateDisabled}
+            />
+          </PopoverContent>
+        </Popover>
+
+        <div className="h-10 border-y border-input bg-muted px-2 flex items-center text-muted-foreground text-[10px] font-bold border-x-0">
+          TO
+        </div>
+
+        {/* Automatically calculated End Date */}
+        <Button
+          variant="outline"
+          disabled
+          className={cn(
+            "flex-1 justify-between rounded-l-none border-l-0 font-normal px-3 h-10 truncate",
+            !end && "text-muted-foreground",
+            readonly
+              ? "cursor-default opacity-100 border-dashed shadow-none"
+              : ""
+          )}
+        >
+          {end
+            ? formatLongDate(end)
+            : "Until"}
+
+          <CalendarIcon className="size-3.5 opacity-50 ml-2" />
+        </Button>
+
+      </div>
+
+      {/* Hidden form fields */}
+      {startName && (
+        <input
+          type="hidden"
+          name={startName}
+          value={start ? start.toISOString() : ""}
+        />
+      )}
+
+      {endName && (
+        <input
+          type="hidden"
+          name={endName}
+          value={end ? end.toISOString() : ""}
+        />
+      )}
+    </div>
+  )
+}
+
+export { DatePicker, DateRangePicker, AutoDateRangePicker }

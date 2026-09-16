@@ -48,6 +48,7 @@ stages:
           inputs:
             targetType: 'inline'
             script: |
+              npm run prisma:generate
               npm run build
           displayName: 'Build Next.js app'
 

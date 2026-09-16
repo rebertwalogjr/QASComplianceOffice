@@ -6,7 +6,7 @@ import { Loader2 } from "lucide-react"
 
 export default function SignInPage() {
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center md:p-4">
       <Suspense
         fallback={
           <div className="flex flex-col items-center gap-2 text-muted-foreground">

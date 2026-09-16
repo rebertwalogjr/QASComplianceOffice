@@ -67,6 +67,11 @@ export default function TableCellViewer({ item, className }: Props) {
             </div>
 
             <div className="flex flex-col gap-3">
+              <Label htmlFor="typeOfFinding">Finding Type</Label>
+              <Input id="typeOfFinding" defaultValue={item.typeOfFinding.name ?? ""} readOnly />
+            </div>
+
+            <div className="flex flex-col gap-3">
               <Label htmlFor="rating">Rating</Label>
               <Input id="rating" defaultValue={item.auditRating.name} readOnly />
             </div>

@@ -14,7 +14,7 @@ export default async function TransactionPage(props: { searchParams: Promise<{ p
       <PageHeader>
         <QASMasterListSiteHeaderContent />
       </PageHeader>
-      <div className="mx-6 mt-4">
+      <div className="mx-2 mt-0 lg:mx-6 lg:mt-4">
         <Label className="text-lg">QAS Master List</Label>
       </div>
       <TransactionList searchParamsPromise={props.searchParams} />

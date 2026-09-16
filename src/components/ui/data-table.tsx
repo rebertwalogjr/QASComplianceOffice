@@ -1,14 +1,15 @@
 "use client"
 
 import * as React from "react"
-import { ColumnDef, flexRender, getCoreRowModel, useReactTable, getPaginationRowModel, SortingState, getSortedRowModel, ColumnFiltersState, getFilteredRowModel } from "@tanstack/react-table";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Input } from "./input";
+import { ColumnDef, flexRender, getCoreRowModel, useReactTable, getPaginationRowModel, SortingState, getSortedRowModel, ColumnFiltersState, getFilteredRowModel } from "@tanstack/react-table"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Input } from "./input"
 import { Button } from "./button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select";
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
-import { Label } from "./label";
-import { cn } from "@/lib/utils";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select"
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"
+import { Label } from "./label"
+import { cn } from "@/lib/utils"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -25,8 +26,9 @@ export function DataTable<TData, TValue>({
   getRowClassName,
   searchPlaceholder
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+  const isMobile = useIsMobile()
+  const [sorting, setSorting] = React.useState<SortingState>([])
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
 
   const table = useReactTable({
     data,
@@ -49,32 +51,32 @@ export function DataTable<TData, TValue>({
   })
 
   const handlePageSizeChange = (value: string) => {
-    const pageSize = Number(value);
-    table.setPageSize(pageSize);
-    document.cookie = `pageSize=${pageSize}; path=/; max-age=31536000`;
+    const pageSize = Number(value)
+    table.setPageSize(pageSize)
+    document.cookie = `pageSize=${pageSize}; path=/; max-age=31536000`
   }
 
   return (
-    <div className="justify-start mt-2">
+    <div className="justify-start">
 
       {/* FIXED TOP SECTION */}
-      <div className="px-6 z-40 w-full h-18 flex items-center">
-        <div className="flex items-center w-100">
-          <Input
-            placeholder={searchPlaceholder ?? "Type to search..."}
-            // value={(table.getColumn("id")?.getFilterValue() as string) ?? ""}
-            value={(table.getState().globalFilter as string) ?? ""}
-            onChange={(event) =>
-              // table.getColumn("id")?.setFilterValue(event.target.value)
-              table.setGlobalFilter(event.target.value)
-            }
-            className="max-w-sm"
-          />
-        </div>
+      {/* <div className="px-6 z-40 w-full h-18 flex items-center"> */}
+      <div className="p-2 lg:p-6 w-full flex items-center">
+        <Input
+          placeholder={searchPlaceholder ?? "Type to search..."}
+          // value={(table.getColumn("id")?.getFilterValue() as string) ?? ""}
+          value={(table.getState().globalFilter as string) ?? ""}
+          onChange={(event) =>
+            // table.getColumn("id")?.setFilterValue(event.target.value)
+            table.setGlobalFilter(event.target.value)
+          }
+          className={!isMobile ? "max-w-sm" : ""}
+        />
       </div>
+      {/* </div> */}
 
       {/* TABLE */}
-      <div className="overflow-auto rounded-md border  mx-6">
+      <div className="overflow-auto rounded-md border mx-2 lg:mx-6">
         <Table>
 
           <TableHeader className="bg-muted sticky top-0 z-20">

@@ -117,6 +117,10 @@ export const columns: ColumnDef<TransactionBasicPaylod>[] = [
     }
   },
   {
+    accessorKey: "typeOfFinding.name",
+    header: "Finding Type"
+  },
+  {
     accessorKey: "projectId.name",
     header: "Project/Department",
     cell: ({ row }) => {

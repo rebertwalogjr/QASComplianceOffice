@@ -12,6 +12,7 @@ import { Edit2 } from "lucide-react"
 import { reOpenTransaction, TransactionPayload } from "@/server-actions/transaction"
 import { Spinner } from "@/components/ui/spinner"
 import { toast } from "sonner"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 interface Props {
   jobTransaction: TransactionPayload
@@ -19,6 +20,7 @@ interface Props {
 
 export default function SeriesTitle({ jobTransaction }: Props) {
   const router = useRouter()
+  const isMobile = useIsMobile()
   const [isLoading, setIsLoading] = useState(false)
   const { data: session } = useSession()
   const userId = session?.user.id
@@ -54,11 +56,11 @@ export default function SeriesTitle({ jobTransaction }: Props) {
             </div>
           </div>
           <div className="flex items-center">
-            <Button variant="outline" className="" onClick={handleUpdate} hidden={!canUpdate}>
-              <Edit2 className="size-3.5" />Update
+            <Button variant="outline" size={isMobile ? "icon-sm" : "sm"} className="" onClick={handleUpdate} hidden={!canUpdate}>
+              <Edit2 className="size-3.5" />{isMobile ? "" : "Update"}
             </Button>
             <Button variant="outline" className="" onClick={handleReopen} hidden={!canReopen} disabled={isLoading}>
-              {isLoading ? <Spinner /> : "Re-open" }
+              {isLoading ? <Spinner /> : "Re-open"}
             </Button>
           </div>
         </div>

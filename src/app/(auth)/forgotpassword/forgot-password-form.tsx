@@ -1,6 +1,5 @@
 "use client"
 
-import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import z from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -14,6 +13,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { ArrowLeftIcon, Loader2, LockKeyhole } from "lucide-react"
 import { sendOTPCode } from "@/server-actions/account"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 const forgotPasswordSchema = z.object({
   email: z.email("Invalid email address"),
@@ -22,6 +22,7 @@ const forgotPasswordSchema = z.object({
 type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>
 
 export default function ForgotPasswordForm() {
+  const isMobile = useIsMobile()
   const router = useRouter()
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<ForgotPasswordFormValues>({
@@ -48,13 +49,7 @@ export default function ForgotPasswordForm() {
   }
 
   return (
-    <Card className="w-full max-w-[400px]">
-      {/* <CardHeader>
-        <div className="flex gap-2 mb-4">
-          <Image src="/DMCILogo.png" width={128} height={32} alt="DMCI Logo" priority className="object-contain" />
-        </div>
-        <CardTitle>Forgot password?</CardTitle>
-      </CardHeader> */}
+    <Card className={isMobile ? "w-screen min-h-screen border-0 rounded-none shadow-none" : "w-full max-w-[400px]"}>
       <CardHeader>
         <div className="flex gap-2 mb-4">
           <Image

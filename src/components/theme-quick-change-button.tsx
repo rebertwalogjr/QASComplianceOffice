@@ -30,7 +30,7 @@ export default function ThemeQuickChangeButton() {
 
   return (
     <Button type="button" size="icon-sm" variant="outline" onClick={handleClick}>
-      {theme === 'light' ? <SunIcon /> : <MoonIcon />}
+      {theme === 'light' ? <SunIcon className="text-yellow-400" /> : <MoonIcon />}
     </Button>
   )
 }
