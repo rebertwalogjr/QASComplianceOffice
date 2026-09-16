@@ -9,7 +9,7 @@ export function getPrisma(): PrismaClient {
     const DB_PASSWORD = process.env.DB_PASSWORD
     const DB_NAME = process.env.DB_NAME
     const DB_HOST = process.env.DB_HOST
-    const DB_PORT = process.env.DB_PORT || "1433"
+    const DB_PORT = process.env.DB_PORT
 
     if (!DB_USER) {
       throw new Error("DB_USER environment variable is not configured")
@@ -32,7 +32,7 @@ export function getPrisma(): PrismaClient {
       password: DB_PASSWORD,
       database: DB_NAME,
       server: DB_HOST,
-      port: parseInt(DB_PORT, 10),
+      ...(DB_PORT ? { port: parseInt(DB_PORT, 10) } : {}),
       pool: {
         max: 10,
         min: 0,
