@@ -179,14 +179,14 @@ export default function CreateDrawer({ companies, projects, auditEngagements }: 
 
                     {/* Project Field */}
                     <Field>
-                      <FieldLabel htmlFor="project">Project / Department</FieldLabel>
+                      <FieldLabel htmlFor="project">Department</FieldLabel>
                       <Controller
                         name="projectId"
                         control={control}
                         render={({ field }) => (
                           <Select value={field.value} onValueChange={field.onChange} >
                             <SelectTrigger id="project">
-                              <SelectValue placeholder={selectedCompanyId ? "Select a project" : "Select a company first."} />
+                              <SelectValue placeholder={selectedCompanyId ? "Select a department" : "Select a company first."} />
                             </SelectTrigger>
                             <SelectContent>
                               {filteredProjects.map((project) => (

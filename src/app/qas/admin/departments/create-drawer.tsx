@@ -19,8 +19,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Loader2, PlusCircle, X } from "lucide-react"
 
 const projectSchema = z.object({
-  name: z.string().min(1, "Project name is required"),
-  code: z.string().min(1, "Project code is required"),
+  name: z.string().min(1, "Department name is required"),
+  code: z.string().min(1, "Department code is required"),
   companyId: z.string().min(1, "Please select a company"),
   remarks: z.string().optional(),
 })
@@ -58,7 +58,7 @@ export default function CreateDrawer({ companies }: CreateDrawerProps) {
     if (result.error) {
       toast.error(result.error)
     } else {
-      toast.success("Project created successfully!", { position: "top-center" });
+      toast.success("Department created successfully!", { position: "top-center" });
       setIsOpen(false)
     }
   }
@@ -75,14 +75,14 @@ export default function CreateDrawer({ companies }: CreateDrawerProps) {
       <DrawerTrigger asChild>
         <Button variant="outline" size={isMobile ? "icon-sm" : "sm"}>
           <PlusCircle />
-          {!isMobile ? "Add Project" : ""}
+          {!isMobile ? "Add Department" : ""}
         </Button>
       </DrawerTrigger>
 
       <DrawerContent>
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col h-full">
           <DrawerHeader className="gap-1 flex flex-row items-center h-12 justify-between">
-            <DrawerTitle>Add New Project</DrawerTitle>
+            <DrawerTitle>Add New Department</DrawerTitle>
             <DrawerDescription></DrawerDescription>
             <DrawerClose asChild>
               <Button variant="ghost" size="icon-sm">
@@ -101,7 +101,7 @@ export default function CreateDrawer({ companies }: CreateDrawerProps) {
 
                     {/* Code Field */}
                     <Field>
-                      <FieldLabel htmlFor="code">Project Code</FieldLabel>
+                      <FieldLabel htmlFor="code">Department Code</FieldLabel>
                       <Input
                         id="code"
                         placeholder="MC"
@@ -112,7 +112,7 @@ export default function CreateDrawer({ companies }: CreateDrawerProps) {
 
                     {/* Name Field */}
                     <Field>
-                      <FieldLabel htmlFor="name">Project Name</FieldLabel>
+                      <FieldLabel htmlFor="name">Department Name</FieldLabel>
                       <Input
                         id="name"
                         placeholder="e.g. Moncello Crest"

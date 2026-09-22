@@ -45,7 +45,7 @@ export const columns: ColumnDef<AuditReport>[] = [
   },
   {
     accessorKey: "projectId.name",
-    header: "Project",
+    header: "Department",
     cell: ({ row }) => {
       const project = row.original.projectId ? (row.original as any).project : null
       const isActive = project ? project.isActive : null
@@ -58,7 +58,7 @@ export const columns: ColumnDef<AuditReport>[] = [
                   <AlertTriangle className="h-4 w-4 text-amber-500" />
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Warning: This project is currently inactive.</p>
+                  <p>Warning: This department is currently inactive.</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>

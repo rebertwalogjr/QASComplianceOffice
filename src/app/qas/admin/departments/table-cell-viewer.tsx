@@ -20,8 +20,8 @@ import { Project } from "../../../../../generated/prisma/client"
 import { updateProject } from "@/server-actions/project"
 
 const projectUpdateSchema = z.object({
-  name: z.string().min(1, "Project name is required"),
-  code: z.string().min(1, "Project code is required"),
+  name: z.string().min(1, "Department name is required"),
+  code: z.string().min(1, "Department code is required"),
   companyId: z.string().min(1, "Please select a company"),
   remarks: z.string().optional(),
   isActive: z.string(),
@@ -67,9 +67,9 @@ export default function TableCellViewer({ item, className }: Props) {
     const result = await updateProject(formData, item.id)
 
     if (result.error) {
-      toast.error(`Failed to update project: ${result.error}`)
+      toast.error(`Failed to update department: ${result.error}`)
     } else {
-      toast.success("Project updated successfully!", { position: "top-center" })
+      toast.success("Department updated successfully!", { position: "top-center" })
       setIsEditing(false)
       setIsOpen(false)
     }
@@ -99,7 +99,7 @@ export default function TableCellViewer({ item, className }: Props) {
       <DrawerContent>
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col h-full">
           <DrawerHeader className="gap-1 flex flex-row items-center h-12 justify-between">
-            <DrawerTitle>{isEditing ? "Edit Project" : "Project Details"}</DrawerTitle>
+            <DrawerTitle>{isEditing ? "Edit Department" : "Department Details"}</DrawerTitle>
             <DrawerDescription></DrawerDescription>
             <DrawerClose asChild>
               <Button variant="ghost" size="icon-sm">
@@ -123,7 +123,7 @@ export default function TableCellViewer({ item, className }: Props) {
 
                   {/* Code Field */}
                   <Field>
-                    <FieldLabel htmlFor="code">Project Code</FieldLabel>
+                    <FieldLabel htmlFor="code">Department Code</FieldLabel>
                     <Input
                       {...register("code")}
                       readOnly={!isEditing}
@@ -134,7 +134,7 @@ export default function TableCellViewer({ item, className }: Props) {
 
                   {/* Name Field */}
                   <Field>
-                    <FieldLabel htmlFor="name">Project Name</FieldLabel>
+                    <FieldLabel htmlFor="name">Department Name</FieldLabel>
                     <Input
                       {...register("name")}
                       readOnly={!isEditing}

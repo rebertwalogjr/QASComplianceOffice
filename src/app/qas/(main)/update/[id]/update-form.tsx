@@ -259,7 +259,7 @@ export default function UpdateForm({ options }: { options: EntryFormProps }) {
                   </Field>
 
                   <Field>
-                    <FieldLabel>Project</FieldLabel>
+                    <FieldLabel>Department</FieldLabel>
                     <Input value={options.initialData?.project.name} disabled />
                   </Field>
 

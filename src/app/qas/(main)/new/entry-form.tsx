@@ -266,7 +266,7 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
                   </Field>
 
                   <Field>
-                    <FieldLabel>Project</FieldLabel>
+                    <FieldLabel>Department</FieldLabel>
                     <Controller
                       name="projectId"
                       control={control}
@@ -276,7 +276,7 @@ export default function EntryForm({ options }: { options: EntryFormProps }) {
                           onValueChange={field.onChange}
                         >
                           <SelectTrigger>
-                            <SelectValue placeholder="Select project..." />
+                            <SelectValue placeholder="Select department..." />
                           </SelectTrigger>
                           <SelectContent>
                             {filtered.projects?.map((project) => (

@@ -22,7 +22,7 @@ export const columns: ColumnDef<Group>[] = [
   },
   {
     accessorKey: "projectId.name",
-    header: "Project/Department",
+    header: "Department",
     cell: ({ row }) => {
       const project = row.original.projectId ? (row.original as any).project : null
       const isActive = project ? project.isActive : null

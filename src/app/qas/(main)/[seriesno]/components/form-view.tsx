@@ -45,7 +45,7 @@ export default function FormView({ data }: { data: TransactionPayload | null }) 
         </CardContent>
         <CardContent className="">
           <div className="grid md:grid-cols-3 gap-2 items-start">
-            <Label className="text-muted-foreground">Project</Label>
+            <Label className="text-muted-foreground">Department</Label>
             <Label className="col-span-2">{data?.project.name}</Label>
           </div>
         </CardContent>

@@ -11,14 +11,14 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 export const columns: ColumnDef<Project>[] = [
   {
     accessorKey: "code",
-    header: "Project Code",
+    header: "Department Code",
     cell: ({ row }) => {
       return <TableCellViewer item={row.original as Project} />
     }
   },
   {
     accessorKey: "name",
-    header: "Project Name"
+    header: "Department Name"
   },
   {
     accessorKey: "company.name",

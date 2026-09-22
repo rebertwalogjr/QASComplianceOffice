@@ -57,7 +57,7 @@ export default function TableCellViewer({ item, className }: Props) {
             </div>
 
             <div className="flex flex-col gap-3">
-              <Label htmlFor="project">Project</Label>
+              <Label htmlFor="project">Department</Label>
               <Input id="project" defaultValue={item.project.name} readOnly />
             </div>
 

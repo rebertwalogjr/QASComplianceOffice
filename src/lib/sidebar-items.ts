@@ -18,7 +18,7 @@ export const sidebarItems = {
     { title: "Finding Type", url: "/qas/admin/types", icon: FileSearch },
     { title: "Finding Category", url: "/qas/admin/categories", icon: FolderSearch },
     { title: "Holiday", url: "/qas/admin/holidays", icon: Calendar },
-    { title: "Project", url: "/qas/admin/projects", icon: Building2 },
+    { title: "Department", url: "/qas/admin/departments", icon: Building2 },
     { title: "Company", url: "/qas/admin/companies", icon: Building },
     { title: "Engagement", url: "/qas/admin/engagements", icon: BookHeart },
     { title: "Rating", url: "/qas/admin/ratings", icon: Star },

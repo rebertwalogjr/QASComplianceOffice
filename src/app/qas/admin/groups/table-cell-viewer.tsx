@@ -147,14 +147,14 @@ export default function TableCellViewer({ item, className }: Props) {
 
                   {/* Project Field */}
                   <Field>
-                    <FieldLabel htmlFor="project">Project / Department</FieldLabel>
+                    <FieldLabel htmlFor="project">Department</FieldLabel>
                     <Controller
                       name="projectId"
                       control={control}
                       render={({ field }) => (
                         <Select value={field.value} onValueChange={field.onChange}>
                           <SelectTrigger id="projectId" className={!isEditing ? "bg-muted/30 border-transparent shadow-none pointer-events-none cursor-default" : ""}>
-                            <SelectValue placeholder="Select project or department..." />
+                            <SelectValue placeholder="Select department..." />
                           </SelectTrigger>
                           <SelectContent>
                             {activeProjects?.map((project) => (
