@@ -67,77 +67,84 @@ export async function createUser(formData: any) {
   const hashedPassword = await bcrypt.hash(genPassword, 10)
 
   const { data: newUser, error } = await dbQuery(
-    prisma.$transaction(async (tx) => {
-      // 1. Create the User
-      const newUser = await tx.user.create({
-        data: {
-          employeeNumber,
-          username,
-          password: hashedPassword,
-          emailAddress,
-          firstName: appSuiteUser.firstName,
-          middleName: appSuiteUser.middleName,
-          lastName: appSuiteUser.lastName,
-          fullName: fullName,
-          department: appSuiteUser.department,
-          position: appSuiteUser.position,
-          companyId: companyId ? Number(companyId) : null,
-          isEscalation,
-          createdBy: currentUser,
-          escalation1: escalations.first?.id || null,
-          escalation2: escalations.second?.id || null,
-          escalation3: escalations.third?.id || null,
-          escalation4: escalations.fourth?.id || null,
+    prisma.user.create({
+      data: {
+        employeeNumber,
+        username,
+        password: hashedPassword,
+        emailAddress,
+        firstName: appSuiteUser.firstName,
+        middleName: appSuiteUser.middleName,
+        lastName: appSuiteUser.lastName,
+        fullName: fullName,
+        department: appSuiteUser.department,
+        position: appSuiteUser.position,
+        companyId: companyId ? Number(companyId) : null,
+        isEscalation,
+        createdBy: currentUser,
+        escalation1: escalations.first?.id || null,
+        escalation2: escalations.second?.id || null,
+        escalation3: escalations.third?.id || null,
+        escalation4: escalations.fourth?.id || null,
 
-          // 2. Create UserRoles
-          userRoles: {
-            create: roleIds.map((rId: number) => ({
-              role: {
-                connect: { id: rId }
-              },
-              creator: {
-                connect: { id: currentUser }
-              }
-            }))
-          },
-
-          // 3. Create UserGroups
-          userGroups: {
-            create: groupIds.map((gId: number) => ({
-              group: {
-                connect: { id: gId }
-              },
-              creator: {
-                connect: { id: currentUser }
-              }
-            }))
-          },
-
-          // 4. Create UserProjects
-          userProjects: {
-            create: projectIds.map((pId: number) => ({
-              project: {
-                connect: { id: pId }
-              },
-              creator: {
-                connect: { id: currentUser }
-              }
-            }))
-          },
-
+        // 2. Create UserRoles
+        userRoles: {
+          create: roleIds.map((rId: number) => ({
+            role: {
+              connect: { id: rId }
+            },
+            creator: {
+              connect: { id: currentUser }
+            }
+          }))
         },
-        include: userInfoInclude
-      })
 
-      // send email notif
-      await tx.$executeRaw`
-        EXEC dbo.pr_SendUserInvitationEmailNotif
-          @UserId = ${newUser.id},
-          @Password = ${genPassword}`
+        // 3. Create UserGroups
+        userGroups: {
+          create: groupIds.map((gId: number) => ({
+            group: {
+              connect: { id: gId }
+            },
+            creator: {
+              connect: { id: currentUser }
+            }
+          }))
+        },
 
-      return newUser
+        // 4. Create UserProjects
+        userProjects: {
+          create: projectIds.map((pId: number) => ({
+            project: {
+              connect: { id: pId }
+            },
+            creator: {
+              connect: { id: currentUser }
+            }
+          }))
+        },
+
+      },
+      include: userInfoInclude
     })
   )
+
+  // send email notif
+  try {
+    await prisma.$executeRaw`
+      EXEC dbo.pr_SendUserInvitationEmailNotif
+        @UserId = ${newUser.id},
+        @Password = ${genPassword}`
+  } catch (error) {
+    console.error("Invitation stored procedure failed:", error)
+    if (
+      error &&
+      typeof error === "object" &&
+      "meta" in error
+    ) {
+      console.error("Prisma meta:", error.meta)
+    }
+    throw error
+  }
 
   if (error) { return { newUser, error } }
   revalidatePath("/qas/admin/users")

@@ -66,27 +66,36 @@ export async function adminTriggeredResetPassword(userId: number) {
   const genPassword = generateRandomPassword(8)
   const hashedPassword = await bcrypt.hash(genPassword, 10)
 
-  const { error } = await dbQuery(
-    prisma.$transaction(async (tx) => {
-      const userData = await tx.user.update({
-        where: { id: userId },
-        data: {
-          password: hashedPassword,
-          isActivated: false,
-        },
-        select: { id: true }
-      })
-
-      // send email notif
-      const res = await tx.$executeRaw`
-        EXEC dbo.pr_ResetPasswordEmailNotif
-          @UserId = ${userData.id.toString()},
-          @Password = ${genPassword}`
-
+  const { data: userData, error } = await dbQuery(
+    prisma.user.update({
+      where: { id: userId },
+      data: {
+        password: hashedPassword,
+        isActivated: false,
+      },
+      select: { id: true }
     })
   )
 
   if (error) return { success: false, message: error }
+
+  // send email notif
+  try {
+    await prisma.$executeRaw`
+      EXEC dbo.pr_ResetPasswordEmailNotif
+          @UserId = ${userData.id.toString()},
+          @Password = ${genPassword}`
+  } catch (error) {
+    console.error("Invitation stored procedure failed:", error)
+    if (
+      error &&
+      typeof error === "object" &&
+      "meta" in error
+    ) {
+      console.error("Prisma meta:", error.meta)
+    }
+    throw error
+  }
 
   return { success: true, message: "Account password resets successfully" }
 }
@@ -145,13 +154,6 @@ export async function sendOTPCode(emailAddress: string): Promise<SendOTPCodeResu
           expiresOn: tokenExpiresOn
         }
       })
-
-      // send email notif
-      await tx.$executeRaw`
-        EXEC dbo.pr_SendCodeEmailNotif
-          @EmailAdrress = ${emailAddress},
-          @Code = ${code},
-          @Token = ${token}`
     })
   )
 
@@ -160,6 +162,25 @@ export async function sendOTPCode(emailAddress: string): Promise<SendOTPCodeResu
       success: false,
       message: error
     }
+  }
+
+  // send email notif
+  try {
+    await prisma.$executeRaw`
+      EXEC dbo.pr_SendCodeEmailNotif
+          @EmailAdrress = ${emailAddress},
+          @Code = ${code},
+          @Token = ${token}`
+  } catch (error) {
+    console.error("Invitation stored procedure failed:", error)
+    if (
+      error &&
+      typeof error === "object" &&
+      "meta" in error
+    ) {
+      console.error("Prisma meta:", error.meta)
+    }
+    throw error
   }
 
   return {

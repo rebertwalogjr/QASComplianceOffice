@@ -97,17 +97,32 @@ export async function createTransaction(formData: FormData) {
           tag: "created"
         }
       })
-      // Send email notif
-      await tx.$executeRaw`
-        EXEC dbo.pr_JobTransactionSupervisorVerificationRequest
-          @JobTransactionId = ${newJob.id}`
+
       return newJob
     })
   )
 
   if (newJob) {
     await promoteToFinal(sessionId, newJob.id)
+
+    // Send email notif
+    try {
+      await prisma.$executeRaw`
+      EXEC dbo.pr_JobTransactionSupervisorVerificationRequest
+          @JobTransactionId = ${newJob.id}`
+    } catch (error) {
+      console.error("Invitation stored procedure failed:", error)
+      if (
+        error &&
+        typeof error === "object" &&
+        "meta" in error
+      ) {
+        console.error("Prisma meta:", error.meta)
+      }
+      throw error
+    }
   }
+
   return { data: newJob, error }
 }
 
@@ -313,14 +328,14 @@ export async function jobTransactionClientUpdate(formData: FormData) {
   const prevCommitmentDateValue = formData.get("prevCommitmentDate")
 
   const corrCommitmentDate =
-  corrCommitmentDateValue && String(corrCommitmentDateValue).trim() !== ""
-    ? new Date(String(corrCommitmentDateValue))
-    : null
+    corrCommitmentDateValue && String(corrCommitmentDateValue).trim() !== ""
+      ? new Date(String(corrCommitmentDateValue))
+      : null
 
-const prevCommitmentDate =
-  prevCommitmentDateValue && String(prevCommitmentDateValue).trim() !== ""
-    ? new Date(String(prevCommitmentDateValue))
-    : null
+  const prevCommitmentDate =
+    prevCommitmentDateValue && String(prevCommitmentDateValue).trim() !== ""
+      ? new Date(String(prevCommitmentDateValue))
+      : null
 
   const { deletedAttachmentIds } = JSON.parse(payload)
 
@@ -432,18 +447,32 @@ const prevCommitmentDate =
         })
       }
 
-      if (procToDo !== "") {
-        await tx.$executeRaw`
-        EXEC ${procToDo}
-          @JobTransactionId = ${job.id}`
-      }
-
       return job
     })
   )
 
   if (newJob) {
     await promoteToFinal(sessionId, newJob.id)
+
+    // send email notif
+    try {
+      if (procToDo !== "") {
+        await prisma.$executeRaw`
+          EXEC ${procToDo}
+            @JobTransactionId = ${newJob.id}`
+      }
+    } catch (error) {
+      console.error("Invitation stored procedure failed:", error)
+      if (
+        error &&
+        typeof error === "object" &&
+        "meta" in error
+      ) {
+        console.error("Prisma meta:", error.meta)
+      }
+      throw error
+    }
+
     revalidatePath(`/qas/${newJob.id}`)
   }
   return { data: newJob, error }
@@ -473,7 +502,7 @@ export async function reOpenTransaction(id: number) {
   const creatorId = await getUserId()
   if (!creatorId) throw new Error("Unauthorized")
 
-  await dbQuery(
+  const { data: job } = await dbQuery(
     prisma.$transaction(async (tx) => {
       const job = await tx.jobTransaction.update({
         where: { id: id },
@@ -492,17 +521,33 @@ export async function reOpenTransaction(id: number) {
         }
       })
 
-      await tx.$executeRaw`
-        EXEC pr_JobTransactionReOpenSeries
-          @JobTransactionId = ${job.id}`
-
+      return job
     })
   )
+
+  if (job) {
+    // send email notif
+    try {
+      await prisma.$executeRaw`
+        EXEC pr_JobTransactionReOpenSeries
+          @JobTransactionId = ${job.id}`
+    } catch (error) {
+      console.error("Invitation stored procedure failed:", error)
+      if (
+        error &&
+        typeof error === "object" &&
+        "meta" in error
+      ) {
+        console.error("Prisma meta:", error.meta)
+      }
+      throw error
+    }
+  }
 }
 
 export async function generateAuditFindingNumber(id: number) {
   const prisma = getPrisma()
-  const {data: count, error} = await dbQuery(
+  const { data: count, error } = await dbQuery(
     prisma.$executeRaw`
     EXEC pr_GenerateAuditFindingNumber
       @JobTransactionId = ${id}`
@@ -511,7 +556,7 @@ export async function generateAuditFindingNumber(id: number) {
     revalidatePath(`/qas/${id}`)
     return { success: true, message: 'Generated Successfully!' }
   } else {
-    return { success: false, message: error } 
+    return { success: false, message: error }
   }
 }
 
